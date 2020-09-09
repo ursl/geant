@@ -23,30 +23,39 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: EventAction.hh 75214 2013-10-29 16:04:42Z gcosmo $
-//
-/// \file EventAction.hh
+/// \file persistency/P01/include/EventAction.hh
 /// \brief Definition of the EventAction class
-
+//
+//
+// $Id: EventAction.hh 71111 2013-06-11 10:51:02Z gcosmo $
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+ 
 #ifndef EventAction_h
 #define EventAction_h 1
 
 #include "G4UserEventAction.hh"
 
-#include "globals.hh"
+class G4Event;
 
-/// Event action class
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+/// Event action for the persistency example
 
 class EventAction : public G4UserEventAction
 {
   public:
     EventAction();
-    virtual ~EventAction();
+   ~EventAction();
 
-    virtual void  BeginOfEventAction(const G4Event* );
-    virtual void    EndOfEventAction(const G4Event* );
+  public:
+    virtual void BeginOfEventAction(const G4Event*);
+    virtual void EndOfEventAction(const G4Event*);
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
+
+    

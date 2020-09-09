@@ -23,11 +23,15 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: EventAction.cc 75214 2013-10-29 16:04:42Z gcosmo $
-//
-/// \file EventAction.cc
+/// \file persistency/P01/src/EventAction.cc
 /// \brief Implementation of the EventAction class
-
+//
+//
+// $Id: EventAction.cc 71791 2013-06-24 14:08:28Z gcosmo $
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+ 
 #include "EventAction.hh"
 
 #include "G4Event.hh"
@@ -37,44 +41,40 @@
 #include "G4ios.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+ 
 EventAction::EventAction()
 : G4UserEventAction()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+ 
 EventAction::~EventAction()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+ 
 void EventAction::BeginOfEventAction(const G4Event*)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void EventAction::EndOfEventAction(const G4Event* event)
+ 
+void EventAction::EndOfEventAction(const G4Event* evt)
 {
+  G4int event_id = evt->GetEventID();
+  
   // get number of stored trajectories
-
-  G4TrajectoryContainer* trajectoryContainer = event->GetTrajectoryContainer();
+  //
+  G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
   G4int n_trajectories = 0;
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
-
+  
   // periodic printing
-
-  G4int eventID = event->GetEventID();
-  if ( eventID < 100 || eventID % 100 == 0) {
-    G4cout << ">>> Event: " << eventID  << G4endl;
-    if ( trajectoryContainer ) {
-      G4cout << "    " << n_trajectories
-             << " trajectories stored in this event." << G4endl;
-    }
-    G4VHitsCollection* hc = event->GetHCofThisEvent()->GetHC(0);
-    G4cout << "    "  
-           << hc->GetSize() << " hits stored in this event" << G4endl;
+  //
+  if (event_id < 100 || event_id%100 == 0) {
+    G4cout << ">>> Event " << evt->GetEventID() << G4endl;
+    G4cout << "    " << n_trajectories 
+           << " trajectories stored in this event." << G4endl;
   }
-}  
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -23,56 +23,33 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file persistency/P01/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
+/// \file persistency/P01/include/SteppingAction.hh
+/// \brief Definition of the SteppingAction class
 //
 //
-// $Id: PrimaryGeneratorAction.cc 71791 2013-06-24 14:08:28Z gcosmo $
-//
+// $Id: SteppingAction.hh 71111 2013-06-11 10:51:02Z gcosmo $
+// 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "PrimaryGeneratorAction.hh"
-#include "DetectorConstruction.hh"
+#ifndef SteppingAction_h
+#define SteppingAction_h 1
 
-#include "G4Event.hh"
-#include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "globals.hh"
-#include "G4SystemOfUnits.hh"
-
-#include "musrMuonium.hh"
-
+#include "G4UserSteppingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC):
-  G4VUserPrimaryGeneratorAction(), fParticleGun(0), fMyDetector(myDC) {
-  G4int n_particle = 1;
-  fParticleGun = new G4ParticleGun(n_particle);
+/// Stepping action for the persistency example
 
-  G4ParticleDefinition* particle  = musrMuonium::MuoniumDefinition();
-  fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
-  fParticleGun->SetParticleEnergy(0.1*keV);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
+class SteppingAction : public G4UserSteppingAction
 {
-  delete fParticleGun;
-}
+  public:
+    SteppingAction();
+   ~SteppingAction(){};
+
+    virtual void UserSteppingAction(const G4Step*);
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-{
-  G4double position = -0.5*(fMyDetector->GetWorldFullLength());
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,position));
-
-  fParticleGun->GeneratePrimaryVertex(anEvent);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

@@ -1,8 +1,5 @@
-# $Id: CMakeLists.txt 100813 2016-11-02 15:09:50Z gcosmo $
-
 #----------------------------------------------------------------------------
 # Setup the project
-#
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(test1)
 
@@ -20,44 +17,73 @@ endif()
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
-# Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
-include_directories(${PROJECT_SOURCE_DIR}/include )
+
+#----------------------------------------------------------------------------
+# Find ROOT (required package)
+#
+find_package(ROOT REQUIRED)
+
+# ROOT version 6 required
+if(ROOT_FOUND)
+  STRING(REGEX MATCH "6.*" VERSION6MATCH ${ROOT_VERSION})
+  if(NOT VERSION6MATCH)
+    message(FATAL_ERROR "P01 requires ROOT 6")
+  endif()
+endif()
+
+# Include ROOT's CMake functions for dictionary generation
+include("${ROOT_DIR}/modules/RootNewMacros.cmake")
+
+#----------------------------------------------------------------------------
+# P01 requires shared libraries
+#
+if(NOT Geant4_shared_FOUND)
+  message(FATAL_ERROR "P01 must use shared libraries")
+endif()
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
-# NB: headers are included so they will show up in IDEs
 #
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh )
+include_directories(${PROJECT_SOURCE_DIR}/include
+                    ${PROJECT_SOURCE_DIR}/../common/
+                    ${Geant4_INCLUDE_DIR}
+                    ${ROOT_INCLUDE_DIRS}
+		   )
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/../common/*.cc)
+file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
-# -- add new stuff
-include_directories(${PROJECT_SOURCE_DIR}/../common)
-file(GLOB musources ${PROJECT_SOURCE_DIR}/../common/*.cc)
+
+
+#----------------------------------------------------------------------------
+# Generate dictionaries, add ROOT libraries properties
+#
+REFLEX_GENERATE_DICTIONARY(Classes include/Classes.hh SELECTION xml/selection.xml)
+add_library(ClassesDict SHARED ${sources} Classes.cxx)
+set(libsuffix .so)
+set(ROOT_LIBRARY_PROPERTIES ${ROOT_LIBRARY_PROPERTIES} SUFFIX ${libsuffix})
+set_target_properties(ClassesDict PROPERTIES ${ROOT_LIBRARY_PROPERTIES})
+target_link_libraries(ClassesDict  ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(exe exe.cc ${sources} ${musources} ${headers})
-target_link_libraries(exe ${Geant4_LIBRARIES})
+add_executable(rung4 rung4.cc ${sources} ${headers})
+target_link_libraries(rung4 ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+add_executable(readHits readHits.cc  ${sources} ${headers})
+target_link_libraries(readHits ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
-# build test1. This is so that we can run the executable directly because it
+# build P01. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(TEST1_SCRIPTS
-  example.out
-  example.in
-  gui.mac
-  run1.mac
-  run2.mac
-  init_vis.mac
-  vis.mac
+set(P01_SCRIPTS
+    run.mac vis.mac
   )
 
-foreach(_script ${TEST1_SCRIPTS})
+foreach(_script ${P01_SCRIPTS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}
@@ -66,6 +92,15 @@ foreach(_script ${TEST1_SCRIPTS})
 endforeach()
 
 #----------------------------------------------------------------------------
+# Add program to the project targets
+# (this avoids the need of typing the program name after make)
+#
+add_custom_target(P01 DEPENDS rung4 readHits )
+
+#----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS exe DESTINATION bin)
+install(TARGETS rung4 DESTINATION bin)
+install(TARGETS readHits DESTINATION bin)
+install(TARGETS ClassesDict DESTINATION lib)
+install(FILES ${PROJECT_BINARY_DIR}/Classes_rdict.pcm DESTINATION lib)

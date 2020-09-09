@@ -23,10 +23,14 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: TrackerSD.cc 87359 2014-12-01 16:04:27Z gcosmo $
-//
-/// \file TrackerSD.cc
+/// \file persistency/P01/src/TrackerSD.cc
 /// \brief Implementation of the TrackerSD class
+//
+//
+// $Id: TrackerSD.cc 71111 2013-06-11 10:51:02Z gcosmo $
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "TrackerSD.hh"
 #include "G4HCofThisEvent.hh"
@@ -35,58 +39,60 @@
 #include "G4SDManager.hh"
 #include "G4ios.hh"
 
+#include "RootIO.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TrackerSD::TrackerSD(const G4String& name,
-                         const G4String& hitsCollectionName) 
- : G4VSensitiveDetector(name),
-   fHitsCollection(NULL)
+TrackerSD::TrackerSD(G4String name)
+  :G4VSensitiveDetector(name), fTrackerCollection(0), fHCID(0)
 {
-  collectionName.insert(hitsCollectionName);
+  G4String HCname = name + "_HC";
+  collectionName.insert(HCname);
+  G4cout << collectionName.size() << "   CalorimeterSD name:  " << name << " collection Name: " 
+         << HCname << G4endl;
+  fHCID = -1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TrackerSD::~TrackerSD() 
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void TrackerSD::Initialize(G4HCofThisEvent* hce)
-{
-  // Create hits collection
-
-  fHitsCollection 
-    = new TrackerHitsCollection(SensitiveDetectorName, collectionName[0]); 
-
-  // Add this collection in hce
-
-  G4int hcID 
-    = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
-  hce->AddHitsCollection( hcID, fHitsCollection ); 
+TrackerSD::~TrackerSD()
+{ 
+  RootIO::GetInstance()->Close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool TrackerSD::ProcessHits(G4Step* aStep, 
-                                     G4TouchableHistory*)
-{  
-  // energy deposit
+void TrackerSD::Initialize(G4HCofThisEvent* HCE)
+{
+  fTrackerCollection = new TrackerHitsCollection
+                          (SensitiveDetectorName,collectionName[0]); 
+  if (fHCID < 0) {
+    G4cout << "CalorimeterSD::Initialize:  " << SensitiveDetectorName << "   " 
+           << collectionName[0] << G4endl;
+    fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
+    
+  }
+  HCE->AddHitsCollection(fHCID, fTrackerCollection);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4bool TrackerSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
+{
   G4double edep = aStep->GetTotalEnergyDeposit();
 
-  if (edep==0.) return false;
+  if(edep==0.) return false;
 
   TrackerHit* newHit = new TrackerHit();
-
   newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
-  newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchableHandle()
-                                               ->GetCopyNumber());
-  newHit->SetEdep(edep);
-  newHit->SetPos (aStep->GetPostStepPoint()->GetPosition());
-
-  fHitsCollection->insert( newHit );
-
+  newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchable()
+                                               ->GetReplicaNumber());
+  newHit->SetEdep     (edep);
+  newHit->SetPos      (aStep->GetPostStepPoint()->GetPosition());
+  fTrackerCollection->insert( newHit );
+  
   //newHit->Print();
+  //newHit->Draw();
 
   return true;
 }
@@ -95,13 +101,24 @@ G4bool TrackerSD::ProcessHits(G4Step* aStep,
 
 void TrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
-  if ( verboseLevel>1 ) { 
-     G4int nofHits = fHitsCollection->entries();
-     G4cout << G4endl
-            << "-------->Hits Collection: in this event they are " << nofHits 
-            << " hits in the tracker chambers: " << G4endl;
-     for ( G4int i=0; i<nofHits; i++ ) (*fHitsCollection)[i]->Print();
-  }
+  // storing the hits in ROOT file
+  G4int NbHits = fTrackerCollection->entries();
+  std::vector<TrackerHit*> hitsVector;
+
+  { 
+    G4cout << "\n-------->Storing hits in the ROOT file: in this event there are " << NbHits 
+           << " hits in the tracker chambers: " << G4endl;
+    for (G4int i=0;i<NbHits;i++) (*fTrackerCollection)[i]->Print();
+  } 
+
+  
+  for (G4int i=0;i<NbHits;i++) 
+    hitsVector.push_back((*fTrackerCollection)[i]);
+  
+  RootIO::GetInstance()->Write(&hitsVector);
+
+  //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+

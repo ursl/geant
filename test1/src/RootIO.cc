@@ -23,56 +23,79 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file persistency/P01/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
+/// \file persistency/P01/src/RootIO.cc
+/// \brief Implementation of the RootIO class
 //
-//
-// $Id: PrimaryGeneratorAction.cc 71791 2013-06-24 14:08:28Z gcosmo $
+// $Id: RootIO.cc 98770 2016-08-09 14:22:25Z gcosmo $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "PrimaryGeneratorAction.hh"
-#include "DetectorConstruction.hh"
+#include <sstream>
 
+#include "RootIO.hh"
+//
+#include "G4SDManager.hh"
+#include "G4HCofThisEvent.hh"
+#include "G4EventManager.hh"
 #include "G4Event.hh"
-#include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "globals.hh"
-#include "G4SystemOfUnits.hh"
-
-#include "musrMuonium.hh"
-
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC):
-  G4VUserPrimaryGeneratorAction(), fParticleGun(0), fMyDetector(myDC) {
-  G4int n_particle = 1;
-  fParticleGun = new G4ParticleGun(n_particle);
+static RootIO* instance = 0;
 
-  G4ParticleDefinition* particle  = musrMuonium::MuoniumDefinition();
-  fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
-  fParticleGun->SetParticleEnergy(0.1*keV);
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+RootIO::RootIO():fNevents(0)
+{
+  // initialize ROOT
+  TSystem ts;
+  gSystem->Load("libClassesDict");
+
+  //gDebug = 1;
+
+  fFile = new TFile("hits.root","RECREATE");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
+RootIO::~RootIO()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+RootIO* RootIO::GetInstance()
 {
-  delete fParticleGun;
+  if (instance == 0 )
+  {
+    instance = new RootIO();
+  }
+  return instance;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void RootIO::Write(std::vector<TrackerHit*>* hcont)
 {
-  G4double position = -0.5*(fMyDetector->GetWorldFullLength());
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,position));
+  fNevents++;
 
-  fParticleGun->GeneratePrimaryVertex(anEvent);
+  std::ostringstream os;
+  os << fNevents;
+  std::string stevt = "Event_" + os.str(); 
+  const char* chevt = stevt.c_str();
+
+  G4cout << "writing " << stevt << G4endl;
+
+  fFile->WriteObject(hcont, chevt);
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void RootIO::Close()
+{
+  fFile->Close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

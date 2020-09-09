@@ -23,39 +23,12 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file persistency/P01/include/RunAction.hh
-/// \brief Definition of the RunAction class
+/// \file persistency/P01/include/Classes.hh
+/// \brief Declaration of the classes for generating dictionaries
 //
+// $Id: Classes.hh 68025 2013-03-13 13:43:46Z gcosmo $
 //
-// $Id: RunAction.hh 98770 2016-08-09 14:22:25Z gcosmo $
-// 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "TrackerHit.hh"
 
-#ifndef RunAction_h
-#define RunAction_h 1
-
-#include "G4UserRunAction.hh"
-#include "globals.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class G4Run;
-
-/// Run action for the persistency example
-
-class RunAction : public G4UserRunAction
-{
-  public:
-    RunAction();
-   ~RunAction();
-
-  public:
-    virtual void BeginOfRunAction(const G4Run*);
-    virtual void EndOfRunAction(const G4Run*);
-};
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#endif
-
+std::vector<TrackerHit*> a;
+#undef __G4String

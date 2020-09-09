@@ -23,67 +23,83 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: DetectorConstruction.hh 73722 2013-09-09 10:23:05Z gcosmo $
-//
-/// \file DetectorConstruction.hh
+/// \file persistency/P01/include/DetectorConstruction.hh
 /// \brief Definition of the DetectorConstruction class
+//
+//
+// $Id: DetectorConstruction.hh 98770 2016-08-09 14:22:25Z gcosmo $
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
-#include "tls.hh"
+#include "MagneticField.hh"
 
-class G4VPhysicalVolume;
+class G4Box;
 class G4LogicalVolume;
+class G4VPhysicalVolume;
 class G4Material;
-class G4UserLimits;
-class G4GlobalMagFieldMessenger;
-
 class DetectorMessenger;
 
-/// Detector construction class to define materials, geometry
-/// and global uniform magnetic field.
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+/// Detector Construction for the persistency example
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-    DetectorConstruction();
-    virtual ~DetectorConstruction();
+  
+     DetectorConstruction();
+    ~DetectorConstruction();
 
   public:
-    virtual G4VPhysicalVolume* Construct();
-    virtual void ConstructSDandField();
-
-    // Set methods
-    void SetTargetMaterial (G4String );
-    void SetChamberMaterial(G4String );
-    void SetMaxStep (G4double );
-    void SetCheckOverlaps(G4bool );
-
-  private:
-    // methods
-    void DefineMaterials();
-    G4VPhysicalVolume* DefineVolumes();
   
-    // data members
-    G4int fNbOfChambers;
+     virtual G4VPhysicalVolume* Construct();
+     
+     const 
+     G4VPhysicalVolume* GetTracker() {return fPhysiTracker;};
+     G4double GetTrackerFullLength() {return fTrackerLength;};
+     G4double GetTargetFullLength()  {return fTargetLength;};
+     G4double GetWorldFullLength()   {return fWorldLength;}; 
+     
+     void SetTargetMaterial (G4String);
+     void SetChamberMaterial(G4String);
+     void SetMagField(G4double);
+     
+  private:
 
-    G4LogicalVolume*   fLogicTarget;     // pointer to the logical Target
-    G4LogicalVolume**  fLogicChamber;    // pointer to the logical Chamber
-
-    G4Material*        fTargetMaterial;  // pointer to the target  material
-    G4Material*        fChamberMaterial; // pointer to the chamber material
-
-    G4UserLimits* fStepLimit;            // pointer to user step limits
-
-    DetectorMessenger*  fMessenger;   // messenger
-
-    static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger; 
-                                         // magnetic field messenger
-    
-    G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps 
+     G4Box*             fSolidWorld;    // pointer to the solid envelope 
+     G4LogicalVolume*   fLogicWorld;    // pointer to the logical envelope
+     G4VPhysicalVolume* fPhysiWorld;    // pointer to the physical envelope
+     
+     G4Box*             fSolidTarget;   // pointer to the solid Target
+     G4LogicalVolume*   fLogicTarget;   // pointer to the logical Target
+     G4VPhysicalVolume* fPhysiTarget;   // pointer to the physical Target
+               
+     G4Box*             fSolidTracker;  // pointer to the solid Tracker
+     G4LogicalVolume*   fLogicTracker;  // pointer to the logical Tracker
+     G4VPhysicalVolume* fPhysiTracker;  // pointer to the physical Tracker
+     
+     G4Box*             fSolidChamber;  // pointer to the solid Chamber
+     G4LogicalVolume*   fLogicChamber;  // pointer to the logical Chamber
+     G4VPhysicalVolume* fPhysiChamber;  // pointer to the physical Chamber
+     
+     G4Material*         fTargetMater;  // pointer to the target  material
+     G4Material*         fChamberMater; // pointer to the chamber material     
+     MagneticField* fPMagField;   // pointer to the magnetic field 
+     
+     DetectorMessenger* fDetectorMessenger;  // pointer to the Messenger
+       
+     G4double fWorldLength;            // Full length of the world volume
+     G4double fTargetLength;           // Full length of Target
+     G4double fTrackerLength;          // Full length of Tracker
+     G4int    fNbOfChambers;            // Nb of chambers in the tracker region
+     G4double fChamberWidth;            // width of the chambers
+     G4double fChamberSpacing;          // distance between chambers
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

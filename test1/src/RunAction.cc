@@ -23,24 +23,24 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: RunAction.cc 75214 2013-10-29 16:04:42Z gcosmo $
-//
-/// \file RunAction.cc
+/// \file persistency/P01/src/RunAction.cc
 /// \brief Implementation of the RunAction class
+//
+//
+// $Id: RunAction.cc 98770 2016-08-09 14:22:25Z gcosmo $
+// 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "RunAction.hh"
 
 #include "G4Run.hh"
-#include "G4RunManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction()
- : G4UserRunAction()
-{ 
-  // set printing event number per each 100 events
-  G4RunManager::GetRunManager()->SetPrintProgress(1000);     
-}
+: G4UserRunAction()
+{}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -49,15 +49,15 @@ RunAction::~RunAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RunAction::BeginOfRunAction(const G4Run*)
-{ 
-  //inform the runManager to save random number seed
-  G4RunManager::GetRunManager()->SetRandomNumberStore(false);
+void RunAction::BeginOfRunAction(const G4Run* aRun)
+{
+  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RunAction::EndOfRunAction(const G4Run* )
-{}
+void RunAction::EndOfRunAction(const G4Run*)
+{ }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+

@@ -23,56 +23,77 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file persistency/P01/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
+/// \file persistency/P01/src/ChamberParameterisation.cc
+/// \brief Implementation of the ChamberParameterisation class
 //
 //
-// $Id: PrimaryGeneratorAction.cc 71791 2013-06-24 14:08:28Z gcosmo $
+// $Id: ChamberParameterisation.cc 82130 2014-06-11 09:26:44Z gcosmo $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "PrimaryGeneratorAction.hh"
-#include "DetectorConstruction.hh"
+#include "ChamberParameterisation.hh"
 
-#include "G4Event.hh"
-#include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "globals.hh"
-#include "G4SystemOfUnits.hh"
-
-#include "musrMuonium.hh"
-
+#include "G4VPhysicalVolume.hh"
+#include "G4ThreeVector.hh"
+#include "G4Box.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC):
-  G4VUserPrimaryGeneratorAction(), fParticleGun(0), fMyDetector(myDC) {
-  G4int n_particle = 1;
-  fParticleGun = new G4ParticleGun(n_particle);
+ChamberParameterisation::ChamberParameterisation(  
+        G4int    NoChambers, 
+        G4double startZ,          //  Z of center of first 
+        G4double spacingZ,        //  Z spacing of centers
+        G4double widthChamber, 
+        G4double lengthInitial, 
+        G4double lengthFinal )
+ : G4VPVParameterisation()        
+{
+   fNoChambers =  NoChambers; 
+   fStartZ     =  startZ; 
+   fHalfWidth  =  widthChamber*0.5;
+   fSpacing    =  spacingZ;
+   fHalfLengthFirst = 0.5 * lengthInitial; 
+   // fHalfLengthLast = lengthFinal;
+   fHalfLengthIncr = 0;
+   if( NoChambers > 0 ){
+      fHalfLengthIncr =  0.5 * (lengthFinal-lengthInitial)/NoChambers;
 
-  G4ParticleDefinition* particle  = musrMuonium::MuoniumDefinition();
-  fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
-  fParticleGun->SetParticleEnergy(0.1*keV);
+      if (spacingZ < widthChamber) {
+        G4Exception(
+        "ExN02ChamberParameterisation::ExN02ChamberParameterisation()",
+                   "InvalidSetup", FatalException,
+                   "Width>Spacing");
+      }
+   }
+   
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
+ChamberParameterisation::~ChamberParameterisation()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ChamberParameterisation::ComputeTransformation
+(const G4int copyNo, G4VPhysicalVolume* physVol) const
 {
-  delete fParticleGun;
+  G4double      Zposition= fStartZ + (copyNo+1) * fSpacing;
+  G4ThreeVector origin(0,0,Zposition);
+  physVol->SetTranslation(origin);
+  physVol->SetRotation(0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void ChamberParameterisation::ComputeDimensions
+(G4Box& trackerChamber, const G4int copyNo, const G4VPhysicalVolume*) const
 {
-  G4double position = -0.5*(fMyDetector->GetWorldFullLength());
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,position));
-
-  fParticleGun->GeneratePrimaryVertex(anEvent);
+  G4double  halfLength= fHalfLengthFirst + copyNo * fHalfLengthIncr;
+  trackerChamber.SetXHalfLength(halfLength);
+  trackerChamber.SetYHalfLength(halfLength);
+  trackerChamber.SetZHalfLength(fHalfWidth);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

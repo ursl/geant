@@ -23,41 +23,45 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: ActionInitialization.cc 68058 2013-03-13 14:47:43Z gcosmo $
+/// \file persistency/P01/include/RootIO.hh
+/// \brief Definition of the RootIO class
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
+// $Id: RootIO.hh 71791 2013-06-24 14:08:28Z gcosmo $
+#ifndef INCLUDE_ROOTIO_HH 
+#define INCLUDE_ROOTIO_HH 1
 
-#include "ActionInitialization.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
+// Include files
+#include "TROOT.h"
+#include "TFile.h"
+#include "TSystem.h"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "TrackerHit.hh"
 
-ActionInitialization::ActionInitialization()
- : G4VUserActionInitialization()
-{}
+/** @class RootIO
+ *   
+ *
+ *  @author Witold POKORSKI
+ *  @date   2005-10-27
+ */
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/// Root IO implementation for the persistency example
 
-ActionInitialization::~ActionInitialization()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
+class RootIO 
 {
-  SetUserAction(new RunAction);
-}
+public: 
+  virtual ~RootIO();
+  
+  static RootIO* GetInstance();
+  void Write(std::vector<TrackerHit*>*);
+  void Close();
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+protected:
+  RootIO(); 
+  
+private:
 
-void ActionInitialization::Build() const
-{
-  SetUserAction(new PrimaryGeneratorAction);
-  SetUserAction(new RunAction);
-  SetUserAction(new EventAction);
-}  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  TFile* fFile;
+  int fNevents;
+  
+};
+#endif // INCLUDE_ROOTIO_HH

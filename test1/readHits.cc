@@ -23,39 +23,43 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file persistency/P01/include/RunAction.hh
-/// \brief Definition of the RunAction class
+// $Id: readHits.cc 98770 2016-08-09 14:22:25Z gcosmo $
 //
+/// \file persistency/P01/readHits.cc
+/// \brief Main program of the persistency/P01 example
 //
-// $Id: RunAction.hh 98770 2016-08-09 14:22:25Z gcosmo $
-// 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// Include files
+#include "TROOT.h"
+#include "TFile.h"
+#include "TSystem.h"
+#include "TKey.h"
+//
+#include "include/TrackerHit.hh"
 
-#ifndef RunAction_h
-#define RunAction_h 1
+int main(int argc,char** argv)  {
+  // initialize ROOT
+  TSystem ts;
+  gSystem->Load("libClassesDict");
+  if(argc<2) G4cout << "Missing name of the file to read!" << G4endl;
 
-#include "G4UserRunAction.hh"
-#include "globals.hh"
+  TFile fo(argv[1]);
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  std::vector<TrackerHit*>* hits;
+  fo.GetListOfKeys()->Print();
 
-class G4Run;
+  TIter next(fo.GetListOfKeys());
+  TKey *key;
+  //double tot_en;
+  while ((key=(TKey*)next()))
+  {
+    fo.GetObject(key->GetName(), hits);
 
-/// Run action for the persistency example
-
-class RunAction : public G4UserRunAction
-{
-  public:
-    RunAction();
-   ~RunAction();
-
-  public:
-    virtual void BeginOfRunAction(const G4Run*);
-    virtual void EndOfRunAction(const G4Run*);
-};
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#endif
-
+    //tot_en = 0;
+    G4cout << "Collection: " << key->GetName() << G4endl;
+    G4cout << "Number of hits: " << hits->size() << G4endl;
+    for (size_t i=0;i!=hits->size();i++)
+    {
+      (*hits)[i]->Print();
+    }
+  }
+}

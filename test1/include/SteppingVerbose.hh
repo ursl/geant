@@ -23,31 +23,42 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: ActionInitialization.hh 68058 2013-03-13 14:47:43Z gcosmo $
+/// \file persistency/P01/include/SteppingVerbose.hh
+/// \brief Definition of the SteppingVerbose class
 //
-/// \file ActionInitialization.hh
-/// \brief Definition of the ActionInitialization class
+//
+// $Id: SteppingVerbose.hh 71791 2013-06-24 14:08:28Z gcosmo $
+//
+//   This class manages the verbose outputs in G4SteppingManager. 
+//   It inherits from G4SteppingVerbose.
+//   It shows how to extract informations during the tracking of a particle.
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef ActionInitialization_h
-#define ActionInitialization_h 1
+class SteppingVerbose;
 
-#include "G4VUserActionInitialization.hh"
+#ifndef SteppingVerbose_h
+#define SteppingVerbose_h 1
 
-class B4DetectorConstruction;
+#include "G4SteppingVerbose.hh"
 
-/// Action initialization class.
-///
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class ActionInitialization : public G4VUserActionInitialization
+/// Stepping verbose for the persistency example
+
+class SteppingVerbose : public G4SteppingVerbose 
 {
-  public:
-    ActionInitialization();
-    virtual ~ActionInitialization();
+ public:
+   
+  SteppingVerbose();
+ ~SteppingVerbose();
 
-    virtual void BuildForMaster() const;
-    virtual void Build() const;
+  virtual void StepInfo();
+  virtual void TrackingStarted();
+
 };
 
-#endif
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-    
+#endif

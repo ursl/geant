@@ -29,7 +29,6 @@
 /// \brief Main program of the B2a example
 
 #include "DetectorConstruction.hh"
-#include "ActionInitialization.hh"
 
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
@@ -37,6 +36,7 @@
 #include "G4RunManager.hh"
 #endif
 
+#include "G4RunManager.hh"
 #include "G4UImanager.hh"
 #include "FTFP_BERT.hh"
 #include "G4StepLimiterPhysics.hh"
@@ -45,6 +45,12 @@
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
+
+#include "DetectorConstruction.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "RunAction.hh"
+#include "EventAction.hh"
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -70,14 +76,26 @@ int main(int argc,char** argv)
 
   // Set mandatory initialization classes
   //
-  runManager->SetUserInitialization(new DetectorConstruction());
+  //ul  runManager->SetUserInitialization(new DetectorConstruction());
+
+  // UserInitialization classes (mandatory)
+  DetectorConstruction* detector = new DetectorConstruction;
+  runManager->SetUserInitialization(detector);
+
 
   G4VModularPhysicsList* physicsList = new FTFP_BERT;
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   runManager->SetUserInitialization(physicsList);
 
   // Set user action classes
-  runManager->SetUserInitialization(new ActionInitialization());
+  //  runManager->SetUserInitialization(new ActionInitialization());
+
+  // UserAction classes
+  runManager->SetUserAction(new PrimaryGeneratorAction(detector));
+  runManager->SetUserAction(new RunAction);
+  runManager->SetUserAction(new EventAction);
+
+  runManager->Initialize();
 
   // Initialize visualization
   //
@@ -114,6 +132,8 @@ int main(int argc,char** argv)
   //
   delete visManager;
   delete runManager;
+
+  return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....

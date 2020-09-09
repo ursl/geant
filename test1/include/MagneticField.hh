@@ -23,56 +23,50 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file persistency/P01/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
+/// \file persistency/P01/include/MagneticField.hh
+/// \brief Definition of the MagneticField class
 //
 //
-// $Id: PrimaryGeneratorAction.cc 71791 2013-06-24 14:08:28Z gcosmo $
+// $Id: MagneticField.hh 68025 2013-03-13 13:43:46Z gcosmo $
 //
+//
+//    A class for control of the Magnetic Field of the detector.
+//  The field is assumed to be uniform.
+// 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "PrimaryGeneratorAction.hh"
-#include "DetectorConstruction.hh"
+#ifndef MagneticField_H
+#define MagneticField_H
 
-#include "G4Event.hh"
-#include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "globals.hh"
-#include "G4SystemOfUnits.hh"
+#include "G4UniformMagField.hh"
 
-#include "musrMuonium.hh"
-
+class G4FieldManager;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC):
-  G4VUserPrimaryGeneratorAction(), fParticleGun(0), fMyDetector(myDC) {
-  G4int n_particle = 1;
-  fParticleGun = new G4ParticleGun(n_particle);
+/// Magnetic field for the persistency example
 
-  G4ParticleDefinition* particle  = musrMuonium::MuoniumDefinition();
-  fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
-  fParticleGun->SetParticleEnergy(0.1*keV);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-PrimaryGeneratorAction::~PrimaryGeneratorAction()
+class MagneticField: public G4UniformMagField
 {
-  delete fParticleGun;
-}
+  public:
+  
+   MagneticField(G4ThreeVector);  //  The value of the field
+   MagneticField();               //  A zero field
+  ~MagneticField();  
+      
+   //Set the field (fieldValue,0,0)
+   void SetFieldValue(G4double fieldValue);
+   void SetFieldValue(G4ThreeVector fieldVector);
+      
+   G4ThreeVector GetConstantFieldValue();
+
+  protected:
+
+      // Find the global Field Manager
+      G4FieldManager* GetGlobalFieldManager();   // static 
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-{
-  G4double position = -0.5*(fMyDetector->GetWorldFullLength());
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,position));
-
-  fParticleGun->GeneratePrimaryVertex(anEvent);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

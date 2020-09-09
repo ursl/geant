@@ -23,10 +23,14 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: TrackerHit.hh 69706 2013-05-13 09:12:40Z gcosmo $
-//
-/// \file TrackerHit.hh
+/// \file persistency/P01/include/TrackerHit.hh
 /// \brief Definition of the TrackerHit class
+//
+//
+// $Id: TrackerHit.hh 71397 2013-06-14 15:05:31Z gcosmo $
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef TrackerHit_h
 #define TrackerHit_h 1
@@ -35,46 +39,41 @@
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
 #include "G4ThreeVector.hh"
-#include "tls.hh"
 
-/// Tracker hit class
-///
-/// It defines data members to store the trackID, chamberNb, energy deposit,
-/// and position of charged particles in a selected volume:
-/// - fTrackID, fChamberNB, fEdep, fPos
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+/// Hit implementation for the persistency example
 
 class TrackerHit : public G4VHit
 {
   public:
-    TrackerHit();
-    TrackerHit(const TrackerHit&);
-    virtual ~TrackerHit();
 
-    // operators
-    const TrackerHit& operator=(const TrackerHit&);
-    G4int operator==(const TrackerHit&) const;
+      TrackerHit();
+     ~TrackerHit();
+      TrackerHit(const TrackerHit&);
+      const TrackerHit& operator=(const TrackerHit&);
+      G4int operator==(const TrackerHit&) const;
 
-    inline void* operator new(size_t);
-    inline void  operator delete(void*);
+      inline void* operator new(size_t);
+      inline void  operator delete(void*);
 
-    // methods from base class
-    virtual void Draw();
-    virtual void Print();
+      virtual void Draw();
+      virtual void Print();
 
-    // Set methods
-    void SetTrackID  (G4int track)      { fTrackID = track; };
-    void SetChamberNb(G4int chamb)      { fChamberNb = chamb; };
-    void SetEdep     (G4double de)      { fEdep = de; };
-    void SetPos      (G4ThreeVector xyz){ fPos = xyz; };
-
-    // Get methods
-    G4int GetTrackID() const     { return fTrackID; };
-    G4int GetChamberNb() const   { return fChamberNb; };
-    G4double GetEdep() const     { return fEdep; };
-    G4ThreeVector GetPos() const { return fPos; };
-
+  public:
+  
+      void SetTrackID  (G4int track)      { fTrackID = track; };
+      void SetChamberNb(G4int chamb)      { fChamberNb = chamb; };  
+      void SetEdep     (G4double de)      { fEdep = de; };
+      void SetPos      (G4ThreeVector xyz){ fPos = xyz; };
+      
+      G4int GetTrackID()    { return fTrackID; };
+      G4int GetChamberNb()  { return fChamberNb; };
+      G4double GetEdep()    { return fEdep; };      
+      G4ThreeVector GetPos(){ return fPos; };
+      
   private:
-
+  
       G4int         fTrackID;
       G4int         fChamberNb;
       G4double      fEdep;
@@ -85,22 +84,22 @@ class TrackerHit : public G4VHit
 
 typedef G4THitsCollection<TrackerHit> TrackerHitsCollection;
 
-extern G4ThreadLocal G4Allocator<TrackerHit>* TrackerHitAllocator;
+extern G4Allocator<TrackerHit> TrackerHitAllocator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 inline void* TrackerHit::operator new(size_t)
 {
-  if(!TrackerHitAllocator)
-      TrackerHitAllocator = new G4Allocator<TrackerHit>;
-  return (void *) TrackerHitAllocator->MallocSingle();
+  void *aHit;
+  aHit = (void *) TrackerHitAllocator.MallocSingle();
+  return aHit;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-inline void TrackerHit::operator delete(void *hit)
+inline void TrackerHit::operator delete(void *aHit)
 {
-  TrackerHitAllocator->FreeSingle((TrackerHit*) hit);
+  TrackerHitAllocator.FreeSingle((TrackerHit*) aHit);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

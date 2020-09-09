@@ -23,10 +23,14 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: TrackerHit.cc 69706 2013-05-13 09:12:40Z gcosmo $
-//
-/// \file TrackerHit.cc
+/// \file persistency/P01/src/TrackerHit.cc
 /// \brief Implementation of the TrackerHit class
+//
+//
+// $Id: TrackerHit.cc 71791 2013-06-24 14:08:28Z gcosmo $
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "TrackerHit.hh"
 #include "G4UnitsTable.hh"
@@ -35,19 +39,12 @@
 #include "G4Colour.hh"
 #include "G4VisAttributes.hh"
 
-#include <iomanip>
-
-G4ThreadLocal G4Allocator<TrackerHit>* TrackerHitAllocator=0;
+G4Allocator<TrackerHit> TrackerHitAllocator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 TrackerHit::TrackerHit()
- : G4VHit(),
-   fTrackID(-1),
-   fChamberNb(-1),
-   fEdep(0.),
-   fPos(G4ThreeVector())
-{}
+: G4VHit(), fTrackID(0), fChamberNb(0), fEdep(0), fPos(0,0,0) {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -72,7 +69,6 @@ const TrackerHit& TrackerHit::operator=(const TrackerHit& right)
   fChamberNb = right.fChamberNb;
   fEdep      = right.fEdep;
   fPos       = right.fPos;
-
   return *this;
 }
 
@@ -80,7 +76,7 @@ const TrackerHit& TrackerHit::operator=(const TrackerHit& right)
 
 G4int TrackerHit::operator==(const TrackerHit& right) const
 {
-  return ( this == &right ) ? 1 : 0;
+  return (this==&right) ? 1 : 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -91,7 +87,7 @@ void TrackerHit::Draw()
   if(pVVisManager)
   {
     G4Circle circle(fPos);
-    circle.SetScreenSize(4.);
+    circle.SetScreenSize(2.);
     circle.SetFillStyle(G4Circle::filled);
     G4Colour colour(1.,0.,0.);
     G4VisAttributes attribs(colour);
@@ -104,13 +100,10 @@ void TrackerHit::Draw()
 
 void TrackerHit::Print()
 {
-  G4cout
-     << "  trackID: " << fTrackID << " chamberNb: " << fChamberNb
-     << "Edep: "
-     << std::setw(7) << G4BestUnit(fEdep,"Energy")
-     << " Position: "
-     << std::setw(7) << G4BestUnit( fPos,"Length")
-     << G4endl;
+  G4cout << "  trackID: " << fTrackID << "  chamberNb: " << fChamberNb
+         << "  energy deposit[MeV]: " << fEdep
+         << "  position[mm]: " << fPos << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+

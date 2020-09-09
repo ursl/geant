@@ -23,10 +23,14 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: DetectorMessenger.hh 69706 2013-05-13 09:12:40Z gcosmo $
-//
-/// \file DetectorMessenger.hh
+/// \file persistency/P01/include/DetectorMessenger.hh
 /// \brief Definition of the DetectorMessenger class
+//
+//
+// $Id: DetectorMessenger.hh 71791 2013-06-24 14:08:28Z gcosmo $
+//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef DetectorMessenger_h
 #define DetectorMessenger_h 1
@@ -41,33 +45,27 @@ class G4UIcmdWithADoubleAndUnit;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-/// Messenger class that defines commands for DetectorConstruction.
-///
-/// It implements commands:
-/// - /B2/det/setTargetMaterial name
-/// - /B2/det/setChamberMaterial name
-/// - /B2/det/stepMax value unit
+/// Detector messenger for the persistency example
 
 class DetectorMessenger: public G4UImessenger
 {
   public:
-    DetectorMessenger(DetectorConstruction* );
-    virtual ~DetectorMessenger();
+    DetectorMessenger(DetectorConstruction*);
+   ~DetectorMessenger();
     
     virtual void SetNewValue(G4UIcommand*, G4String);
     
   private:
-    DetectorConstruction*  fDetectorConstruction;
-
-    G4UIdirectory*           fB2Directory;
-    G4UIdirectory*           fDetDirectory;
-
-    G4UIcmdWithAString*      fTargMatCmd;
-    G4UIcmdWithAString*      fChamMatCmd;
-
-    G4UIcmdWithADoubleAndUnit* fStepMaxCmd;
+    DetectorConstruction* fDetector;
+    
+    G4UIdirectory*             fN02Dir;
+    G4UIdirectory*             fDetDir;
+    G4UIcmdWithAString*        fTargMatCmd;
+    G4UIcmdWithAString*        fChamMatCmd;    
+    G4UIcmdWithADoubleAndUnit* fFieldCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
+

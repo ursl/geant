@@ -23,45 +23,56 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: DetectorMessenger.cc 69706 2013-05-13 09:12:40Z gcosmo $
-// 
-/// \file DetectorMessenger.cc
+/// \file persistency/P01/src/DetectorMessenger.cc
 /// \brief Implementation of the DetectorMessenger class
+//
+//
+// $Id: DetectorMessenger.cc 98770 2016-08-09 14:22:25Z gcosmo $
+// 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "DetectorMessenger.hh"
-#include "DetectorConstruction.hh"
 
+#include "DetectorConstruction.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "globals.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorMessenger::DetectorMessenger(DetectorConstruction* Det)
- : G4UImessenger(),
-   fDetectorConstruction(Det)
-{
-  fB2Directory = new G4UIdirectory("/B2/");
-  fB2Directory->SetGuidance("UI commands specific to this example.");
-
-  fDetDirectory = new G4UIdirectory("/B2/det/");
-  fDetDirectory->SetGuidance("Detector construction control");
-
-  fTargMatCmd = new G4UIcmdWithAString("/B2/det/setTargetMaterial",this);
+DetectorMessenger::DetectorMessenger(DetectorConstruction* myDet)
+: G4UImessenger(),
+  fDetector(myDet),
+  fN02Dir(0),
+  fDetDir(0),
+  fTargMatCmd(0),
+  fChamMatCmd(0),    
+  fFieldCmd(0)
+{ 
+  fN02Dir = new G4UIdirectory("/P01/");
+  fN02Dir->SetGuidance("UI commands specific to this example.");
+  
+  fDetDir = new G4UIdirectory("/P01/det/");
+  fDetDir->SetGuidance("detector control.");
+  
+  fTargMatCmd = new G4UIcmdWithAString("/P01/det/setTargetMate",this);
   fTargMatCmd->SetGuidance("Select Material of the Target.");
   fTargMatCmd->SetParameterName("choice",false);
   fTargMatCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-
-  fChamMatCmd = new G4UIcmdWithAString("/B2/det/setChamberMaterial",this);
-  fChamMatCmd->SetGuidance("Select Material of the Chamber.");
+  
+  fChamMatCmd = new G4UIcmdWithAString("/P01/det/setChamberMate",this);
+  fChamMatCmd->SetGuidance("Select Material of the Target.");
   fChamMatCmd->SetParameterName("choice",false);
-  fChamMatCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-
-  fStepMaxCmd = new G4UIcmdWithADoubleAndUnit("/B2/det/stepMax",this);
-  fStepMaxCmd->SetGuidance("Define a step max");
-  fStepMaxCmd->SetParameterName("stepMax",false);
-  fStepMaxCmd->SetUnitCategory("Length");
-  fStepMaxCmd->AvailableForStates(G4State_Idle);
+  fChamMatCmd->AvailableForStates(G4State_PreInit,G4State_Idle);  
+  
+  fFieldCmd = new G4UIcmdWithADoubleAndUnit("/P01/det/setField",this);  
+  fFieldCmd->SetGuidance("Define magnetic field.");
+  fFieldCmd->SetGuidance("Magnetic field will be in X direction.");
+  fFieldCmd->SetParameterName("Bx",false);
+  fFieldCmd->SetUnitCategory("Magnetic flux density");
+  fFieldCmd->AvailableForStates(G4State_PreInit,G4State_Idle);  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -70,25 +81,23 @@ DetectorMessenger::~DetectorMessenger()
 {
   delete fTargMatCmd;
   delete fChamMatCmd;
-  delete fStepMaxCmd;
-  delete fB2Directory;
-  delete fDetDirectory;
+  delete fFieldCmd;
+  delete fDetDir;
+  delete fN02Dir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
-{
+{ 
   if( command == fTargMatCmd )
-   { fDetectorConstruction->SetTargetMaterial(newValue);}
-
+   { fDetector->SetTargetMaterial(newValue);}
+   
   if( command == fChamMatCmd )
-   { fDetectorConstruction->SetChamberMaterial(newValue);}
-
-  if( command == fStepMaxCmd ) {
-    fDetectorConstruction
-      ->SetMaxStep(fStepMaxCmd->GetNewDoubleValue(newValue));
-  }   
+   { fDetector->SetChamberMaterial(newValue);}  
+  
+  if( command == fFieldCmd )
+   { fDetector->SetMagField(fFieldCmd->GetNewDoubleValue(newValue));}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
