@@ -1,0 +1,8 @@
+cd $G4BASE
+git clone git@github.com:ursl/muamu
+cd muamu/
+mkdir build
+cd build/
+cmake ../test1
+make
+./exe example.in
