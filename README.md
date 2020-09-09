@@ -1,2 +1,2 @@
 # muamu
-Simple setup for starting a Mu\bar{Mu} sensitivity study
+Simple setup for starting a Muonium-antiMuonium sensitivity study
