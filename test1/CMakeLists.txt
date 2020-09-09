@@ -23,24 +23,28 @@ endif()
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
-include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/../mu)
+include_directories(${PROJECT_SOURCE_DIR}/include )
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/../mu/*.cc)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh )
+
+# -- add new stuff
+include_directories(${PROJECT_SOURCE_DIR}/../common)
+file(GLOB musources ${PROJECT_SOURCE_DIR}/../common/*.cc)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(exe exe.cc ${sources} ${headers})
+add_executable(exe exe.cc ${sources} ${musources} ${headers})
 target_link_libraries(exe ${Geant4_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
-# build B2a. This is so that we can run the executable directly because it
+# build test1. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
 set(TEST1_SCRIPTS
