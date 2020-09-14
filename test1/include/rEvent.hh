@@ -5,6 +5,7 @@
 #include "TClonesArray.h"
 
 #include "TGenCand.hh"
+#include "THit.hh"
 
 
 class rEvent: public TObject {
@@ -20,11 +21,30 @@ public:
   void                dumpGenBlock();
   void                clearGenBlock();
 
+  // ----------------------------------------------------------------------
+  int                 nHits() {return fnHits;}
+  THit*               getHit(int n);
+  THit*               addHit();
+  void                dumpHits();
+  void                clearHits();
 
-  int fID;
+  // ----------------------------------------------------------------------
+  // -- Basic event and detector information
+  int                 fRunNumber, fEventNumber;
+  // -- MC event/generation information
+  int               fProcessID;
 
+  // -- Reserve variables
+  int               fIntRes[10];
+  double            fDoubleRes[10];
+
+  // ----------------------------------------------------------------------
+  // -- the TClonesArray's
   int               fnGenCands;
-  TClonesArray      *fGenCands;         //->
+  TClonesArray      *fGenCands;   //->
+
+  int               fnHits;
+  TClonesArray      *fHits;       //->
 
 private:
   ClassDef(rEvent,1)

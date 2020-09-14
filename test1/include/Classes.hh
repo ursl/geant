@@ -31,6 +31,7 @@
 #include "TrackerHit.hh"
 #include "rEvent.hh"
 #include "TGenCand.hh"
+#include "THit.hh"
 
 std::vector<TrackerHit*> a;
 #undef __G4String

@@ -4,6 +4,7 @@
 <class name="G4VHit"/>
 <class name="TrackerHit"/>
 <class name="TGenCand"/>
+<class name="THit"/>
 <class name="rEvent"/>
 <class name="std::vector<TrackerHit*>"/>
 <class name="CLHEP::Hep3Vector"/>
