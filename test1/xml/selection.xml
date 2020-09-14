@@ -3,6 +3,7 @@
 <class name="G4String"/>
 <class name="G4VHit"/>
 <class name="TrackerHit"/>
+<class name="rEvent"/>
 <class name="std::vector<TrackerHit*>"/>
 <class name="CLHEP::Hep3Vector"/>
 </lcgdict>
