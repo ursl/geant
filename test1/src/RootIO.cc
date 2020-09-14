@@ -22,8 +22,9 @@ RootIO::RootIO() {
   fTree->SetDirectory(fFile);
 
   fEvent = new rEvent;
+  rEvent::Class()->SetCanSplit(1);
+  fTree->Branch("rEvent", "rEvent", &fEvent, 64000, 99);
 
-  fTree->Branch("event", &fEvent);
 }
 
 // ----------------------------------------------------------------------

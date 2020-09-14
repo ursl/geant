@@ -18,6 +18,7 @@ public:
   void Close();
 
   TTree* getTree() {return fTree;}
+  rEvent* getEvent() {return fEvent;}
   void fillTree();
   void clear();
 

@@ -69,8 +69,8 @@ target_link_libraries(ClassesDict  ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(rung4 rung4.cc ${sources} ${headers})
-target_link_libraries(rung4 ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+add_executable(runG4 runG4.cc ${sources} ${headers})
+target_link_libraries(runG4 ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 add_executable(readHits readHits.cc  ${sources} ${headers})
 target_link_libraries(readHits ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
@@ -95,12 +95,12 @@ endforeach()
 # Add program to the project targets
 # (this avoids the need of typing the program name after make)
 #
-add_custom_target(P01 DEPENDS rung4 readHits )
+add_custom_target(P01 DEPENDS runG4 readHits )
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS rung4 DESTINATION bin)
+install(TARGETS runG4 DESTINATION bin)
 install(TARGETS readHits DESTINATION bin)
 install(TARGETS ClassesDict DESTINATION lib)
 install(FILES ${PROJECT_BINARY_DIR}/Classes_rdict.pcm DESTINATION lib)

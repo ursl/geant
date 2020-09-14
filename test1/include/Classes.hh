@@ -29,6 +29,8 @@
 // $Id: Classes.hh 68025 2013-03-13 13:43:46Z gcosmo $
 //
 #include "TrackerHit.hh"
+#include "rEvent.hh"
+#include "TGenCand.hh"
 
 std::vector<TrackerHit*> a;
 #undef __G4String

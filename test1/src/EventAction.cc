@@ -56,6 +56,14 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     e  = trj->GetInitialKineticEnergy();
     id = trj->GetPDGEncoding();
     G4cout << "(p,e) = " << px << "/" << py << "/" << pz << "/" << e << " ID = " << id << G4endl;
+    TGenCand* pGen =  rio->getEvent()->addGenCand();
+    pGen->fID = id;
+    pGen->fNumber = genlist[i];
+    pGen->fP.SetXYZT(px,
+                     py,
+                     px,
+                     e);
+
     // rio->fGenParticles[i].px = px;
     // rio->fGenParticles[i].py = py;
     // rio->fGenParticles[i].pz = pz;
