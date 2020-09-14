@@ -4,14 +4,16 @@
 # can be run in batch, without graphic
 # or interactively: Idle> /control/execute run1.mac
 #
+/run/initialize
+/control/verbose 2
 /run/verbose 2
 /event/verbose 1
+
+/tracking/storeTrajectory 2
 
 #
 /tracking/verbose 1
 
-/run/initialize
-
-/run/beamOn 100
+/run/beamOn 1000
 
 exit
