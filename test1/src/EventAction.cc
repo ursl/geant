@@ -23,7 +23,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   G4int event_id = evt->GetEventID();
 
   // get number of stored trajectories
-  //
+
   G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
   G4int n_trajectories = 0;
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
@@ -63,13 +63,8 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
                      py,
                      px,
                      e);
-
-    // rio->fGenParticles[i].px = px;
-    // rio->fGenParticles[i].py = py;
-    // rio->fGenParticles[i].pz = pz;
-    // rio->fGenParticles[i].e = e;
-    // rio->fGenParticles[i].id = id;
   }
-  rio->fNGenParticles = genlist.size();
+
   rio->fillTree();
+  rio->getEvent()->Clear();
 }
