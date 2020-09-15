@@ -33,6 +33,9 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   G4cout << "----------------------------------------------------------------------" << G4endl;
   for (G4int i = 0; i < n_trajectories; ++i) {
     G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+    if (0 == trj->GetParentID()) {
+      genlist.push_back(i);
+    }
     if (1 == trj->GetParentID()) {
       genlist.push_back(i);
     }
