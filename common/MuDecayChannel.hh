@@ -43,6 +43,8 @@
 #include "globals.hh"
 #include "G4VDecayChannel.hh"
 
+#include "TF1.h"
+
 class MuDecayChannel :public G4VDecayChannel
 {
   // Class Decription
@@ -61,6 +63,9 @@ class MuDecayChannel :public G4VDecayChannel
 
   public:  // With Description
      virtual G4DecayProducts *DecayIt(G4double);
+
+private:
+  TF1 *feAtomic;
 
 };
 

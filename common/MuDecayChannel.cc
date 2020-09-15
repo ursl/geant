@@ -42,6 +42,8 @@
 //
 //  2008-05
 //      Modified for the muonium decay by Toni SHIROKA, Paul Scherrer Institut, PSI
+//  2020-09
+//      Modified to include the atomic electron by ursl, PSI
 // ------------------------------------------------------------
 
 #include "G4ParticleDefinition.hh"
@@ -53,20 +55,36 @@
 #include "G4LorentzRotation.hh"
 #include "G4RotationMatrix.hh"
 
+#include "TMath.h"
+
+#define MMUON      0.1057
+#define MELECTRON  0.0005
+
+// ----------------------------------------------------------------------
+// -- cf. ~/macros/psi-inHouse/muamu.C
+double f_eAtomic(double *x, double *par) {
+  double r = MELECTRON/MMUON;
+  double rinf = 13.61;
+  double denominator  = 1. + (1 + r)*(1 + r)*x[0]/rinf;
+  double denominator4 = denominator*denominator*denominator*denominator;
+  double numerator    = (16./TMath::Pi())*TMath::Sqrt((1+r)*(1+r)*x[0]/rinf) * (1 + r)*(1+r)/rinf;
+  double result = numerator/denominator4;
+
+  return result;
+}
 
 
-MuDecayChannel::MuDecayChannel(const G4String& theParentName,
-				       G4double        theBR)
-               :G4VDecayChannel("Muonium Decay",1)
-{
+MuDecayChannel::MuDecayChannel(const G4String& theParentName, G4double theBR) : G4VDecayChannel("Muonium Decay",1) {
+  feAtomic = new TF1("feAtomic", f_eAtomic, 0., 100., 1);
   // set names for daughter particles
   if (theParentName == "Mu") {
     SetBR(theBR);
     SetParent("Mu");
-    SetNumberOfDaughters(3);
+    SetNumberOfDaughters(4);
     SetDaughter(0, "e+");
     SetDaughter(1, "nu_e");
     SetDaughter(2, "anti_nu_mu");
+    SetDaughter(3, "e-");
   } else {
 #ifdef G4VERBOSE
     if (GetVerboseLevel()>0) {
@@ -91,26 +109,27 @@ G4DecayProducts *MuDecayChannel::DecayIt(G4double)
   if (GetVerboseLevel()>1) G4cout << "MuDecayChannel::DecayIt ";
 #endif
 
-//------------------------------modified----------xran----------------
+  //------------------------------modified----------xran----------------
   // if (G4MT_parent == 0) FillParent();
   // if (G4MT_daughters == 0) FillDaughters();
-//------------------------------modified----------xran----------------
+  //------------------------------modified----------xran----------------
 
   // parent mass
-//------------------------------modified----------xran----------------
+  //------------------------------modified----------xran----------------
   G4double parentmass = G4MT_parent->GetPDGMass();
-//------------------------------modified----------xran----------------
+  //------------------------------modified----------xran----------------
 
 
   //daughters'mass
-  G4double daughtermass[3];
+  G4double daughtermass[4];
   G4double sumofdaughtermass = 0.0;
-  for (G4int index=0; index<3; index++){
-  daughtermass[index] = G4MT_daughters[index]->GetPDGMass();
-    sumofdaughtermass += daughtermass[index];
+  for (G4int index=0; index<4; index++){
+    daughtermass[index] = G4MT_daughters[index]->GetPDGMass();
+    // -- exclude atomic electron from muon decay daughters:
+    if (index < 3) sumofdaughtermass += daughtermass[index];
   }
 
-   //create parent G4DynamicParticle at rest
+  //create parent G4DynamicParticle at rest
   G4ThreeVector dummy;
   G4DynamicParticle * parentparticle = new G4DynamicParticle( G4MT_parent, dummy, 0.0);
   //create G4Decayproducts
@@ -118,31 +137,34 @@ G4DecayProducts *MuDecayChannel::DecayIt(G4double)
   delete parentparticle;
 
   // calculate daughter momentum
-  G4double daughtermomentum[3];
-    // calcurate electron energy
-  G4double xmax = (1.0+daughtermass[0]*daughtermass[0]/parentmass/parentmass);
-  G4double x;
+  G4double daughtermomentum[4];
+  // calcurate electron energy
+  G4double xmax = (1.0 + daughtermass[0]*daughtermass[0]/parentmass/parentmass);
+  G4double x, y;
 
   G4double Ee,Ene;
 
   G4double gam;
-   G4double EMax=parentmass/2-daughtermass[0];
+  G4double EMax=parentmass/2 - daughtermass[0];
 
 
-   //Generating Random Energy
-do {
-  Ee=G4UniformRand();
+  // -- Generate random energies for muonic decay products
+  do {
+    Ee = G4UniformRand();
     do{
-      x=xmax*G4UniformRand();
-      gam=G4UniformRand();
-    }while (gam >x*(1.-x));
-    Ene=x;
-  } while ( Ene < (1.-Ee));
- G4double Enm=(2.-Ee-Ene);
+      x = xmax*G4UniformRand();
+      gam = G4UniformRand();
+    } while (gam > x*(1.-x));
+    Ene = x;
+  } while (Ene < (1.-Ee));
+  G4double Enm = (2. - Ee - Ene);
+
+  // -- and for atomic electron
+  G4double Eeatomic = feAtomic->GetRandom(0., 100.);
 
 
- //initialisation of rotation parameters
 
+  // -- initialisation of rotation parameters
   G4double costheta,sintheta,rphi,rtheta,rpsi;
   costheta= 1.-2./Ee-2./Ene+2./Ene/Ee;
   sintheta=std::sqrt(1.-costheta*costheta);
@@ -155,41 +177,37 @@ do {
   G4RotationMatrix rot;
   rot.set(rphi,rtheta,rpsi);
 
-  //electron 0
-  daughtermomentum[0]=std::sqrt(Ee*Ee*EMax*EMax+2.0*Ee*EMax * daughtermass[0]);
-  G4ThreeVector direction0(0.0,0.0,1.0);
-
+  // -- electron 0 (from muonic decay)
+  daughtermomentum[0]=std::sqrt(Ee*Ee*EMax*EMax + 2.0*Ee*EMax * daughtermass[0]);
+  G4ThreeVector direction0(0.0, 0.0, 1.0);
   direction0 *= rot;
-
- G4DynamicParticle * daughterparticle = new G4DynamicParticle (G4MT_daughters[0],	 direction0 * daughtermomentum[0]);
-
+  G4DynamicParticle * daughterparticle = new G4DynamicParticle(G4MT_daughters[0], direction0*daughtermomentum[0]);
   products->PushProducts(daughterparticle);
 
-  //electronic neutrino  1
-
-  daughtermomentum[1]=std::sqrt(Ene*Ene*EMax*EMax+2.0*Ene*EMax * daughtermass[1]);
-  G4ThreeVector direction1(sintheta,0.0,costheta);
-
+  // -- electronic neutrino 1
+  daughtermomentum[1]=std::sqrt(Ene*Ene*EMax*EMax + 2.0*Ene*EMax * daughtermass[1]);
+  G4ThreeVector direction1(sintheta, 0.0, costheta);
   direction1 *= rot;
-
-  G4DynamicParticle * daughterparticle1 = new G4DynamicParticle ( G4MT_daughters[1],	 direction1 * daughtermomentum[1]);
+  G4DynamicParticle * daughterparticle1 = new G4DynamicParticle(G4MT_daughters[1], direction1*daughtermomentum[1]);
   products->PushProducts(daughterparticle1);
 
-  //muonic neutrino 2
-
-     daughtermomentum[2]=std::sqrt(Enm*Enm*EMax*EMax +2.0*Enm*EMax*daughtermass[2]);
-  G4ThreeVector direction2(-Ene/Enm*sintheta,0,-Ee/Enm-Ene/Enm*costheta);
-
+  // -- muonic neutrino 2
+  daughtermomentum[2]=std::sqrt(Enm*Enm*EMax*EMax + 2.0*Enm*EMax*daughtermass[2]);
+  G4ThreeVector direction2(-Ene/Enm*sintheta, 0., -Ee/Enm-Ene/Enm*costheta);
   direction2 *= rot;
-
-  G4DynamicParticle * daughterparticle2 = new G4DynamicParticle ( G4MT_daughters[2],
-	 direction2 * daughtermomentum[2]);
+  G4DynamicParticle * daughterparticle2 = new G4DynamicParticle(G4MT_daughters[2], direction2*daughtermomentum[2]);
   products->PushProducts(daughterparticle2);
 
 
+  // -- electron 1 (atomic electron)
+  daughtermomentum[3] = std::sqrt(Eeatomic*Eeatomic + 2.*Eeatomic*daughtermass[3]);
+  G4ThreeVector direction3(0., 0., -1.);
+  direction3 *= rot;
+  G4DynamicParticle * daughterparticle3 = new G4DynamicParticle(G4MT_daughters[3], direction3*daughtermomentum[3]);
+  products->PushProducts(daughterparticle3);
 
 
- // output message
+  // output message
 #ifdef G4VERBOSE
   if (GetVerboseLevel()>1) {
     G4cout << "MuDecayChannel::DecayIt ";
