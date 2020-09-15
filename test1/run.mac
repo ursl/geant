@@ -1,19 +1,35 @@
-#
-# Macro file for "persEx02.cc"
-#
-# can be run in batch, without graphic
-# or interactively: Idle> /control/execute run1.mac
-#
 /run/initialize
-/control/verbose 2
-/run/verbose 2
+/control/verbose 1
+/run/verbose 1
 /event/verbose 1
 
 /tracking/storeTrajectory 2
 
+
+# -- configure GeneralParticleSource
+/gps/pos/type Surface
+/gps/pos/shape Rectangle
+/gps/pos/centre 0 0 0 cm
+
+/gps/pos/halfx 1 cm
+/gps/pos/halfy 1 cm
+/gps/pos/halfz 0.1 cm
+
+/gps/number 1
+# the Bbody setup does not work yet!?
+#/gps/ene/type Bbody
+#/gps/ene/temp 300
+#/gps/ene/min 0 keV
+#/gps/ene/max 100 ke
+#/gps/ene/calculate
+
+/gps/ene/mono 1 keV
+
+
+
 #
 /tracking/verbose 1
 
-/run/beamOn 1000
+/run/beamOn 100
 
 exit
