@@ -74,17 +74,16 @@ musrMuonium* musrMuonium::Definition()
   G4VDecayChannel* mode = new MuDecayChannel("Mu",1.00);
   table->Insert(mode);
   anInstance->SetDecayTable(table);
+
   }
   theInstance = reinterpret_cast<musrMuonium*>(anInstance);
   return theInstance;
 }
 
-musrMuonium*  musrMuonium::MuoniumDefinition()
-{
+musrMuonium*  musrMuonium::MuoniumDefinition() {
   return Definition();
 }
 
-musrMuonium*  musrMuonium::Muonium()
-{
+musrMuonium*  musrMuonium::Muonium() {
   return Definition();
 }
