@@ -171,7 +171,7 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
   // ------------------------------
   // -- Target
   // ------------------------------
-  G4ThreeVector positionTarget = G4ThreeVector(0., 0., 0.);
+  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -99.*cm);
   fSolidTarget = new G4Box("Target", 5.0*cm, 5.0*cm, tgtHalfLength);
   fLogicTarget = new G4LogicalVolume(fSolidTarget,fTargetMater,"Target", 0, 0, 0);
   fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0);
@@ -198,7 +198,8 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
 				  0.*deg, 360.*deg);
 
     fLogicChamber[itrk] = new G4LogicalVolume(chamberS, fChamberMater, Form("Chamber_LV"), 0, 0, 0);
-    fLogicChamber[itrk]->SetVisAttributes(chamberVisAtt);
+    double iscale = 0.3 + itrk*0.1;
+    fLogicChamber[itrk]->SetVisAttributes(G4Colour(0.8, iscale, iscale));
 
     fPhysiChamber[itrk] = new G4PVPlacement(0,                            // no rotation
 					    G4ThreeVector(0., 0., 0.),    // at (x,y,z)
