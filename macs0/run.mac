@@ -10,7 +10,7 @@
 /gps/pos/type Surface
 /gps/pos/shape Rectangle
 /gps/pos/centre 0 0 0 cm
-/gps/direction 0 0 -1.57075
+/gps/direction 0 0 1.57075
 
 /gps/pos/halfx 1 cm
 /gps/pos/halfy 1 cm
@@ -24,7 +24,7 @@
 #/gps/ene/max 100 ke
 #/gps/ene/calculate
 
-/gps/ene/mono 1 keV
+/gps/ene/mono 0.001 keV
 
 
 
