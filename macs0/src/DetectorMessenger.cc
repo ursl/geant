@@ -22,16 +22,6 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* myDet)
   fDetDir = new G4UIdirectory("/muamu/det/");
   fDetDir->SetGuidance("detector control.");
 
-  fTargMatCmd = new G4UIcmdWithAString("/muamu/det/setTargetMate",this);
-  fTargMatCmd->SetGuidance("Select Material of the Target.");
-  fTargMatCmd->SetParameterName("choice",false);
-  fTargMatCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-
-  fChamMatCmd = new G4UIcmdWithAString("/muamu/det/setChamberMate",this);
-  fChamMatCmd->SetGuidance("Select Material of the Target.");
-  fChamMatCmd->SetParameterName("choice",false);
-  fChamMatCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-
   fFieldCmd = new G4UIcmdWithADoubleAndUnit("/muamu/det/setField",this);
   fFieldCmd->SetGuidance("Define magnetic field.");
   fFieldCmd->SetGuidance("Magnetic field will be in X direction.");
@@ -51,7 +41,5 @@ DetectorMessenger::~DetectorMessenger() {
 
 // ----------------------------------------------------------------------
 void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue) {
-  if (command == fTargMatCmd) { fDetector->SetTargetMaterial(newValue);}
-  if (command == fChamMatCmd) { fDetector->SetChamberMaterial(newValue);}
   if (command == fFieldCmd) { fDetector->SetMagField(fFieldCmd->GetNewDoubleValue(newValue));}
 }

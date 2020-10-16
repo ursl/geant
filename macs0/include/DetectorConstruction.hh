@@ -4,15 +4,17 @@
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "MagneticField.hh"
+#include "G4FieldManager.hh"
 
 class G4Box;
 class G4Tubs;
+class G4UnionSolid;
+class G4MultiUnion;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4Material;
 class G4UserLimits;
 class DetectorMessenger;
-class G4GlobalMagFieldMessenger;
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
@@ -32,33 +34,46 @@ public:
   G4double GetTargetFullLength()  {return fTgtLength;};
   G4double GetWorldFullLength()   {return fWorldLength;};
 
-  void SetTargetMaterial (G4String);
-  void SetChamberMaterial(G4String);
+  void defineMaterials();
   void SetMagField(G4double);
 
 private:
-  static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger;
+  // -- Materials
+  G4Material *fVac, *fAir, *fAl, *fPb, *fSiO2,
+    *fXeGas;
 
+  // -- world
+  G4Box*             fSolidWorld;
+  G4LogicalVolume*   fLogicWorld;
+  G4VPhysicalVolume* fPhysiWorld;
 
-  G4Box*             fSolidWorld;    // pointer to the solid envelope
-  G4LogicalVolume*   fLogicWorld;    // pointer to the logical envelope
-  G4VPhysicalVolume* fPhysiWorld;    // pointer to the physical envelope
+  // -- target
+  G4Box*             fSolidTarget;
+  G4LogicalVolume*   fLogicTarget;
+  G4VPhysicalVolume* fPhysiTarget;
+  G4Material*        fTargetMater;
 
-  G4Box*             fSolidTarget;   // pointer to the solid Target
-  G4LogicalVolume*   fLogicTarget;   // pointer to the logical Target
-  G4VPhysicalVolume* fPhysiTarget;   // pointer to the physical Target
+  // -- tracker
+  G4Tubs*            fSolidTracker;
+  G4LogicalVolume*   fLogicTracker;
+  G4VPhysicalVolume* fPhysiTracker;
 
-  G4Tubs*            fSolidTracker;  // pointer to the solid Tracker
-  G4LogicalVolume*   fLogicTracker;  // pointer to the logical Tracker
-  G4VPhysicalVolume* fPhysiTracker;  // pointer to the physical Tracker
+  // -- tracker chambers
+  G4Box*             fSolidChamber;
+  G4LogicalVolume**  fLogicChamber;
+  G4VPhysicalVolume**fPhysiChamber;
+  G4Material*        fChamberMater;
 
-  G4Box*             fSolidChamber;  // pointer to the solid Chamber
-  G4LogicalVolume**  fLogicChamber;  // pointer to the logical Chamber
-  G4VPhysicalVolume**fPhysiChamber;  // pointer to the physical Chamber
+  // -- transport tube
+  G4MultiUnion*      fSolidTrsp;
+  G4LogicalVolume*   fLogicTrsp;
+  G4VPhysicalVolume* fPhysiTrsp;
+  G4Material*        fTrspMater;
+  G4double           fTrspOuterRadius, fTrspLength1, fTrspLength2;
+  G4LogicalVolume*   fMagneticLogical;
 
-  G4Material*         fTargetMater;  // pointer to the target  material
-  G4Material*         fChamberMater; // pointer to the chamber material
-  MagneticField* fPMagField;   // pointer to the magnetic field
+  static G4ThreadLocal MagneticField* fpMagField;
+  static G4ThreadLocal G4FieldManager* fpFieldMgr;
 
   DetectorMessenger* fDetectorMessenger;  // pointer to the Messenger
   G4UserLimits* fStepLimit;            // pointer to user step limits
