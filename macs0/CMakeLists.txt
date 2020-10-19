@@ -80,7 +80,7 @@ target_link_libraries(readHits ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES}
 # relies on these scripts being in the current working directory.
 #
 set(P01_SCRIPTS
-    run.mac vis.mac init_vis.mac example.in
+    run.mac vis.mac init_vis.mac example.in egun.mac Mugun.mac
   )
 
 foreach(_script ${P01_SCRIPTS})

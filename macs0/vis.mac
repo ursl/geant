@@ -79,18 +79,6 @@
 
 /tracking/storeTrajectory 2
 
-# -- configure GeneralParticleSource
-/gps/pos/type Surface
-/gps/pos/shape Rectangle
-/gps/pos/centre 1 1 -10. cm
-/gps/direction 0 0 1.57075
-
-/gps/pos/halfx 1 cm
-/gps/pos/halfy 1 cm
-/gps/pos/halfz 0.1 cm
-
-/gps/number 1
-/gps/ene/mono 0.001 keV
 
 
 #/run/beamOn 1
