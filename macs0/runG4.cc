@@ -24,6 +24,7 @@
 
 // ----------------------------------------------------------------------
 int main(int argc,char** argv) {
+
   // -- Detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = 0;
   if ( argc == 1 ) {
@@ -40,7 +41,7 @@ int main(int argc,char** argv) {
   G4RunManager* runManager = new G4RunManager;
 #endif
 
-  // -- UserInitialization classes (mandatory)
+  // -- Detector construction
   DetectorConstruction* detector = new DetectorConstruction;
   runManager->SetUserInitialization(detector);
 
@@ -48,7 +49,7 @@ int main(int argc,char** argv) {
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   runManager->SetUserInitialization(physicsList);
 
-  // -- Set user action classes
+  // -- Set user action classes: define particle generator
   runManager->SetUserAction(new PrimaryGeneratorAction(detector));
   runManager->SetUserAction(new RunAction);
   runManager->SetUserAction(new EventAction);
@@ -63,7 +64,7 @@ int main(int argc,char** argv) {
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   // -- Process macro or start UI session
-  if ( ! ui ) {
+  if (!ui) {
     // batch mode
     G4String command = "/control/execute ";
     G4String fileName = argv[1];
