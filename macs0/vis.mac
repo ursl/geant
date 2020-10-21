@@ -28,7 +28,7 @@
 /vis/viewer/set/globalLineWidthScale 2
 
 # Draw coordinate axes:
-/vis/scene/add/axes 0 0 0 30 cm
+/vis/scene/add/axes 0 0 0 50 cm
 
 # Draw smooth trajectories at end of event, showing trajectory points
 /vis/scene/add/eventID
@@ -80,5 +80,10 @@
 /tracking/storeTrajectory 2
 
 
+## /control/execute egun.mac
+#/gun/particle e+
+/gun/position 0 0 -100 cm
+/gun/energy 1 keV
+/gun/direction 0 0 1
 
-#/run/beamOn 1
+/run/beamOn 1
