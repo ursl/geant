@@ -13,7 +13,7 @@ public:
   ~MagneticField();
 
   virtual void GetFieldValue(const G4double point[4],double* bField ) const;
-  void SetField(G4double val) { fBy = val; }
+  void SetField(G4double val);
   G4double GetField() const { return fBy; }
 
 private:
