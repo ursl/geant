@@ -6,6 +6,7 @@
 #include "G4VisAttributes.hh"
 
 G4Allocator<TrackerHit> TrackerHitAllocator;
+//G4ThreadLocal G4Allocator<TrackerHit>* TrackerHitAllocator = 0;
 
 // ----------------------------------------------------------------------
 TrackerHit::TrackerHit(): G4VHit(), fTrackID(0), fChamberNb(0), fEdep(0), fPos(0,0,0) {
@@ -41,15 +42,19 @@ G4int TrackerHit::operator==(const TrackerHit& right) const {
 // ----------------------------------------------------------------------
 void TrackerHit::Draw() {
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
-  if(pVVisManager) {
+  if (pVVisManager) {
+    G4cout << "=============> TrackerHit::Draw()> Draw hit at " << fPos << G4endl;
     G4Circle circle(fPos);
-    circle.SetScreenSize(2.);
+    circle.SetScreenSize(4.);
     circle.SetFillStyle(G4Circle::filled);
-    G4Colour colour(1.,0.,0.);
+    G4Colour colour(0.4,0.8,0.6);
     G4VisAttributes attribs(colour);
     circle.SetVisAttributes(attribs);
     pVVisManager->Draw(circle);
+  } else {
+    G4cout << "=============> TrackerHit::Draw()> NO G4VVisManager found!!" << G4endl;
   }
+
 }
 
 // ----------------------------------------------------------------------
