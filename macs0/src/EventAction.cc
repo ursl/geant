@@ -16,14 +16,13 @@ EventAction::~EventAction() {
 }
 
 // ----------------------------------------------------------------------
-void EventAction::BeginOfEventAction(const G4Event*) { }
+void EventAction::BeginOfEventAction(const G4Event*evt) {
+  G4cout << "==========> Event " << evt->GetEventID() << " start." << G4endl;
+}
 
 // ----------------------------------------------------------------------
 void EventAction::EndOfEventAction(const G4Event* evt) {
   G4int event_id = evt->GetEventID();
-
-  // get number of stored trajectories
-
   G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
   G4int n_trajectories = 0;
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
@@ -46,6 +45,9 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 	   <<  G4endl;
   }
 
+  G4VHitsCollection* hc = evt->GetHCofThisEvent()->GetHC(0);
+  G4cout << " Hits stored in this event:  "  << hc->GetSize() << G4endl;
+
   G4cout << "----------------------------------------------------------------------" << G4endl;
   G4cout << "genlist size() = " << genlist.size() << G4endl;
 
@@ -62,10 +64,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     TGenCand* pGen =  rio->getEvent()->addGenCand();
     pGen->fID = id;
     pGen->fNumber = genlist[i];
-    pGen->fP.SetXYZT(px,
-                     py,
-                     px,
-                     e);
+    pGen->fP.SetXYZT(px, py, px, e);
   }
 
   rio->fillTree();
