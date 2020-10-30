@@ -19,11 +19,10 @@ public:
 private:
   DetectorConstruction* fDetector;
 
-  G4UIdirectory*             fN02Dir;
+  G4UIdirectory*             fDir;
   G4UIdirectory*             fDetDir;
   G4UIcmdWithAString*        fTargMatCmd;
   G4UIcmdWithAString*        fChamMatCmd;
-  G4UIcmdWithADoubleAndUnit* fFieldCmd;
 };
 
 #endif
