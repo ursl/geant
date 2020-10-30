@@ -23,8 +23,6 @@ public:
   void clear();
 
   static const int NGENMAX = 100;
-  //  GenParticle   fGenParticles[NGENMAX];
-  int           fNGenParticles;
 
 
 protected:
