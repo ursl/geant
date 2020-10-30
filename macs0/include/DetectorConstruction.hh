@@ -3,7 +3,6 @@
 
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
-#include "MagneticField.hh"
 #include "G4FieldManager.hh"
 
 class G4Box;
@@ -15,6 +14,7 @@ class G4VPhysicalVolume;
 class G4Material;
 class G4UserLimits;
 class DetectorMessenger;
+class MagneticField;
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
@@ -26,7 +26,7 @@ public:
 
   virtual G4VPhysicalVolume* Construct();
   void ConstructSDandField();
-  G4VPhysicalVolume* macs1(); // MACS version 1, extracted from PRL,82,49
+  G4VPhysicalVolume* macs0(); // MACS version 0, extracted from PRL,82,49
 
   const
   G4VPhysicalVolume* GetTracker() {return fPhysiTracker;};
@@ -36,6 +36,8 @@ public:
 
   void defineMaterials();
   void SetMagField(G4double);
+  void makeSplitTrspTube();
+  void makeCombinedTrspTube();
 
 private:
   // -- Materials

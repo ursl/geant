@@ -20,6 +20,8 @@
 #include "G4GlobalMagFieldMessenger.hh"
 #include "G4AutoDelete.hh"
 
+#include "G4GeometryTolerance.hh"
+#include "G4GeometryManager.hh"
 #include "G4UserLimits.hh"
 
 #include "G4VisAttributes.hh"
@@ -64,7 +66,8 @@ DetectorConstruction::~DetectorConstruction() {
 
 // ----------------------------------------------------------------------
 G4VPhysicalVolume* DetectorConstruction::Construct() {
-  return macs1();
+  defineMaterials();
+  return macs0();
 }
 
 
@@ -110,26 +113,11 @@ void DetectorConstruction::defineMaterials() {
 }
 
 // ----------------------------------------------------------------------
-void DetectorConstruction::SetMagField(G4double fieldValue) {
-  fpMagField->SetField(fieldValue);
-}
-
-
-
-// ----------------------------------------------------------------------
-G4VPhysicalVolume* DetectorConstruction::macs1() {
-
-  defineMaterials();
+G4VPhysicalVolume* DetectorConstruction::macs0() {
 
   // -- placeholder
   fChamberMater = fXeGas;
 
-  // -- MACS detector dimensions
-  fMacsTrkRadialThickness = 1.0*cm; // placeholder
-  for (int i = 0; i < fMacsTrkNum; ++i) {
-    fMacsTrkLength[i] = 38.0*cm + i*10.0*cm;
-    fMacsTrkInnerRadius[i] = 6.0*cm + i*5.0*cm;
-  }
 
   // -- target thickness: d = 8mg/cm2 -> l = d/rho = (8mg/cm) / (2.5e3mg/cm3) = 3.2e-3cm
   fTgtLength  = 3.2e-3*cm;                        // Full length of Target
@@ -137,12 +125,25 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
   fTargetMater  = fSiO2;
   fTargetMater  = fPb;                          // placeholder
   fTgtLength  = 0.1*cm;                        // placeholder
+  fTrkLength  = 100.*cm;
 
-  fWorldLength= 400.0*cm;
+  // -- MACS detector dimensions
+  fChamberWidth = fMacsTrkRadialThickness = 1.0*cm; // placeholder
+  for (int i = 0; i < fMacsTrkNum; ++i) {
+    fMacsTrkLength[i] = fTrkLength; // 38.0*cm + (fMacsTrkNum-1)*10.0*cm;
+    fMacsTrkInnerRadius[i] = 6.0*cm + i*5.0*cm;
+  }
+
+
+  fWorldLength= 420.0*cm;
+  G4GeometryManager::GetInstance()->SetWorldMaximumExtent(fWorldLength);
+  G4cout << "==========> Computed tolerance = "
+         << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
+         << " mm" << G4endl;
 
   fTrkOuterRadius = 100.0*cm;
   G4double tgtHalfLength  = 0.5*fTgtLength;    // Half length of the Target
-  G4double trkHalfLength  = 0.5*100.*cm;
+  G4double trkHalfLength  = 0.5*fTrkLength;
 
   // ------------------------------
   // -- World
@@ -151,7 +152,7 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
   G4double worldHalfLength = 0.5*fWorldLength;
   fSolidWorld = new G4Box("World", worldHalfLength, worldHalfLength, worldHalfLength);
   fLogicWorld = new G4LogicalVolume(fSolidWorld, fVac, "World", 0, 0, 0);
-  fPhysiWorld = new G4PVPlacement(0, G4ThreeVector(), fLogicWorld, "World", 0, false, 0);
+  fPhysiWorld = new G4PVPlacement(0, G4ThreeVector(), fLogicWorld, "World", 0, false, 0, true);
 
   // ------------------------------
   // -- Target
@@ -159,7 +160,7 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
   G4ThreeVector positionTarget = G4ThreeVector(0., 0., -99.*cm);
   fSolidTarget = new G4Box("Target", 5.0*cm, 5.0*cm, tgtHalfLength);
   fLogicTarget = new G4LogicalVolume(fSolidTarget,fTargetMater,"Target", 0, 0, 0);
-  fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0);
+  fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
   fLogicTarget->SetVisAttributes(boxVisAtt);
 
   G4cout << "Target is " << fTgtLength/cm << "cm of " << fTargetMater->GetName() << G4endl;
@@ -198,19 +199,121 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
   }
 
 
+  G4double maxStep = 0.5*fChamberWidth;
+  fStepLimit = new G4UserLimits(maxStep);
+  fLogicTracker->SetUserLimits(fStepLimit);
+
 
   // ------------------------------
   // -- Transport tube
   // ------------------------------
-  G4ThreeVector positionTrsp = G4ThreeVector(0, 0, trkHalfLength);
+  //  makeCombinedTrspTube();
+  makeSplitTrspTube();
+
+  return fPhysiWorld;
+}
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::SetMagField(G4double fieldValue) {
+  G4cout << "===============> DetectorConstruction::SetMagField> SetMagField(" << fieldValue << G4endl;
+  fpMagField->SetField(fieldValue);
+}
+
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::ConstructSDandField() {
+
+  // Sensitive detectors
+  TrackerSD* aTrackerSD = new TrackerSD("macs0/TrackerChamberSD", "TrackerHitsCollection");
+  G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
+  // Setting aTrackerSD to all logical volumes with the same name of "Chamber_LV".
+  SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
+
+
+  fpMagField = new MagneticField();
+  fpFieldMgr = new G4FieldManager();
+  fpFieldMgr->SetDetectorField(fpMagField);
+  fpFieldMgr->CreateChordFinder(fpMagField);
+  fMagneticLogical->SetFieldManager(fpFieldMgr, true);
+  // -- these two lines lead to BREAKs
+  //  G4AutoDelete::Register(fpMagField);
+  //  G4AutoDelete::Register(fpFieldMgr);
+}
+
+
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::makeSplitTrspTube() {
+
   fTrspOuterRadius = 6.*cm;
   fTrspLength1 = fTrspLength2 = 60.*cm;
   G4double pRtor = 40.*cm;
   fTrspMater  = fAl;
+  G4double trkHalfLength  = 0.5*fTrkLength;
 
+  G4ThreeVector positionTrsp = G4ThreeVector(0, 0, 2.*trkHalfLength - 0.25*fTrspLength1);
+  G4Tubs  *part1 = new G4Tubs("Trsp1", fTrspOuterRadius-0.1*cm, fTrspOuterRadius, 0.5*fTrspLength1, 0.*deg, 360.*deg);
+  G4Tubs  *part3 = new G4Tubs("Trsp3", fTrspOuterRadius-0.1*cm, fTrspOuterRadius, 0.5*fTrspLength2, 0.*deg, 360.*deg);
+
+
+  // -- trafo for part3
+  G4RotationMatrix* rot3 = new G4RotationMatrix;
+  rot3->rotateY(M_PI/2.*rad);
+  G4ThreeVector zTrans3(pRtor + 0.5*fTrspLength2, 0, -0.5*fTrspLength1 - pRtor);
+  G4RotationMatrix invRot3 = rot3->invert();
+  G4Transform3D transform3(invRot3, -zTrans3);
+
+  G4Transform3D unity;
+
+  fSolidTrsp = new G4MultiUnion("allTrsp");
+  fSolidTrsp->AddNode(*part1, unity);
+  fSolidTrsp->AddNode(*part3, transform3);
+  fSolidTrsp->Voxelize();
+
+  fLogicTrsp = new G4LogicalVolume(fSolidTrsp, fAl, "Trsp", 0, 0, 0);
+  fPhysiTrsp = new G4PVPlacement(0, positionTrsp, fLogicTrsp, "Trsp", fLogicWorld, false, 0, true);
+
+  G4VisAttributes *pVA  = new G4VisAttributes;
+  pVA->SetColour(G4Colour(0.8, 0.8, 0.8));
+  pVA->SetForceSolid(true);
+  fLogicTrsp->SetVisAttributes(pVA);
+
+  // -- now add tube with magnetic field, just as in B5:
+  G4double fdiam = 0.36*m;
+  G4double fheight = 0.31*m;
+  auto magneticSolid = new G4Tubs("magneticTubs", 0., fdiam, fheight, 0., 360.*deg);
+  fMagneticLogical = new G4LogicalVolume(magneticSolid, fVac, "magneticLogical");
+
+  G4RotationMatrix* fieldRot = new G4RotationMatrix();
+  fieldRot->rotateX(90.*deg);
+
+  G4ThreeVector zTransField(0, 0, -fTrspLength1 - fTrkLength);
+  G4RotationMatrix invFieldRot = fieldRot->invert();
+  G4Transform3D transformField(invFieldRot, -zTransField);
+
+
+  new G4PVPlacement(transformField, fMagneticLogical, "magneticPhysical", fLogicWorld, false, 0, true);
+
+  // set step limit in tube with magnetic field
+  G4UserLimits* userLimits = new G4UserLimits(1*m);
+  fMagneticLogical->SetUserLimits(userLimits);
+
+}
+
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::makeCombinedTrspTube() {
+
+  fTrspOuterRadius = 6.*cm;
+  fTrspLength1 = fTrspLength2 = 60.*cm;
+  G4double pRtor = 40.*cm;
+  fTrspMater  = fAl;
+  G4double trkHalfLength  = 0.5*fTrkLength;
+
+  G4ThreeVector positionTrsp = G4ThreeVector(0, 0, 2.*trkHalfLength - 0.25*fTrspLength1);
   G4Tubs  *part1 = new G4Tubs("Trsp1", fTrspOuterRadius-0.1*cm, fTrspOuterRadius, 0.5*fTrspLength1, 0.*deg, 360.*deg);
   G4Torus *part2 = new G4Torus("Trsp2", fTrspOuterRadius-0.1*cm, fTrspOuterRadius, pRtor, 0.*degree, 90.*degree);
-  fMagneticLogical = new G4LogicalVolume(part2, fAir, "magneticLogical");
+  fMagneticLogical = new G4LogicalVolume(part2, fVac, "magneticLogical");
   G4Tubs  *part3 = new G4Tubs("Trsp3", fTrspOuterRadius-0.1*cm, fTrspOuterRadius, 0.5*fTrspLength2, 0.*deg, 360.*deg);
 
   // -- trafo for part2
@@ -223,15 +326,13 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
   // -- trafo for part3
   G4RotationMatrix* rot3 = new G4RotationMatrix;
   rot3->rotateY(M_PI/2.*rad);
-  //  G4ThreeVector zTrans3(0.,0.,0.);
   G4ThreeVector zTrans3(pRtor + 0.5*fTrspLength2, 0, -0.5*fTrspLength1 - pRtor);
   G4RotationMatrix invRot3 = rot3->invert();
   G4Transform3D transform3(invRot3, -zTrans3);
 
   G4Transform3D unity;
 
-  //  fSolidTrsp = new G4UnionSolid("Trsp1+Trsp2", part1, part2, transform);
-  fSolidTrsp = new G4MultiUnion("Trsp1+Trsp2");
+  fSolidTrsp = new G4MultiUnion("allTrsp");
   fSolidTrsp->AddNode(*part1, unity);
   fSolidTrsp->AddNode(*part2, transform2);
   fSolidTrsp->AddNode(*part3, transform3);
@@ -244,26 +345,4 @@ G4VPhysicalVolume* DetectorConstruction::macs1() {
   pVA->SetColour(G4Colour(0.8, 0.8, 0.8));
   pVA->SetForceSolid(true);
   fLogicTrsp->SetVisAttributes(pVA);
-
-
-  return fPhysiWorld;
-}
-
-// ----------------------------------------------------------------------
-void DetectorConstruction::ConstructSDandField() {
-
-  // Sensitive detectors
-  TrackerSD* aTrackerSD = new TrackerSD("muamu/TrackerChamberSD", "TrackerHitsCollection");
-  G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
-  // Setting aTrackerSD to all logical volumes with the same name of "Chamber_LV".
-  SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
-
-
-  fpMagField = new MagneticField();
-  fpFieldMgr = new G4FieldManager();
-  fpFieldMgr->SetDetectorField(fpMagField);
-  fpFieldMgr->CreateChordFinder(fpMagField);
-  G4bool forceToAllDaughters = true;
-  fMagneticLogical->SetFieldManager(fpFieldMgr, forceToAllDaughters);
-
 }
