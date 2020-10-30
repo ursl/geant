@@ -1,5 +1,7 @@
-/control/verbose 2
-/run/verbose 2
+/run/initialize
+
+/control/verbose 0
+/run/verbose 0
 
 # Use this open statement to create an OpenGL view:
 /vis/open OGL 1000x1000-0+0
@@ -7,7 +9,6 @@
 
 /vis/viewer/set/autoRefresh true
 /vis/verbose errors
-
 
 # Draw geometry:
 /vis/drawVolume
@@ -32,7 +33,8 @@
 
 # Draw smooth trajectories at end of event, showing trajectory points
 /vis/scene/add/eventID
-/vis/scene/add/trajectories smooth rich
+/vis/scene/add/trajectories smooth
+/vis/scene/add/trajectories rich
 
 #/vis/modeling/trajectories/create/drawByCharge
 #/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
@@ -52,21 +54,16 @@
 /vis/modeling/trajectories/drawByParticleID-0/set neutron gray
 /vis/modeling/trajectories/drawByParticleID-0/set Mu yellow
 
-# (if too many tracks cause core dump => /tracking/storeTrajectory 0)
+/vis/modeling/trajectories/drawByParticleID-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByParticleID-0/default/setStepPtsSize 2
+
+
+#/vis/modeling/trajectories/create/drawByCharge
+#/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+#/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+
 # Draw hits at end of event:
-#/vis/scene/add/hits
-
-# To draw only gammas:
-#/vis/filtering/trajectories/create/particleFilter
-#/vis/filtering/trajectories/particleFilter-0/add gamma
-
-# To invert the above, drawing all particles except gammas,
-# keep the above two lines but also add:
-#/vis/filtering/trajectories/create/particleFilter
-#/vis/filtering/trajectories/particleFilter-0/add gamma
-#/vis/filtering/trajectories/particleFilter-0/invert true
-
-
+/vis/scene/add/hits
 
 # To superimpose all of the events from a given run:
 /vis/scene/endOfEventAction accumulate
@@ -75,15 +72,23 @@
 
 # ----------------------------------------------------------------------
 # -- physics setup (from run.mac)
-/tracking/verbose 1
+/tracking/verbose 0
 
 /tracking/storeTrajectory 2
 
 
+#/macs0/det/setField 4 tesla
+/macs0/field/value 1000 tesla
+
 ## /control/execute egun.mac
 #/gun/particle e+
-/gun/position 0 0 -100 cm
-/gun/energy 1 keV
+/gun/position 0 0 0 cm
+/gun/energy 10 eV
+/gun/direction 0 0 1
+
+# -- test hits with e-
+/gun/particle e-
+/gun/energy 1000 keV
 /gun/direction 0 0 1
 
 /run/beamOn 1
