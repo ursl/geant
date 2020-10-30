@@ -46,6 +46,7 @@ private:
 typedef G4THitsCollection<TrackerHit> TrackerHitsCollection;
 
 extern G4Allocator<TrackerHit> TrackerHitAllocator;
+//extern G4ThreadLocal G4Allocator<TrackerHit>* TrackerHitAllocator;
 
 
 // ----------------------------------------------------------------------
