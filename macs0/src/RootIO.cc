@@ -42,13 +42,14 @@ RootIO* RootIO::GetInstance() {
 
 // ----------------------------------------------------------------------
 void RootIO::clear() {
-  fNGenParticles = -99;
 }
 
 // ----------------------------------------------------------------------
 void RootIO::fillTree() {
-  G4cout << "Filling tree with ngen = " << fNGenParticles << G4endl;
-  fTree->Print();
+  G4cout << "Filling tree with ngen = " << fEvent->nGenCands() << G4endl;
+  if (0) {
+    fTree->Print();
+  }
   fTree->Fill();
 }
 
