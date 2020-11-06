@@ -3,7 +3,7 @@
 #include "G4SystemOfUnits.hh"
 
 // ----------------------------------------------------------------------
-MagneticField::MagneticField() : G4MagneticField(), fMessenger(nullptr), fBy(1.0*tesla) {
+MagneticField::MagneticField() : G4MagneticField(), fMessenger(nullptr), fBy(-0.014*tesla) {
   DefineCommands();
 }
 
@@ -38,5 +38,5 @@ void MagneticField::DefineCommands() {
   // fieldValue command
   auto& valueCmd = fMessenger->DeclareMethodWithUnit("value","tesla", &MagneticField::SetField, "Set field strength.");
   valueCmd.SetParameterName("field", true);
-  valueCmd.SetDefaultValue("1.");
+  valueCmd.SetDefaultValue("-0.014");
 }
