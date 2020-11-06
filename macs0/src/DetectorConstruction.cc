@@ -2,6 +2,7 @@
 #include "DetectorMessenger.hh"
 #include "ChamberParameterisation.hh"
 #include "MagneticField.hh"
+#include "ElectricFieldSetup.hh"
 #include "TrackerSD.hh"
 
 #include "TTree.h"
@@ -207,8 +208,8 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // ------------------------------
   // -- Transport tube
   // ------------------------------
-  //  makeCombinedTrspTube();
   makeSplitTrspTube();
+  makeAccel();
 
   return fPhysiWorld;
 }
@@ -235,11 +236,41 @@ void DetectorConstruction::ConstructSDandField() {
   fpFieldMgr->SetDetectorField(fpMagField);
   fpFieldMgr->CreateChordFinder(fpMagField);
   fMagneticLogical->SetFieldManager(fpFieldMgr, true);
+
+  ElectricFieldSetup* fieldSetup = new ElectricFieldSetup();
+  fEmFieldSetup.Put(fieldSetup);
+  fLogicAccel->SetFieldManager(fpFieldMgr, true);
+
+
   // -- these two lines lead to BREAKs
   //  G4AutoDelete::Register(fpMagField);
   //  G4AutoDelete::Register(fpFieldMgr);
 }
 
+// ----------------------------------------------------------------------
+void DetectorConstruction::makeAccel() {
+
+  G4double orAcc = 26.0*cm;
+  G4double lAcc =   2.0*cm;
+  auto p0 = new G4Tubs("Accel", orAcc-0.1*cm, orAcc, lAcc, 0.*deg, 360.*deg);
+  fLogicAccel = new G4LogicalVolume(p0, fVac, "lAccel");
+
+  G4RotationMatrix* fieldRot = new G4RotationMatrix();
+  //  fieldRot->rotateX(90.*deg);
+  fPhysiAccel =  new G4PVPlacement(fieldRot,
+				   G4ThreeVector(0., 0., 0.5*(fTrkLength+2.*lAcc)+0.5*cm),
+				   fLogicAccel, "pAccel", fLogicWorld, false, 0, fCheckOverlaps);
+
+  // set step limit in tube with magnetic field
+  G4UserLimits* userLimits = new G4UserLimits(0.1*cm);
+  fLogicAccel->SetUserLimits(userLimits);
+
+  G4VisAttributes *pVA  = new G4VisAttributes;
+  pVA->SetColour(G4Colour(0.0, 0.8, 0.8));
+  pVA->SetForceSolid(true);
+  fLogicAccel->SetVisAttributes(pVA);
+
+}
 
 
 // ----------------------------------------------------------------------
@@ -295,7 +326,7 @@ void DetectorConstruction::makeSplitTrspTube() {
   new G4PVPlacement(transformField, fMagneticLogical, "magneticPhysical", fLogicWorld, false, 0, true);
 
   // set step limit in tube with magnetic field
-  G4UserLimits* userLimits = new G4UserLimits(1*m);
+  G4UserLimits* userLimits = new G4UserLimits(0.1*cm);
   fMagneticLogical->SetUserLimits(userLimits);
 
 }

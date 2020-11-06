@@ -3,7 +3,9 @@
 
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
+#include "G4Cache.hh"
 #include "G4FieldManager.hh"
+#include "ElectricFieldSetup.hh"
 
 class G4Box;
 class G4Tubs;
@@ -38,6 +40,7 @@ public:
   void SetMagField(G4double);
   void makeSplitTrspTube();
   void makeCombinedTrspTube();
+  void makeAccel();
 
 private:
   // -- Materials
@@ -74,6 +77,11 @@ private:
   G4double           fTrspOuterRadius, fTrspLength1, fTrspLength2;
   G4LogicalVolume*   fMagneticLogical;
 
+  // -- accelerator
+  G4LogicalVolume*   fLogicAccel;
+  G4VPhysicalVolume* fPhysiAccel;
+
+
   static G4ThreadLocal MagneticField* fpMagField;
   static G4ThreadLocal G4FieldManager* fpFieldMgr;
 
@@ -92,6 +100,9 @@ private:
     fMacsTrkRadialThickness;
 
   G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps
+
+  G4Cache<ElectricFieldSetup*> fEmFieldSetup;
+
 };
 
 
