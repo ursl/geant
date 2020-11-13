@@ -1,3 +1,5 @@
+/control/execute commands.mac
+
 /run/initialize
 
 # only with 10.6.x: /process/had/verbose 0
@@ -40,13 +42,13 @@
 #/vis/modeling/trajectories/create/drawByCharge
 #/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
 #/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
-#/vis/modeling/trajectories/drawByCharge-0/set 1 blue
-#/vis/modeling/trajectories/drawByCharge-0/set -1 red
+#/vis/modeling/trajectories/drawByCharge-0/set 1 red
+#/vis/modeling/trajectories/drawByCharge-0/set -1 blue
 #/vis/modeling/trajectories/drawByCharge-0/set 0 white
 
 /vis/modeling/trajectories/create/drawByParticleID
-/vis/modeling/trajectories/drawByParticleID-0/set e- magenta
-/vis/modeling/trajectories/drawByParticleID-0/set e+ cyan
+/vis/modeling/trajectories/drawByParticleID-0/set e- cyan
+/vis/modeling/trajectories/drawByParticleID-0/set e+ red
 /vis/modeling/trajectories/drawByParticleID-0/set gamma white
 /vis/modeling/trajectories/drawByParticleID-0/setRGBA nu_e 0.8 0.6 0.8 1
 /vis/modeling/trajectories/drawByParticleID-0/setRGBA anti_nu_e 0.8 0.6 0.8 1
@@ -80,7 +82,7 @@
 
 
 #/macs0/det/setField 4 tesla
-#/macs0/field/value -0.014 tesla
+/macs0/field/value -0.0039 tesla
 
 ## /control/execute egun.mac
 #/gun/particle e+
@@ -89,8 +91,8 @@
 /gun/direction 0 0 1
 
 # -- test hits with e-
-/gun/particle e-
-/gun/energy 1000 keV
-/gun/direction 0 0 1
+#/gun/particle e-
+#/gun/energy 900 keV
+#/gun/direction 0 0 1
 
 /run/beamOn 1
