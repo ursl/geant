@@ -51,18 +51,32 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   G4cout << "----------------------------------------------------------------------" << G4endl;
   G4cout << "genlist size() = " << genlist.size() << G4endl;
 
+  std::string sid;
   double px, py, pz, e;
-  int id;
+  int pdgid, pid, tid;
   for (unsigned int i = 0; i < genlist.size(); ++i) {
     G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[genlist[i]]);
     px = trj->GetInitialMomentum().x();
     py = trj->GetInitialMomentum().y();
     pz = trj->GetInitialMomentum().z();
     e  = trj->GetInitialKineticEnergy();
-    id = trj->GetPDGEncoding();
-    G4cout << "(p,e) = " << px << "/" << py << "/" << pz << "/" << e << " ID = " << id << G4endl;
+    pdgid = trj->GetPDGEncoding();
+    tid = trj->GetTrackID();
+    pid = trj->GetParentID();
+    if (pdgid == 11) sid = "e-";
+    if (pdgid == -11) sid = "e+";
+    if (pdgid == 12) sid = "nu_e";
+    if (pdgid == -12) sid = "anti-nu_e";
+    if (pdgid == 13) sid = "mu-";
+    if (pdgid == -13) sid = "mu+";
+    if (pdgid == 14) sid = "nu_mu";
+    if (pdgid == -14) sid = "anti-nu_mu";
+    G4cout << "(p,Ekin) = " << px << "/" << py << "/" << pz << "/" << e << " ID = " << pdgid
+	   << " (" << sid << ", m = " << trj->GetParticleDefinition()->GetPDGMass() << ")"
+	   << " trkID = " << tid << " parentID = " << pid
+	   << G4endl;
     TGenCand* pGen =  rio->getEvent()->addGenCand();
-    pGen->fID = id;
+    pGen->fID = pdgid;
     pGen->fNumber = genlist[i];
     pGen->fP.SetXYZT(px, py, px, e);
   }
