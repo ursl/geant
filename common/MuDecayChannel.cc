@@ -68,7 +68,7 @@ double f_eAtomic(double *x, double *par) {
   double denominator  = 1. + (1 + r)*(1 + r)*x[0]/rinf;
   double denominator4 = denominator*denominator*denominator*denominator;
   double numerator    = (16./TMath::Pi())*TMath::Sqrt((1+r)*(1+r)*x[0]/rinf) * (1 + r)*(1+r)/rinf;
-  double result = numerator/denominator4;
+  double result = numerator/denominator4; // this is in eV!!
 
   return result;
 }
@@ -160,7 +160,7 @@ G4DecayProducts *MuDecayChannel::DecayIt(G4double)
   G4double Enm = (2. - Ee - Ene);
 
   // -- and for atomic electron
-  G4double Eeatomic = feAtomic->GetRandom(0., 100.);
+  G4double Eeatomic = 1.e-6*feAtomic->GetRandom(0., 100.);
 
 
 
