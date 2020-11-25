@@ -38,14 +38,19 @@ public:
 
   void defineMaterials();
   void SetMagField(G4double);
+  // -- everything split, with B field
   void makeSplitTrspTube();
+  // -- decrepit: everything connected, but without B field
   void makeCombinedTrspTube();
+  // -- accelerating field for atomic e-
   void makeAccel();
+  // -- MCP and xtals
+  void makeEndDetector();
 
 private:
   // -- Materials
   G4Material *fVac, *fAir, *fAl, *fPb, *fSiO2,
-    *fXeGas;
+    *fXeGas, *fAerog;
 
   // -- world
   G4Box*             fSolidWorld;
@@ -80,6 +85,13 @@ private:
   // -- accelerator
   G4LogicalVolume*   fLogicAccel;
   G4VPhysicalVolume* fPhysiAccel;
+
+  // -- End detector: MCP and xtals
+  G4LogicalVolume*   fLogicMCP;
+  G4VPhysicalVolume* fPhysiMCP;
+  static const G4int fMacsXtalNum = 8;
+  G4LogicalVolume**  fLogicXtals;
+  G4VPhysicalVolume**fPhysiXtals;
 
 
   static G4ThreadLocal MagneticField* fpMagField;

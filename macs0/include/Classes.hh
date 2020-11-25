@@ -29,6 +29,7 @@
 // $Id: Classes.hh 68025 2013-03-13 13:43:46Z gcosmo $
 //
 #include "TrackerHit.hh"
+#include "MCPHit.hh"
 #include "rEvent.hh"
 #include "TGenCand.hh"
 #include "THit.hh"

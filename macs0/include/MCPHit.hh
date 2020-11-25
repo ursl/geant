@@ -1,5 +1,5 @@
-#ifndef TrackerHit_h
-#define TrackerHit_h 1
+#ifndef MCPHit_h
+#define MCPHit_h 1
 
 #include "G4VHit.hh"
 #include "G4THitsCollection.hh"
@@ -7,14 +7,14 @@
 #include "G4ThreeVector.hh"
 
 // ----------------------------------------------------------------------
-class TrackerHit : public G4VHit {
+class MCPHit : public G4VHit {
 public:
 
-  TrackerHit();
-  ~TrackerHit();
-  TrackerHit(const TrackerHit&);
-  const TrackerHit& operator=(const TrackerHit&);
-  G4int operator==(const TrackerHit&) const;
+  MCPHit();
+  ~MCPHit();
+  MCPHit(const MCPHit&);
+  const MCPHit& operator=(const MCPHit&);
+  G4int operator==(const MCPHit&) const;
 
   inline void* operator new(size_t);
   inline void  operator delete(void*);
@@ -28,7 +28,7 @@ public:
   void SetChamberNb(G4int chamb)      { fChamberNb = chamb; };
   void SetEdep     (G4double de)      { fEdep = de; };
   void SetPos      (G4ThreeVector xyz){ fPos = xyz; };
-  void SetEtrk     (G4double e){ fEtrk = e; };
+  void SetEtrk     (G4double e)       { fEtrk = e; };
 
   G4int GetTrackID()    { return fTrackID; };
   G4int GetChamberNb()  { return fChamberNb; };
@@ -41,28 +41,28 @@ private:
   G4int         fTrackID;
   G4int         fChamberNb;
   G4double      fEdep;
-  G4double      fEtrk;
   G4ThreeVector fPos;
+  G4double      fEtrk;
 };
 
 
-typedef G4THitsCollection<TrackerHit> TrackerHitsCollection;
+typedef G4THitsCollection<MCPHit> MCPHitsCollection;
 
-extern G4Allocator<TrackerHit> TrackerHitAllocator;
-//extern G4ThreadLocal G4Allocator<TrackerHit>* TrackerHitAllocator;
+extern G4Allocator<MCPHit> MCPHitAllocator;
+//extern G4ThreadLocal G4Allocator<MCPHit>* MCPHitAllocator;
 
 
 // ----------------------------------------------------------------------
-inline void* TrackerHit::operator new(size_t) {
+inline void* MCPHit::operator new(size_t) {
   void *aHit;
-  aHit = (void *) TrackerHitAllocator.MallocSingle();
+  aHit = (void *) MCPHitAllocator.MallocSingle();
   return aHit;
 }
 
 
 // ----------------------------------------------------------------------
-inline void TrackerHit::operator delete(void *aHit) {
-  TrackerHitAllocator.FreeSingle((TrackerHit*) aHit);
+inline void MCPHit::operator delete(void *aHit) {
+  MCPHitAllocator.FreeSingle((MCPHit*) aHit);
 }
 
 

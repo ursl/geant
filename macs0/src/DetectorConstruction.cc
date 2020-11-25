@@ -4,6 +4,7 @@
 #include "MagneticField.hh"
 #include "ElectricFieldSetup.hh"
 #include "TrackerSD.hh"
+#include "MCPSD.hh"
 
 #include "TTree.h"
 
@@ -44,6 +45,9 @@ DetectorConstruction::DetectorConstruction() :G4VUserDetectorConstruction(),
 					      fSolidChamber(0), fChamberMater(0),
 					      fSolidTrsp(0), fLogicTrsp(0), fPhysiTrsp(0), fTrspMater(0),
 					      fTrspOuterRadius(10.0), fTrspLength1(50.), fTrspLength2(50.),
+					      fMagneticLogical(0),
+					      fLogicAccel(0), fPhysiAccel(0),
+					      fLogicMCP(0), fPhysiMCP(0),
 					      fDetectorMessenger(0),
 					      fStepLimit(NULL),
 					      fWorldLength(0.),
@@ -54,6 +58,8 @@ DetectorConstruction::DetectorConstruction() :G4VUserDetectorConstruction(),
   fNbOfChambers = 2;
   fLogicChamber = new G4LogicalVolume*[fMacsTrkNum];
   fPhysiChamber = new G4VPhysicalVolume*[fMacsTrkNum];
+  fLogicXtals   = new G4LogicalVolume*[fMacsXtalNum];
+  fPhysiXtals   = new G4VPhysicalVolume*[fMacsXtalNum];
 }
 
 // ----------------------------------------------------------------------
@@ -84,8 +90,8 @@ void DetectorConstruction::defineMaterials() {
   fVac =  new G4Material("vac", atomicNumber,  massOfMole, density, kStateGas, temperature, pressure);
 
 
-  G4double a, z;
-  G4int nel, natoms;
+  G4double a, z, fractionmass;
+  G4int nel, natoms, ncomp;
 
   // -- Air
   G4Element* N = new G4Element("Nitrogen", "N", z=7., a= 14.01*g/mole);
@@ -100,6 +106,21 @@ void DetectorConstruction::defineMaterials() {
   fSiO2 = new G4Material("SiO2", density = 2.5*g/cm3, nel = 2);
   fSiO2->AddElement (Si, natoms=1);
   fSiO2->AddElement (O, natoms=2);
+
+
+  // -- Aerogel (from https://geant4.web.cern.ch/.../geometry/training/D1-Materials.pdf)
+  G4Element* elH = new G4Element("Hydrogen", "H", z=1., 1.01*g/mole);
+  G4Element* elC = new G4Element("Carbon", "C", 6., 12.011*g/mole);
+  G4Element* elO = new G4Element("Oxygen", "O", z=8., 16.00*g/mole);
+  G4Material* H2O = new G4Material("Water", density=1.000*g/cm3, ncomp=2);
+  H2O->AddElement(elH, natoms=2);
+  H2O->AddElement(elO, natoms=1);
+
+  density = 0.200*g/cm3;
+  fAerog = new G4Material("Aerogel", density, ncomp=3);
+  fAerog->AddMaterial(fSiO2,fractionmass=62.5*perCent);
+  fAerog->AddMaterial(H2O ,fractionmass=37.4*perCent);
+  fAerog->AddElement (elC ,fractionmass= 0.1*perCent);
 
   // -- Aluminum
   fAl = new G4Material("Aluminum", z=13., a=26.98*g/mole, density=2.700*g/cm3);
@@ -119,13 +140,8 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // -- placeholder
   fChamberMater = fXeGas;
 
-
-  // -- target thickness: d = 8mg/cm2 -> l = d/rho = (8mg/cm) / (2.5e3mg/cm3) = 3.2e-3cm
-  fTgtLength  = 3.2e-3*cm;                        // Full length of Target
-  fTgtLength  = 3.2*cm;                        // placeholder
-  fTargetMater  = fSiO2;
-  fTargetMater  = fPb;                          // placeholder
-  fTgtLength  = 0.1*cm;                        // placeholder
+  fTargetMater  = fAerog;                          // placeholder
+  fTgtLength  = 5*cm;                        // placeholder
   fTrkLength  = 100.*cm;
 
   // -- MACS detector dimensions
@@ -158,7 +174,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // ------------------------------
   // -- Target
   // ------------------------------
-  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -99.*cm);
+  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength-tgtHalfLength);
   fSolidTarget = new G4Box("Target", 5.0*cm, 5.0*cm, tgtHalfLength);
   fLogicTarget = new G4LogicalVolume(fSolidTarget,fTargetMater,"Target", 0, 0, 0);
   fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
@@ -210,6 +226,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // ------------------------------
   makeSplitTrspTube();
   makeAccel();
+  makeEndDetector();
 
   return fPhysiWorld;
 }
@@ -227,8 +244,11 @@ void DetectorConstruction::ConstructSDandField() {
   // Sensitive detectors
   TrackerSD* aTrackerSD = new TrackerSD("macs0/TrackerChamberSD", "TrackerHitsCollection");
   G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
-  // Setting aTrackerSD to all logical volumes with the same name of "Chamber_LV".
   SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
+
+  MCPSD* aMCPSD = new MCPSD("macs0/MCPSD", "MCPHitsCollection");
+  G4SDManager::GetSDMpointer()->AddNewDetector(aMCPSD);
+  SetSensitiveDetector("lMCP", aMCPSD, true);
 
 
   fpMagField = new MagneticField();
@@ -261,7 +281,6 @@ void DetectorConstruction::makeAccel() {
 				   G4ThreeVector(0., 0., 0.5*(fTrkLength+2.*lAcc)+0.5*cm),
 				   fLogicAccel, "pAccel", fLogicWorld, false, 0, fCheckOverlaps);
 
-  // set step limit in tube with magnetic field
   G4UserLimits* userLimits = new G4UserLimits(0.1*cm);
   fLogicAccel->SetUserLimits(userLimits);
 
@@ -269,6 +288,32 @@ void DetectorConstruction::makeAccel() {
   pVA->SetColour(G4Colour(0.0, 0.8, 0.8));
   pVA->SetForceSolid(true);
   fLogicAccel->SetVisAttributes(pVA);
+
+}
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::makeEndDetector() {
+
+  G4double orMCP = 6.0*cm;
+  G4double lMCP =   0.1*cm;
+  auto p0 = new G4Tubs("MCP", 0., orMCP, lMCP, 0.*deg, 360.*deg);
+  fLogicMCP = new G4LogicalVolume(p0, fAl, "lMCP");
+
+  G4RotationMatrix* fieldRot = new G4RotationMatrix();
+  fieldRot->rotateY(90.*deg);
+  fPhysiMCP =  new G4PVPlacement(fieldRot,
+				 G4ThreeVector(-(fTrspLength2 + 40.0*cm + 2.0*cm), 0., fTrkLength + fTrspLength1 - 5.0*cm),
+				 fLogicMCP, "pMCP", fLogicWorld, false, 0, fCheckOverlaps);
+
+  // set step limit in tube with magnetic field
+  G4UserLimits* userLimits = new G4UserLimits(0.1*cm);
+  fLogicMCP->SetUserLimits(userLimits);
+
+  G4VisAttributes *pVA  = new G4VisAttributes;
+  pVA->SetColour(G4Colour(0.6, 0.4, 0.2));
+  pVA->SetForceWireframe(true);
+  fLogicMCP->SetVisAttributes(pVA);
+
 
 }
 

@@ -7,6 +7,7 @@
 #include "TSystem.h"
 
 #include "TrackerHit.hh"
+#include "MCPHit.hh"
 #include "rEvent.hh"
 
 class RootIO  {
@@ -14,7 +15,8 @@ public:
   virtual ~RootIO();
 
   static RootIO* GetInstance();
-  void Write(std::vector<TrackerHit*>*);
+  void WriteTrackerHits(std::vector<TrackerHit*>*);
+  void WriteMCPHits(std::vector<MCPHit*>*);
   void Close();
 
   TTree* getTree() {return fTree;}

@@ -54,7 +54,20 @@ void RootIO::fillTree() {
 }
 
 // ----------------------------------------------------------------------
-void RootIO::Write(std::vector<TrackerHit*>* hcont) {
+void RootIO::WriteTrackerHits(std::vector<TrackerHit*>* hcont) {
+  fNevents++;
+
+  std::ostringstream os;
+  os << fNevents;
+  std::string stevt = "Event_" + os.str();
+  const char* chevt = stevt.c_str();
+
+  G4cout << "writing " << stevt << G4endl;
+  fFile->WriteObject(hcont, chevt);
+}
+
+// ----------------------------------------------------------------------
+void RootIO::WriteMCPHits(std::vector<MCPHit*>* hcont) {
   fNevents++;
 
   std::ostringstream os;
