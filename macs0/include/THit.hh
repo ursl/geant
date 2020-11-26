@@ -15,17 +15,17 @@ public:
   THit(int Option);
   THit(const THit &);
   ~THit() { };
-  void     clear() {fID = -123;}
+  void     clear() {fDetId = -123;}
 
   // ----------------------------------------------------------------------
   void dump(int printV = 1);
   void dump(std::ofstream &, int printV = 1);
 
   // ----------------------------------------------------------------------
-  int            fNumber, fID, fChamber, fTrack, fGenCand;
+  int            fNumber, fDetId, fChamber, fTrack, fGenCand;
   double         fEdep;
   TVector3       fPos;
-  double         fTime;
+  double         fGblTime;
 
 private:
 

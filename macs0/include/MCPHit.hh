@@ -27,22 +27,25 @@ public:
   void SetTrackID  (G4int track)      { fTrackID = track; };
   void SetChamberNb(G4int chamb)      { fChamberNb = chamb; };
   void SetEdep     (G4double de)      { fEdep = de; };
-  void SetPos      (G4ThreeVector xyz){ fPos = xyz; };
   void SetEtrk     (G4double e)       { fEtrk = e; };
+  void SetGblTime  (G4double t)       { fGblTime = t; };
+  void SetPos      (G4ThreeVector xyz){ fPos = xyz; };
 
   G4int GetTrackID()    { return fTrackID; };
   G4int GetChamberNb()  { return fChamberNb; };
   G4double GetEdep()    { return fEdep; };
-  G4ThreeVector GetPos(){ return fPos; };
   G4double GetEtrk()    { return fEtrk; };
+  G4double GetGblTime() { return fGblTime; };
+  G4ThreeVector GetPos(){ return fPos; };
 
 private:
 
   G4int         fTrackID;
   G4int         fChamberNb;
   G4double      fEdep;
-  G4ThreeVector fPos;
   G4double      fEtrk;
+  G4double      fGblTime;
+  G4ThreeVector fPos;
 };
 
 

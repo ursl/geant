@@ -28,13 +28,15 @@ public:
   void SetChamberNb(G4int chamb)      { fChamberNb = chamb; };
   void SetEdep     (G4double de)      { fEdep = de; };
   void SetPos      (G4ThreeVector xyz){ fPos = xyz; };
-  void SetEtrk     (G4double e){ fEtrk = e; };
+  void SetEtrk     (G4double e)       { fEtrk = e; };
+  void SetGblTime  (G4double t)       { fGblTime = t; };
 
   G4int GetTrackID()    { return fTrackID; };
   G4int GetChamberNb()  { return fChamberNb; };
   G4double GetEdep()    { return fEdep; };
   G4ThreeVector GetPos(){ return fPos; };
   G4double GetEtrk()    { return fEtrk; };
+  G4double GetGblTime() { return fGblTime; };
 
 private:
 
@@ -42,6 +44,7 @@ private:
   G4int         fChamberNb;
   G4double      fEdep;
   G4double      fEtrk;
+  G4double      fGblTime;
   G4ThreeVector fPos;
 };
 

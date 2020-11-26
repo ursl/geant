@@ -9,7 +9,7 @@ G4Allocator<TrackerHit> TrackerHitAllocator;
 //G4ThreadLocal G4Allocator<TrackerHit>* TrackerHitAllocator = 0;
 
 // ----------------------------------------------------------------------
-TrackerHit::TrackerHit(): G4VHit(), fTrackID(0), fChamberNb(0), fEdep(0), fPos(0,0,0) {
+TrackerHit::TrackerHit(): G4VHit(), fTrackID(0), fChamberNb(0), fEdep(0), fGblTime(0), fPos(0,0,0) {
 }
 
 // ----------------------------------------------------------------------
@@ -24,6 +24,7 @@ TrackerHit::TrackerHit(const TrackerHit& right) : G4VHit() {
   fEdep      = right.fEdep;
   fEtrk      = right.fEtrk;
   fPos       = right.fPos;
+  fGblTime   = right.fGblTime;
 }
 
 // ----------------------------------------------------------------------
@@ -33,6 +34,7 @@ const TrackerHit& TrackerHit::operator=(const TrackerHit& right) {
   fEdep      = right.fEdep;
   fPos       = right.fPos;
   fEtrk      = right.fEtrk;
+  fGblTime   = right.fGblTime;
   return *this;
 }
 
@@ -65,5 +67,6 @@ void TrackerHit::Print() {
          << "  energy deposit[MeV]: " << fEdep
          << "  position[mm]: " << fPos
 	 << " Ekin: " << fEtrk
+	 << " GblTime: " << fGblTime
 	 << G4endl;
 }

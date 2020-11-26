@@ -39,6 +39,7 @@ G4bool TrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   newHit->SetEdep     (edep);
   newHit->SetPos      (aStep->GetPostStepPoint()->GetPosition());
   newHit->SetEtrk     (aStep->GetTrack()->GetKineticEnergy());
+  newHit->SetGblTime  (aStep->GetTrack()->GetGlobalTime());
   fHitsCollection->insert(newHit);
 
   return true;
@@ -53,9 +54,24 @@ void TrackerSD::EndOfEvent(G4HCofThisEvent*) {
   if (1) {
     G4cout << "\n-------->Storing hits in the ROOT file: in this event there are " << NbHits
            << " hits in the tracker chambers: " << G4endl;
-    for (G4int i=0;i<NbHits;i++) (*fHitsCollection)[i]->Print();
+    for (G4int i=0;i<NbHits;i++) {
+      (*fHitsCollection)[i]->Print();
+      // -- write into event/tree
+      THit *hit = RootIO::GetInstance()->getEvent()->addHit();
+      hit->fNumber  = RootIO::GetInstance()->getEvent()->nHits() - 1;
+      hit->fDetId   = 0;// tracker = 0
+      hit->fChamber = (*fHitsCollection)[i]->GetChamberNb();
+      hit->fTrack   = (*fHitsCollection)[i]->GetTrackID();
+      hit->fGenCand = 0;
+      hit->fEdep    = (*fHitsCollection)[i]->GetEdep();
+      hit->fGblTime = (*fHitsCollection)[i]->GetGblTime();
+      G4ThreeVector x = (*fHitsCollection)[i]->GetPos();
+      hit->fPos     = TVector3(x.x(), x.y(), x.z());
+    }
   }
 
-  for (G4int i=0;i<NbHits;i++) hitsVector.push_back((*fHitsCollection)[i]);
-  RootIO::GetInstance()->WriteTrackerHits(&hitsVector);
+  if (0) {
+    for (G4int i=0;i<NbHits;i++) hitsVector.push_back((*fHitsCollection)[i]);
+    RootIO::GetInstance()->WriteTrackerHits(&hitsVector);
+  }
 }

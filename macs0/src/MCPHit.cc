@@ -9,7 +9,7 @@ G4Allocator<MCPHit> MCPHitAllocator;
 //G4ThreadLocal G4Allocator<MCPHit>* MCPHitAllocator = 0;
 
 // ----------------------------------------------------------------------
-MCPHit::MCPHit(): G4VHit(), fTrackID(0), fChamberNb(0), fEdep(0), fPos(0,0,0) {
+MCPHit::MCPHit(): G4VHit(), fTrackID(0), fChamberNb(0), fEdep(0.), fGblTime(0.), fPos(0,0,0) {
 }
 
 // ----------------------------------------------------------------------
@@ -22,6 +22,7 @@ MCPHit::MCPHit(const MCPHit& right) : G4VHit() {
   fTrackID   = right.fTrackID;
   fChamberNb = right.fChamberNb;
   fEdep      = right.fEdep;
+  fGblTime   = right.fGblTime;
   fPos       = right.fPos;
 }
 
@@ -30,6 +31,7 @@ const MCPHit& MCPHit::operator=(const MCPHit& right) {
   fTrackID   = right.fTrackID;
   fChamberNb = right.fChamberNb;
   fEdep      = right.fEdep;
+  fGblTime   = right.fGblTime;
   fPos       = right.fPos;
   return *this;
 }
@@ -59,9 +61,10 @@ void MCPHit::Draw() {
 
 // ----------------------------------------------------------------------
 void MCPHit::Print() {
-  G4cout << "  MCP trackID: " << fTrackID << "  chNb: " << fChamberNb
-         << "  Edep[MeV]: " << fEdep
-         << "  pos[mm]: " << fPos
-	 << "  Etrk[MeV]: " << fEtrk
+  G4cout << " MCP trackID: " << fTrackID << "  chNb: " << fChamberNb
+         << " Edep[MeV]: " << fEdep
+         << " pos[mm]: " << fPos
+	 << " Etrk[MeV]: " << fEtrk
+	 << " GblTime[??]: " << fGblTime
 	 << G4endl;
 }
