@@ -1,2 +1,6 @@
 *.pdf
 build
+bin
+obj
+lib
+*.root
