@@ -5,6 +5,8 @@
 # ======================================================================
 .PHONY: prep clean vars
 
+UTIL = /Users/ursl/macros/ana/util
+
 ROOTCINT      = $(ROOTSYS)/bin/rootcint
 ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
 ROOTGLIBS     = $(shell $(ROOTSYS)/bin/root-config --glibs)
@@ -33,7 +35,7 @@ SOFLAGS       = -shared
 
 CXXFLAGS     += $(ROOTCFLAGS)
 GLIBS         = $(filter-out -lz, $(ROOTGLIBS)) -lTMVA -lTMVAGui -lRooFitCore -lRooFit
-EXTHEADERS    = -I..
+EXTHEADERS    = -I.. -I$(UTIL)
 
 
 # -- Files
@@ -73,16 +75,17 @@ $(addprefix lib/,%.pcm) :
 # -- Targets
 all: vars prep lib bin
 
-lib: $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit ../build/libClassesDict.so
+lib: prep $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit ../build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
 bin: lib obj/runTreeReader01.o
-	$(LD) $(LDFLAGS) -o bin/runTreeReader01 $(GLIBS) obj/runTreeReader01.o lib/libAnaClasses.so ../build/libClassesDict.so
+	$(LD) $(LDFLAGS) -o bin/runTreeReader01 obj/runTreeReader01.o $(GLIBS) lib/libAnaClasses.so ../build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
 	cd lib && ln -f -s ../build/libClassesDict.so && cd -
+	cd lib && ln -f -s $(UTIL)/lib/libAnaUtil.so && cd -
 
 # -- clean up
 clean:

@@ -15,20 +15,21 @@
 #include "TSystem.h"
 #include "TKey.h"
 
+#include "util.hh"
 #include "treeReader01.hh"
 
 using namespace std;
 
-// ----------------------------------------------------------------------
-// -- temporary
-void replaceAll(string &str, const string &from, const string &to) {
-  if (from.empty()) return;
-  size_t start_pos = 0;
-  while((start_pos = str.find(from, start_pos)) != string::npos) {
-    str.replace(start_pos, from.length(), to);
-    start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
-  }
-}
+// // ----------------------------------------------------------------------
+// // -- temporary
+// void replaceAll(string &str, const string &from, const string &to) {
+//   if (from.empty()) return;
+//   size_t start_pos = 0;
+//   while((start_pos = str.find(from, start_pos)) != string::npos) {
+//     str.replace(start_pos, from.length(), to);
+//     start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+//   }
+// }
 
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
   // -- Some defaults
   string dirBase("./");               // this could point to "/home/ursl/data/root/."
   string dirName("."); dirspec = 0;   // and this to, e.g. "bmm", "bee", "bem", ...
-  string cutFile("tree.defaults.cuts");
+  string cutFile("tree.default.cuts");
 
   string treeName("gen");
   string evtClassName("rEvent");
