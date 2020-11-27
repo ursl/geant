@@ -5,6 +5,7 @@
 # ======================================================================
 .PHONY: prep clean vars
 
+# -- external dependency, cf https://github.com/ursl/util
 UTIL = /Users/ursl/macros/ana/util
 
 ROOTCINT      = $(ROOTSYS)/bin/rootcint
