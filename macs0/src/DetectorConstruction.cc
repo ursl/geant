@@ -174,8 +174,9 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // ------------------------------
   // -- Target
   // ------------------------------
-  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength-tgtHalfLength);
-  fSolidTarget = new G4Box("Target", 5.0*cm, 5.0*cm, tgtHalfLength);
+  //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength-tgtHalfLength);
+  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength);
+  fSolidTarget = new G4Box("Target", 2*cm, 2*cm, tgtHalfLength);
   fLogicTarget = new G4LogicalVolume(fSolidTarget,fTargetMater,"Target", 0, 0, 0);
   fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
   fLogicTarget->SetVisAttributes(boxVisAtt);

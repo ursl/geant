@@ -85,14 +85,14 @@
 /macs0/field/value -0.0039 tesla
 
 ## /control/execute egun.mac
-#/gun/particle e+
 /gun/position 0 0 0 cm
-/gun/energy 10 eV
+/gun/energy 0.025 eV
 /gun/direction 0 0 1
 
-# -- test hits with e-
+# -- test hits with e- as a background source
 #/gun/particle e-
-#/gun/energy 900 keV
+#/gun/position 0 0 -70 cm
+#/gun/energy 26 MeV
 #/gun/direction 0 0 1
 
 /run/beamOn 1
