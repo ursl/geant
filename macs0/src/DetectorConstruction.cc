@@ -41,6 +41,7 @@ G4ThreadLocal G4FieldManager* DetectorConstruction::fpFieldMgr = 0;
 DetectorConstruction::DetectorConstruction() :G4VUserDetectorConstruction(),
 					      fSolidWorld(0), fLogicWorld(0), fPhysiWorld(0),
 					      fSolidTarget(0), fLogicTarget(0), fPhysiTarget(0), fTargetMater(0),
+					      fSolidBeampipe(0), fLogicBeampipe(0), fPhysiBeampipe(0),
 					      fSolidTracker(0), fLogicTracker(0), fPhysiTracker(0),
 					      fSolidChamber(0), fChamberMater(0),
 					      fSolidTrsp(0), fLogicTrsp(0), fPhysiTrsp(0), fTrspMater(0),
@@ -51,7 +52,9 @@ DetectorConstruction::DetectorConstruction() :G4VUserDetectorConstruction(),
 					      fDetectorMessenger(0),
 					      fStepLimit(NULL),
 					      fWorldLength(0.),
-					      fTgtLength(0.), fTrkLength(0.), fTrkOuterRadius(0.), fTrkInnerRadius(0.),
+					      fTgtLength(0.), fBeampipeLength(0.),
+					      fBeampipeInnerRadius(5.),fBeampipeOuterRadius(5.02),
+					      fTrkLength(0.), fTrkInnerRadius(5.), fTrkOuterRadius(100.),
 					      fNbOfChambers(0), fChamberWidth(0.), fChamberSpacing(0.), fCheckOverlaps(true)
 {
   fDetectorMessenger = new DetectorMessenger(this);
@@ -123,6 +126,9 @@ void DetectorConstruction::defineMaterials() {
   fAerog->AddElement (elC ,fractionmass= 0.1*perCent);
 
   // -- Aluminum
+  fBe = new G4Material("Beryllium", z=4, a=9.012182*g/mole, density=1.848*g/cm3);
+
+  // -- Aluminum
   fAl = new G4Material("Aluminum", z=13., a=26.98*g/mole, density=2.700*g/cm3);
 
   // -- Lead
@@ -140,9 +146,11 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // -- placeholder
   fChamberMater = fXeGas;
 
-  fTargetMater  = fAerog;                          // placeholder
-  fTgtLength  = 5*cm;                        // placeholder
+  fBeampipeMater  = fBe;
+  fTargetMater  = fAerog;
+  fTgtLength  = 1*cm;
   fTrkLength  = 100.*cm;
+  fBeampipeLength = 120.*cm;
 
   // -- MACS detector dimensions
   fChamberWidth = fMacsTrkRadialThickness = 1.0*cm; // placeholder
@@ -158,9 +166,15 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
          << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
          << " mm" << G4endl;
 
+  fBeampipeInnerRadius = 3.0*cm;
+  fBeampipeOuterRadius = 3.1*cm;
+
+
+  fTrkInnerRadius = 5.0*cm;
   fTrkOuterRadius = 100.0*cm;
   G4double tgtHalfLength  = 0.5*fTgtLength;    // Half length of the Target
   G4double trkHalfLength  = 0.5*fTrkLength;
+  G4double beampipeHalfLength  = 0.5*fBeampipeLength;
 
   // ------------------------------
   // -- World
@@ -172,14 +186,36 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   fPhysiWorld = new G4PVPlacement(0, G4ThreeVector(), fLogicWorld, "World", 0, false, 0, true);
 
   // ------------------------------
+  // -- Beampipe
+  // ------------------------------
+  G4ThreeVector positionBeampipe = G4ThreeVector(0., 0., -10.*cm);
+  fSolidBeampipe = new G4Tubs("Beampipe", fBeampipeInnerRadius, fBeampipeOuterRadius, beampipeHalfLength, 0.*deg, 360.*deg);
+  fLogicBeampipe = new G4LogicalVolume(fSolidBeampipe,fBeampipeMater, "Beampipe", 0, 0, 0);
+  fPhysiBeampipe = new G4PVPlacement(0, positionBeampipe, fLogicBeampipe, "Beampipe", fLogicWorld, false, 0, true);
+  G4VisAttributes *pBp  = new G4VisAttributes;
+  pBp->SetColour(G4Colour(0.7, 0.8, 0.7));
+  pBp->SetForceLineSegmentsPerCircle(6);
+  //  pBp->SetForceAuxEdgeVisible(true);
+  pBp->SetLineWidth(0.01);
+  pBp->SetForceWireframe(true);
+  fLogicBeampipe->SetVisAttributes(pBp);
+
+  G4cout << "Beampipe is " << fBeampipeLength/cm << "cm of " << fBeampipeMater->GetName() << G4endl;
+
+
+  // ------------------------------
   // -- Target
   // ------------------------------
-  //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength-tgtHalfLength);
-  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength);
+  //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength+tgtHalfLength);
+  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -0.5*trkHalfLength);
   fSolidTarget = new G4Box("Target", 2*cm, 2*cm, tgtHalfLength);
   fLogicTarget = new G4LogicalVolume(fSolidTarget,fTargetMater,"Target", 0, 0, 0);
   fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
-  fLogicTarget->SetVisAttributes(boxVisAtt);
+
+  G4VisAttributes *pVA  = new G4VisAttributes;
+  pVA->SetColour(G4Colour(0.1, 0.8, 0.1));
+  pVA->SetForceSolid(true);
+  fLogicTarget->SetVisAttributes(pVA);
 
   G4cout << "Target is " << fTgtLength/cm << "cm of " << fTargetMater->GetName() << G4endl;
 
@@ -188,7 +224,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // ------------------------------
   G4ThreeVector positionTracker = G4ThreeVector(0,0,0);
 
-  fSolidTracker = new G4Tubs("Tracker", 0, fTrkOuterRadius, trkHalfLength, 0.*deg, 360.*deg);
+  fSolidTracker = new G4Tubs("Tracker", fTrkInnerRadius, fTrkOuterRadius, trkHalfLength, 0.*deg, 360.*deg);
   fLogicTracker = new G4LogicalVolume(fSolidTracker, fVac, "Tracker", 0, 0, 0);
   fPhysiTracker = new G4PVPlacement(0, positionTracker, fLogicTracker, "Tracker", fLogicWorld, false, 0, true);
   fLogicTracker->SetVisAttributes(boxVisAtt);
@@ -220,6 +256,13 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   G4double maxStep = 0.5*fChamberWidth;
   fStepLimit = new G4UserLimits(maxStep);
   fLogicTracker->SetUserLimits(fStepLimit);
+
+  // -- shielding
+  G4ThreeVector positionShield = G4ThreeVector(0., 0., 70.*cm);
+  fSolidShield = new G4Tubs("shielding", 10.0*cm, 150.*cm, 2*cm, 0.*deg, 360.*deg);
+  fLogicShield = new G4LogicalVolume(fSolidShield, fAl, "Shield", 0, 0, 0);
+  fPhysiShield = new G4PVPlacement(0, positionShield, fLogicShield, "Shield", fLogicWorld, false, 0, true);
+  fLogicShield->SetVisAttributes(boxVisAtt);
 
 
   // ------------------------------
@@ -295,7 +338,7 @@ void DetectorConstruction::makeAccel() {
 // ----------------------------------------------------------------------
 void DetectorConstruction::makeEndDetector() {
 
-  G4double orMCP = 6.0*cm;
+  G4double orMCP = fTrspOuterRadius;
   G4double lMCP =   0.1*cm;
   auto p0 = new G4Tubs("MCP", 0., orMCP, lMCP, 0.*deg, 360.*deg);
   fLogicMCP = new G4LogicalVolume(p0, fAl, "lMCP");
@@ -303,7 +346,9 @@ void DetectorConstruction::makeEndDetector() {
   G4RotationMatrix* fieldRot = new G4RotationMatrix();
   fieldRot->rotateY(90.*deg);
   fPhysiMCP =  new G4PVPlacement(fieldRot,
-				 G4ThreeVector(-(fTrspLength2 + 40.0*cm + 2.0*cm), 0., fTrkLength + fTrspLength1 - 5.0*cm),
+				 G4ThreeVector(-(fTrspLength2 + 40.0*cm + 0.5*fTrspOuterRadius),
+					       0.,
+					       fTrkLength + fTrspLength1 - 0.25*fTrspOuterRadius ),
 				 fLogicMCP, "pMCP", fLogicWorld, false, 0, fCheckOverlaps);
 
   // set step limit in tube with magnetic field
@@ -322,7 +367,7 @@ void DetectorConstruction::makeEndDetector() {
 // ----------------------------------------------------------------------
 void DetectorConstruction::makeSplitTrspTube() {
 
-  fTrspOuterRadius = 6.*cm;
+  fTrspOuterRadius = 8.*cm;
   fTrspLength1 = fTrspLength2 = 60.*cm;
   G4double pRtor = 40.*cm;
   fTrspMater  = fAl;
@@ -336,7 +381,8 @@ void DetectorConstruction::makeSplitTrspTube() {
   // -- trafo for part3
   G4RotationMatrix* rot3 = new G4RotationMatrix;
   rot3->rotateY(M_PI/2.*rad);
-  G4ThreeVector zTrans3(pRtor + 0.5*fTrspLength2, 0, -0.5*fTrspLength1 - pRtor);
+  // -- FIXME: the -3*cm are an empirical shift to contain the bending (why? leaking B field?) trajectories inside part3
+  G4ThreeVector zTrans3(pRtor + 0.5*fTrspLength2, 0, -0.5*fTrspLength1 - pRtor - 3*cm);
   G4RotationMatrix invRot3 = rot3->invert();
   G4Transform3D transform3(invRot3, -zTrans3);
 
