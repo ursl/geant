@@ -49,7 +49,7 @@ public:
 
 private:
   // -- Materials
-  G4Material *fVac, *fAir, *fAl, *fPb, *fSiO2,
+  G4Material *fVac, *fAir, *fAl, *fBe, *fPb, *fSiO2,
     *fXeGas, *fAerog;
 
   // -- world
@@ -63,6 +63,13 @@ private:
   G4VPhysicalVolume* fPhysiTarget;
   G4Material*        fTargetMater;
 
+  // -- beampipe
+  G4Tubs*            fSolidBeampipe;
+  G4LogicalVolume*   fLogicBeampipe;
+  G4VPhysicalVolume* fPhysiBeampipe;
+  G4Material*        fBeampipeMater;
+
+
   // -- tracker
   G4Tubs*            fSolidTracker;
   G4LogicalVolume*   fLogicTracker;
@@ -73,6 +80,11 @@ private:
   G4LogicalVolume**  fLogicChamber;
   G4VPhysicalVolume**fPhysiChamber;
   G4Material*        fChamberMater;
+
+  G4Tubs*            fSolidShield;
+  G4LogicalVolume*   fLogicShield;
+  G4VPhysicalVolume* fPhysiShield;
+
 
   // -- transport tube
   G4MultiUnion*      fSolidTrsp;
@@ -101,8 +113,8 @@ private:
   G4UserLimits* fStepLimit;            // pointer to user step limits
 
   G4double fWorldLength;
-  G4double fTgtLength;
-  G4double fTrkLength, fTrkOuterRadius, fTrkInnerRadius;
+  G4double fTgtLength, fBeampipeLength;
+  G4double fBeampipeOuterRadius, fBeampipeInnerRadius, fTrkLength, fTrkOuterRadius, fTrkInnerRadius;
   G4int fNbOfChambers;
   G4double fChamberWidth;
   G4double fChamberSpacing;
