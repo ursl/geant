@@ -84,15 +84,25 @@
 #/macs0/det/setField 4 tesla
 /macs0/field/value -0.0048 tesla
 
-## /control/execute egun.mac
+# -- (signal) Muonium source and decay
 #/gun/position 0 0 0 cm
 #/gun/energy 0.026 eV
 #/gun/direction 0 0 1
 
 # -- test hits with e- as a background source
-/gun/particle e-
-/gun/position 0 0 -70 cm
-/gun/energy 2 MeV
+#/gun/particle e-
+#/gun/position 0 0 -70 cm
+#/gun/energy 2 MeV
+#/gun/direction 0 0 1
+
+# -- turn on internal conversion
+/particle/select mu+
+/particle/property/decay/select 2
+/particle/property/decay/br 1
+
+/gun/particle mu+
+/gun/position 0 0 50 cm
+/gun/energy 2 eV
 /gun/direction 0 0 1
 
 /run/beamOn 1

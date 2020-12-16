@@ -45,8 +45,7 @@
 
 #include "TF1.h"
 
-class MuDecayChannel :public G4VDecayChannel
-{
+class MuDecayChannel :public G4VDecayChannel {
   // Class Decription
   //  This class describes muon decay kinemtics.
   //  This version neglects muon polarization

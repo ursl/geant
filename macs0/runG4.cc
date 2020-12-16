@@ -18,6 +18,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
+#include "PhysicsList.hh"
 
 #include "RootIO.hh"
 
@@ -45,9 +46,11 @@ int main(int argc,char** argv) {
   DetectorConstruction* detector = new DetectorConstruction;
   runManager->SetUserInitialization(detector);
 
-  G4VModularPhysicsList* physicsList = new FTFP_BERT;
-  physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-  runManager->SetUserInitialization(physicsList);
+  // G4VModularPhysicsList* physicsList = new FTFP_BERT;
+  // physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+  // runManager->SetUserInitialization(physicsList);
+  //  physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+  runManager->SetUserInitialization(new PhysicsList);
 
   // -- Set user action classes: define particle generator
   runManager->SetUserAction(new PrimaryGeneratorAction(detector));
@@ -71,11 +74,7 @@ int main(int argc,char** argv) {
     UImanager->ApplyCommand(command+fileName);
   }
   else {
-    // interactive mode
     UImanager->ApplyCommand("/control/execute init_vis.mac");
-    // if (ui->IsGUI()) {
-    //   UImanager->ApplyCommand("/control/execute gui.mac");
-    // }
     ui->SessionStart();
     delete ui;
   }

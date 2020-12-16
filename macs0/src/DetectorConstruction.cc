@@ -194,10 +194,10 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   fPhysiBeampipe = new G4PVPlacement(0, positionBeampipe, fLogicBeampipe, "Beampipe", fLogicWorld, false, 0, true);
   G4VisAttributes *pBp  = new G4VisAttributes;
   pBp->SetColour(G4Colour(0.7, 0.8, 0.7));
-  pBp->SetForceLineSegmentsPerCircle(6);
+  //  pBp->SetForceLineSegmentsPerCircle(6);
   //  pBp->SetForceAuxEdgeVisible(true);
   pBp->SetLineWidth(0.01);
-  pBp->SetForceWireframe(true);
+  pBp->SetForceSolid(true);
   fLogicBeampipe->SetVisAttributes(pBp);
 
   G4cout << "Beampipe is " << fBeampipeLength/cm << "cm of " << fBeampipeMater->GetName() << G4endl;
@@ -262,7 +262,13 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   fSolidShield = new G4Tubs("shielding", 10.0*cm, 150.*cm, 2*cm, 0.*deg, 360.*deg);
   fLogicShield = new G4LogicalVolume(fSolidShield, fAl, "Shield", 0, 0, 0);
   fPhysiShield = new G4PVPlacement(0, positionShield, fLogicShield, "Shield", fLogicWorld, false, 0, true);
-  fLogicShield->SetVisAttributes(boxVisAtt);
+
+  G4VisAttributes *pBs  = new G4VisAttributes;
+  pBs->SetColour(G4Colour(0.5, 0.8, 0.5));
+  pBs->SetLineWidth(0.01);
+  pBs->SetForceSolid(true);
+
+  fLogicShield->SetVisAttributes(pBs);
 
 
   // ------------------------------
