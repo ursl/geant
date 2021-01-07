@@ -41,28 +41,23 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     G4cout << " Evt/trj =  " << event_id << "/" << i << " " << trj->GetParticleName()
 	   << " ID/Mum " << trj->GetTrackID() << "/" << trj->GetParentID()
 	   << " charge: " << trj->GetCharge()
-	   << " energy: " << trj->GetInitialKineticEnergy()
+	   << " Ekin: " << trj->GetInitialKineticEnergy()
 	   <<  G4endl;
   }
 
-  G4VHitsCollection* hc = evt->GetHCofThisEvent()->GetHC(0);
-  G4cout << " Hits stored in this event:  "  << hc->GetSize() << G4endl;
+  rio->getEvent()->fEventNumber = event_id;
 
-  G4cout << "----------------------------------------------------------------------" << G4endl;
-  G4cout << "genlist size() = " << genlist.size() << G4endl;
+  G4VHitsCollection* hc = evt->GetHCofThisEvent()->GetHC(0);
 
   std::string sid;
-  double px, py, pz, e;
-  int pdgid, pid, tid;
+  double px, py, pz, m, ekin, etot;
+  int pdgid, pid, tid, nchg(0);
   for (unsigned int i = 0; i < genlist.size(); ++i) {
     G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[genlist[i]]);
-    px = trj->GetInitialMomentum().x();
-    py = trj->GetInitialMomentum().y();
-    pz = trj->GetInitialMomentum().z();
-    e  = trj->GetInitialKineticEnergy();
+    tid   = trj->GetTrackID();
+    pid   = trj->GetParentID();
+    m     = trj->GetParticleDefinition()->GetPDGMass();
     pdgid = trj->GetPDGEncoding();
-    tid = trj->GetTrackID();
-    pid = trj->GetParentID();
     if (pdgid == 11) sid = "e-";
     if (pdgid == -11) sid = "e+";
     if (pdgid == 12) sid = "nu_e";
@@ -71,16 +66,25 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     if (pdgid == -13) sid = "mu+";
     if (pdgid == 14) sid = "nu_mu";
     if (pdgid == -14) sid = "anti-nu_mu";
-    G4cout << "(p,Ekin) = " << px << "/" << py << "/" << pz << "/" << e << " ID = " << pdgid
-	   << " (" << sid << ", m = " << trj->GetParticleDefinition()->GetPDGMass() << ")"
-	   << " trkID = " << tid << " parentID = " << pid
+    if (pdgid == 22) sid = "gamma";
+    if (11 == TMath::Abs(pdgid) || 13 == TMath::Abs(pdgid)) ++nchg;
+
+    px    = trj->GetInitialMomentum().x();
+    py    = trj->GetInitialMomentum().y();
+    pz    = trj->GetInitialMomentum().z();
+    ekin  = trj->GetInitialKineticEnergy();
+    etot  = TMath::Sqrt(px*px + py*py + pz*pz + m*m);
+    G4cout << Form("(E, p) = %5.4f/%5.4f/%5.4f/%5.4f ID = %4d(%s) m = %5.4f trkId = %2d parentID = %2d",
+		   etot, px, py, pz, pdgid, sid.c_str(), trj->GetParticleDefinition()->GetPDGMass(),
+		   tid, pid)
 	   << G4endl;
     TGenCand* pGen =  rio->getEvent()->addGenCand();
     pGen->fID = pdgid;
     pGen->fNumber = genlist[i];
-    pGen->fP.SetXYZT(px, py, px, e);
+    pGen->fP.SetXYZT(px, py, pz, etot);
   }
 
-  rio->fillTree();
+  if (nchg > 1) rio->fillTree();
+
   rio->getEvent()->Clear();
 }
