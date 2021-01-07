@@ -65,11 +65,13 @@ protected:
   // -- Cut values
   double PTLO, PTHI;
   int TYPE;
+
+  // -- variables
+  double fElePt, fEleTheta, fElePhi, fEleE;
+  double fPosPt, fPosTheta, fPosPhi, fPosE;
+
+  double fElePosMass, fElePosOa;
 };
 
-// ----------------------------------------------------------------------
-inline void mk4Vector(TLorentzVector &p4, const Double_t p, const Double_t t, const Double_t f, const Double_t m) {
-  p4.SetXYZM(p*TMath::Sin(t)*TMath::Cos(f), p*TMath::Sin(t)*TMath::Sin(f), p*TMath::Cos(t), m);
-}
 
 #endif
