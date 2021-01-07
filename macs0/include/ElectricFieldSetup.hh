@@ -23,7 +23,7 @@ public:
    // Methods to set parameters or select
   void SetStepperType( G4int i) { fStepperType = i ; CreateStepper(); }
 
-  void SetMinStep(G4double s) { fMinStep = s ; }
+  void SetMinStep(G4double st) { fMinStep = st ; }
 
   void SetFieldValue(G4ThreeVector fieldVector);
   void SetConstantFieldValue(G4double      fieldValue);
