@@ -77,10 +77,10 @@ $(addprefix lib/,%.pcm) :
 all: vars prep lib bin
 
 lib: prep $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit ../build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
 bin: lib obj/runTreeReader01.o
-	$(LD) $(LDFLAGS) -o bin/runTreeReader01 obj/runTreeReader01.o $(GLIBS) lib/libAnaClasses.so ../build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
+	$(LD) $(LDFLAGS) -o bin/runTreeReader01 obj/runTreeReader01.o $(GLIBS) lib/libAnaClasses.so ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
 # -- preparatory setup
 prep:
