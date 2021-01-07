@@ -2,7 +2,10 @@
 #define PrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "globals.hh"
+#include "G4SystemOfUnits.hh"
 
+class G4GenericMessenger;
 class DetectorConstruction;
 class G4ParticleGun;
 class G4Event;
@@ -16,8 +19,16 @@ public:
   virtual void GeneratePrimaries(G4Event*);
 
 private:
+  G4int    fBgNpart;
+  G4double fBgNpartSigma;
+  G4double fBgKinEnergy, fBgKinEnergySigma;
+
   G4ParticleGun* fParticleGun;
+  G4ParticleGun* fBackgroundGun;
   DetectorConstruction* fMyDetector;
+
+  void DefineCommands();
+  G4GenericMessenger* fMessenger;
 };
 
 #endif
