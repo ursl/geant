@@ -209,7 +209,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength+tgtHalfLength);
   G4ThreeVector positionTarget = G4ThreeVector(0., 0., -0.5*trkHalfLength);
   fSolidTarget = new G4Box("Target", 2*cm, 2*cm, tgtHalfLength);
-  fLogicTarget = new G4LogicalVolume(fSolidTarget,fTargetMater,"Target", 0, 0, 0);
+  fLogicTarget = new G4LogicalVolume(fSolidTarget, fTargetMater, "Target", 0, 0, 0);
   fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
 
   G4VisAttributes *pVA  = new G4VisAttributes;
@@ -217,7 +217,9 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   pVA->SetForceSolid(true);
   fLogicTarget->SetVisAttributes(pVA);
 
-  G4cout << "Target is " << fTgtLength/cm << "cm of " << fTargetMater->GetName() << G4endl;
+  G4cout << "Target is " << fTgtLength/cm << "cm of " << fTargetMater->GetName()
+	 << " with logical name ->" << fLogicTarget->GetName() << "<-"
+	 << G4endl;
 
   // ------------------------------
   // -- Tracker
