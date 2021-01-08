@@ -25,6 +25,8 @@
 // -- process
 #include <boost/algorithm/string.hpp>
 
+#include "G4ProcessManager.hh"
+
 #include <G4PhotoElectricEffect.hh>
 #include <G4ComptonScattering.hh>
 #include <G4GammaConversion.hh>
@@ -56,6 +58,11 @@
 #include "../common/Mu3eMuonInternalConversionDecayWithSpin.hh"
 #include "../common/Mu3eMuonRadiativeDecayChannelWithSpin.hh"
 
+#include "../common/musrMuonium.hh"
+#include "../common/musrMuEnergyLossLandau.hh"
+#include "../common/musrMuFormation.hh"
+#include "../common/musrMuScatter.hh"
+
 // ----------------------------------------------------------------------
 PhysicsList::PhysicsList() : G4VUserPhysicsList(){
   SetVerboseLevel(1);
@@ -86,6 +93,9 @@ void PhysicsList::ConstructParticle() {
   G4IonConstructor::ConstructParticle();
   G4LeptonConstructor::ConstructParticle();
   G4MesonConstructor::ConstructParticle();
+
+  musrMuonium::MuoniumDefinition();
+
 
   // -- set up muon decays
   G4double radbr10MeV = 0.014;
@@ -175,10 +185,10 @@ void PhysicsList::ConstructProcess() {
 
       helper->RegisterProcess(new G4UserSpecialCuts, particle);
     }
-    else if(particleName == "mu+"
-	    || particleName == "mu-"
-	    || boost::starts_with(particleName, "mu+/")
-	    ) {
+    else if (particleName == "mu+"
+	     || particleName == "mu-"
+	     || boost::starts_with(particleName, "mu+/")
+	     ) {
       helper->RegisterProcess(new G4CoulombScattering, particle);
 
       //            helper->RegisterProcess(new G4MuMultipleScattering, particle);
@@ -189,21 +199,30 @@ void PhysicsList::ConstructProcess() {
       auto muonNuclearProcess = new G4MuonNuclearProcess();
       muonNuclearProcess->RegisterMe(new G4MuonVDNuclearModel);
       helper->RegisterProcess(muonNuclearProcess, particle);
-    }
-    else if(particleName == "pi+"
-	    || particleName == "pi-"
-	    || particleName == "proton"
-	    ) {
-      helper->RegisterProcess(new G4hMultipleScattering, particle);
 
+      G4ProcessManager* pmanager = particle->GetProcessManager();
+      pmanager->AddProcess(new musrMuFormation, -1, -1, 2);
+
+    }
+    else if (particleName == "pi+"
+	     || particleName == "pi-"
+	     || particleName == "proton"
+	     ) {
+      helper->RegisterProcess(new G4hMultipleScattering, particle);
       helper->RegisterProcess(new G4hIonisation, particle);
       helper->RegisterProcess(new G4hBremsstrahlung, particle);
       helper->RegisterProcess(new G4hPairProduction, particle);
-    }
-    else if(!particle->IsShortLived()
-	    && particle->GetPDGCharge() != 0
-	    && particle->GetParticleName() != "chargedgeantino"
-	    ) {
+    } else if (particleName == "Mu") {
+      G4ProcessManager* pmanager = particle->GetProcessManager();
+      G4VProcess* aMuScatt = new musrMuScatter();
+      pmanager->AddProcess(aMuScatt);
+      pmanager->SetProcessOrdering(aMuScatt, idxPostStep, 1);
+      pmanager->AddProcess(new musrMuEnergyLossLandau);
+
+    } else if (!particle->IsShortLived()
+	       && particle->GetPDGCharge() != 0
+	       && particle->GetParticleName() != "chargedgeantino"
+	       ) {
       helper->RegisterProcess(new G4hMultipleScattering, particle);
       helper->RegisterProcess(new G4hIonisation, particle);
     }
