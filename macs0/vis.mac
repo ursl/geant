@@ -84,28 +84,42 @@
 #/macs0/det/setField 4 tesla
 /macs0/field/value -0.0048 tesla
 
+# -- muon beam
 /macs0/generator/bgKinEnergy 26.2 MeV
 /macs0/generator/bgKinEnergySigma 2.2 MeV
 /macs0/generator/bgNpart 5
-/macs0/generator/bgNpartSigma 1
+/macs0/generator/bgNpartSigma 0
 
 # -- (signal) Muonium source and decay
-/gun/position 0 0 0 cm
-/gun/energy 0.026 eV
-/gun/direction 0 0 1
-
-# -- test hits with e- as a background source
-#/gun/particle e-
-#/gun/position 0 0 -70 cm
-#/gun/energy 2 MeV
+#/gun/position 0 0 0 cm
+#/gun/energy 0.001 eV
 #/gun/direction 0 0 1
+
+# -- single muons
+#/gun/particle mu+
+#/gun/position 0 0 -50 cm
+#/gun/energy 26 MeV
+#/gun/direction 0 0 1
+
+# -- select muon BR
+# 0: BR: 9.85966000000000e-01 [Muon Decay]: e+ nu_e anti_nu_mu
+# 1: BR: 1.40000000000000e-02 [rmd]:        e+ gamma nu_e anti_nu_mu
+# 2: BR: 3.40000000000000e-05 [intconv]:    e+ e- e+ anti_nu_mu nu_e
+/particle/select mu+
+/particle/property/decay/select 0
+/particle/property/decay/br 0
+/particle/property/decay/select 1
+/particle/property/decay/br 0
+/particle/property/decay/select 2
+/particle/property/decay/br 1
+/particle/property/decay/dump
 
 # -- turn on internal conversion
 #/particle/select mu+
 #/particle/property/decay/select 2
 #/particle/property/decay/br 1
 
-# -- study Bhabha csattering?
+# -- study Bhabha scattering?
 #/gun/particle e+
 #/gun/position 0 0 -50 cm
 #/gun/energy 30 MeV
