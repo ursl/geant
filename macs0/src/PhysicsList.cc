@@ -212,7 +212,7 @@ void PhysicsList::ConstructProcess() {
       helper->RegisterProcess(new G4hIonisation, particle);
       helper->RegisterProcess(new G4hBremsstrahlung, particle);
       helper->RegisterProcess(new G4hPairProduction, particle);
-    } else if (particleName == "Mu") {
+    } else if (particleName == "Muonium") {
       G4ProcessManager* pmanager = particle->GetProcessManager();
       G4VProcess* aMuScatt = new musrMuScatter();
       pmanager->AddProcess(aMuScatt);

@@ -39,21 +39,21 @@ musrMuScatter::musrMuScatter(const G4String& name,
 
 musrMuScatter:: ~musrMuScatter(){}
 
-// At the end of the step, the current volume is checked and if Muonium is in a solid 
+// At the end of the step, the current volume is checked and if Muonium is in a solid
 // material (except for the carbon foil where it is generated), it is stopped immediately.
 G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
                                                const G4Step& aStep)
 {
   fParticleChange.Initialize(trackData);
-  
+
   //! Tao - Get time information */
   itime = trackData.GetProperTime();
   gtime = trackData.GetGlobalTime();
-  ftime = trackData.GetDynamicParticle()->GetPreAssignedDecayProperTime(); 
-  
+  ftime = trackData.GetDynamicParticle()->GetPreAssignedDecayProperTime();
+
   deltatime = ftime - itime;
   fParticleChange.ProposeGlobalTime(deltatime + itime -gtime);
-  
+
   /*! - Set position, momentum, energy and time of the particle change. */
   fParticleChange.ProposePosition(trackData.GetPosition());
   fParticleChange.ProposeMomentumDirection(trackData.GetMomentumDirection());
@@ -61,15 +61,15 @@ G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
   fParticleChange.ProposeGlobalTime(gtime);
   fParticleChange.ProposeProperTime(itime);
   fParticleChange.ProposeTrackStatus(trackData.GetTrackStatus()) ;
-  
-  /*! - Verify the condition of applying the process: if Mu is in a material 
+
+  /*! - Verify the condition of applying the process: if Mu is in a material
         different than vacuum and carbon foil, then stop it directly. */
   if( CheckCondition(aStep))
     {
       fParticleChange.ProposePosition(trackData.GetStep()->GetPreStepPoint()->GetPosition());
       fParticleChange.ProposeTrackStatus(fStopButAlive) ;
     }
-  
+
   /*! - Return the changed particle object. */
   return &fParticleChange;
 }
@@ -79,14 +79,14 @@ G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
 G4bool musrMuScatter::CheckCondition(const G4Step& aStep)
 {
   G4bool condition = false;
-  p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name  
-  if(p_name == "Mu" && aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName()!="log_CFoil" &&
+  p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
+  if(p_name == "Muonium" && aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName()!="log_CFoil" &&
   aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetMaterial()->GetName()!="G4_Galactic")
     {
       condition=true;
     }
   return condition;
-}  
+}
 
 
 G4double musrMuScatter::GetMeanFreePath(const G4Track&,

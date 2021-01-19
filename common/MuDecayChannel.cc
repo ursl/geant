@@ -77,9 +77,9 @@ double f_eAtomic(double *x, double *par) {
 MuDecayChannel::MuDecayChannel(const G4String& theParentName, G4double theBR) : G4VDecayChannel("Muonium Decay",1) {
   feAtomic = new TF1("feAtomic", f_eAtomic, 0., 100., 1);
   // set names for daughter particles
-  if (theParentName == "Mu") {
+  if (theParentName == "Muonium") {
     SetBR(theBR);
-    SetParent("Mu");
+    SetParent("Muonium");
     SetNumberOfDaughters(4);
     SetDaughter(0, "e+");
     SetDaughter(1, "nu_e");

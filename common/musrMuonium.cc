@@ -35,7 +35,7 @@ musrMuonium* musrMuonium::theInstance = 0;
 musrMuonium* musrMuonium::Definition()
 {
   if (theInstance !=0) return theInstance;
-  const G4String name = "Mu";
+  const G4String name = "Muonium";
   // search in particle table]
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
@@ -71,7 +71,7 @@ musrMuonium* musrMuonium::Definition()
   //create Decay Table
   G4DecayTable* table = new G4DecayTable();
   // create a decay channel
-  G4VDecayChannel* mode = new MuDecayChannel("Mu",1.00);
+  G4VDecayChannel* mode = new MuDecayChannel("Muonium",1.00);
   table->Insert(mode);
   anInstance->SetDecayTable(table);
 

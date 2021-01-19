@@ -27,7 +27,7 @@
 //  Author: Taofiq PARAISO, T. Shiroka
 //  Date  : 2007-12
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-                              
+
 #ifndef   musrMuFormation_h
 #define   musrMuFormation_h 1
 
@@ -36,31 +36,31 @@
 
 #include "yields.hh"
 
-/*! musrMuFormation class defines the muonium formation process in the Carbon foil 
+/*! musrMuFormation class defines the muonium formation process in the Carbon foil
  *  according to yields from Gonin's paper Sci. Rev. Instrum. 65(3), 648-652 (1994).
  * \image html yields3.gif The muonium formation yields.
- * The main parameters are the foil thickness and muon energy. For a given energy, 
+ * The main parameters are the foil thickness and muon energy. For a given energy,
  * a corresponding proportion of the muons will be converted into Muonium.
- * Concretely, the muon is eliminated and replaced by a Muonium with identical 
+ * Concretely, the muon is eliminated and replaced by a Muonium with identical
  * properties, including time, energy, momentum, position etc.
  *
- * The process is executed at the END of a step, i.e. the muon is converted into 
+ * The process is executed at the END of a step, i.e. the muon is converted into
  * Muonium AFTER flying through the Carbon foil (see also yields.hh). */
 
 class musrMuFormation : public G4VDiscreteProcess
 {
  public:
-   
-   musrMuFormation(const G4String& name = "MuFormation", // process description
+
+   musrMuFormation(const G4String& name = "MuoniumFormation", // process description
 		   G4ProcessType aType = fElectromagnetic);
 
   ~musrMuFormation();
-  
+
   //! - Main method. Muonium formation process is executed at the END of a step. */
   G4VParticleChange* PostStepDoIt(
 			     const G4Track&,
 			     const G4Step&);
-  
+
   G4double GetMeanFreePath(const G4Track& aTrack,
 			   G4double previousStepSize,
 			   G4ForceCondition* condition);
@@ -68,27 +68,27 @@ class musrMuFormation : public G4VDiscreteProcess
 
   //! Condition for process application (step Object).
   G4bool CheckCondition(const G4Step& aStep);
-  
+
   //! Condition for process application (step Pointer).
   G4bool CheckCondition(const G4Step* aStep);
-  
-  
+
+
   G4String  p_name;
   G4bool condition;
-  
-  
+
+
   void GetDatas( const G4Step* aStep);
   // model parameters
-  G4ParticleTable* particleTable; 
+  G4ParticleTable* particleTable;
   G4ParticleDefinition* particle;
   Yields   Gonin;
   G4double yvector[3];
   G4double rnd;
   G4DynamicParticle *DP;
-  
+
   //! The particle change object.
-  G4VParticleChange fParticleChange; 
- 
+  G4VParticleChange fParticleChange;
+
   void  PrepareSecondary(const G4Track&);
   G4Track* aSecondary;
 

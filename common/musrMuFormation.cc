@@ -79,7 +79,7 @@ void musrMuFormation::GetDatas(const G4Step* aStep) {
   rnd=G4UniformRand();
   G4double E = aStep->GetTrack()->GetDynamicParticle()->GetKineticEnergy()/CLHEP::keV;
   Gonin.GetYields(E,105.658369*1000,yvector); // Energy [keV], muon mass [keV/c2], yield table
-  G4String p_new = "Mu";
+  G4String p_new = "Muonium";
 
   // Positive muon
   if (p_name=="mu+") {
@@ -87,7 +87,7 @@ void musrMuFormation::GetDatas(const G4Step* aStep) {
       particle = particleTable->FindParticle(p_name) ;
     } else {
       particle = particleTable->FindParticle(p_new);
-      G4cout << "musrMuFormation::GetDatas> Mu formed!!!!!!!!" << G4endl;
+      G4cout << "musrMuFormation::GetDatas> Muonium formed!!!!!!!!" << G4endl;
     }
 
     // Set the new dynamic particle DP
