@@ -19,6 +19,7 @@ public:
   virtual void GeneratePrimaries(G4Event*);
 
 private:
+  G4int    fSgNpart;
   G4int    fBgNpart;
   G4double fBgNpartSigma;
   G4double fBgKinEnergy, fBgKinEnergySigma;

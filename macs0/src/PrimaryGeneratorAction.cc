@@ -43,9 +43,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
   // fParticleGun->GeneratePrimaryVertex(anEvent);
   // fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,-1.));
   // fParticleGun->SetParticleEnergy(1*keV);
-  G4cout << "PrimaryGeneratorAction::GeneratePrimaries with particle = " << fParticleGun->GetParticleDefinition()->GetParticleName() << G4endl;
-  fParticleGun->GeneratePrimaryVertex(anEvent);
+  G4cout << "PrimaryGeneratorAction::GeneratePrimaries with particle = "
+	 << fParticleGun->GetParticleDefinition()->GetParticleName()
+	 << " fSgNpart = " << fSgNpart
+	 << G4endl;
 
+  for (int i = 0; i < fSgNpart; ++i) {
+    fParticleGun->GeneratePrimaryVertex(anEvent);
+  }
 
   G4double z0  = -80.*cm;
   G4double x0  = 0*cm, y0  = 0*cm;
@@ -74,6 +79,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
 // ----------------------------------------------------------------------
 void PrimaryGeneratorAction::DefineCommands() {
   fMessenger  = new G4GenericMessenger(this, "/macs0/generator/", "Primary generator control");
+
+
+  // -- average number of signal particles
+  auto& sgNpartCmd = fMessenger->DeclareProperty("sgNpart", fSgNpart,
+						 "Average number sg particles.");
+  sgNpartCmd.SetParameterName("sgNpart", true);
+  sgNpartCmd.SetRange("sgNpart>=0");
+  sgNpartCmd.SetDefaultValue("0");
 
   // -- average number of background particles
   auto& bgNpartCmd = fMessenger->DeclareProperty("bgNpart", fBgNpart,
