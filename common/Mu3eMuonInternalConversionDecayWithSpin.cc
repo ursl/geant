@@ -290,7 +290,7 @@ G4DecayProducts* Mu3eMuonInternalConversionDecayWithSpin::DecayIt(G4double) {
 	continue;
       mat = matmu3e2nu(P);
       ew = WT*mat;
-      G4cout << "WT: " << WT << "mat: " << mat << " ew: " << ew << " <? rnd = " << rnd << G4endl;
+      //      G4cout << "WT: " << WT << "mat: " << mat << " ew: " << ew << " <? rnd = " << rnd << G4endl;
     }
   }
   else { // generate weighted events
