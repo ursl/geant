@@ -14,7 +14,8 @@
 // ----------------------------------------------------------------------
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC):
   G4VUserPrimaryGeneratorAction(), fParticleGun(0), fMyDetector(myDC),
-  fBgNpart(1), fBgNpartSigma(0.),
+  fSgNpart(0), fBgNpart(1), fBgNpartSigma(0.),
+  fSgKinEnergy(1.0), fSgKinEnergySigma(1.1),
   fBgKinEnergy(26.1), fBgKinEnergySigma(1.1) {
   fParticleGun = new G4ParticleGun();
 
@@ -87,6 +88,24 @@ void PrimaryGeneratorAction::DefineCommands() {
   sgNpartCmd.SetParameterName("sgNpart", true);
   sgNpartCmd.SetRange("sgNpart>=0");
   sgNpartCmd.SetDefaultValue("0");
+
+
+  // -- kinetic energy of signal particles
+  auto& sgKinEnergyCmd = fMessenger->DeclarePropertyWithUnit("sgKinEnergy", "MeV", fSgKinEnergy,
+							     "Mean kinetic energy of sg particles.");
+  sgKinEnergyCmd.SetParameterName("sgEkin", true);
+  sgKinEnergyCmd.SetRange("sgEkin>=0.");
+  sgKinEnergyCmd.SetDefaultValue("1.");
+
+
+  // -- sigma of kinetic energy of signal particles
+  auto& sgKinEnergySigmaCmd = fMessenger->DeclarePropertyWithUnit("sgKinEnergySigma", "MeV", fSgKinEnergySigma,
+								  "Sigma of mean kinetic energy of sg particles.");
+  sgKinEnergySigmaCmd.SetParameterName("sgEkinSigma", true);
+  sgKinEnergySigmaCmd.SetRange("sgEkinSigma>=0.");
+  sgKinEnergySigmaCmd.SetDefaultValue("0.1");
+
+
 
   // -- average number of background particles
   auto& bgNpartCmd = fMessenger->DeclareProperty("bgNpart", fBgNpart,

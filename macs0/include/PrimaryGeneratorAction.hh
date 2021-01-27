@@ -22,6 +22,7 @@ private:
   G4int    fSgNpart;
   G4int    fBgNpart;
   G4double fBgNpartSigma;
+  G4double fSgKinEnergy, fSgKinEnergySigma;
   G4double fBgKinEnergy, fBgKinEnergySigma;
 
   G4ParticleGun* fParticleGun;
