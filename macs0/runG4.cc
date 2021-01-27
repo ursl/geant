@@ -24,11 +24,28 @@
 
 
 // ----------------------------------------------------------------------
-int main(int argc,char** argv) {
+int main(int argc, char** argv) {
+
+  // -- command line arguments
+  bool startGUI(false);
+  int nevt(100);
+  float sgE(-1.), bgE(-1.);
+  int sgN(-1.), bgN(-1.);
+  G4String cmd("vis.mac");
+  for (int i = 0; i < argc; i++){
+    if (!strcmp(argv[i], "-g"))    {startGUI = true;}
+    if (!strcmp(argv[i], "-c"))    {cmd = argv[++i];}
+    if (!strcmp(argv[i], "-n"))    {nevt = atoi(argv[++i]);}
+    if (!strcmp(argv[i], "-sgE"))  {sgE  = atof(argv[++i]);}  // energy of sg particles
+    if (!strcmp(argv[i], "-bgE"))  {bgE  = atof(argv[++i]);}  // energy of bg particles
+    if (!strcmp(argv[i], "-sgN"))  {sgN  = atoi(argv[++i]);}  // number of sg particles
+    if (!strcmp(argv[i], "-bgN"))  {bgN  = atoi(argv[++i]);}  // number of bg particles
+  }
+
 
   // -- Detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = 0;
-  if ( argc == 1 ) {
+  if (startGUI) {
     ui = new G4UIExecutive(argc, argv);
   }
 
@@ -68,12 +85,18 @@ int main(int argc,char** argv) {
 
   // -- Process macro or start UI session
   if (!ui) {
-    // batch mode
+    // batch mode: after *.mac the program exits
     G4String command = "/control/execute ";
-    G4String fileName = argv[1];
+    G4String fileName = cmd;
     UImanager->ApplyCommand(command+fileName);
+    // -- override default values in macro after executing it
+    if (bgE > -0.9) UImanager->ApplyCommand(Form("/macs0/generator/bgKinEnergy %3.1f MeV", bgE));
+    if (sgE > -0.9) UImanager->ApplyCommand(Form("/macs0/generator/sgKinEnergy %3.1f MeV", sgE));
+    // -- run some events
+    UImanager->ApplyCommand(Form("/run/beamOn %d", nevt));
   }
   else {
+    // batch mode: after vis.mac the program waits for user input
     UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();
     delete ui;
