@@ -22,6 +22,7 @@
 
 #include "RootIO.hh"
 
+using namespace std;
 
 // ----------------------------------------------------------------------
 int main(int argc, char** argv) {
@@ -31,8 +32,9 @@ int main(int argc, char** argv) {
   int nevt(100);
   float sgE(-1.), bgE(-1.);
   int sgN(-1.), bgN(-1.);
-  G4String cmd("vis.mac");
+  G4String cmd("vis.mac"), filename("g4run.root");
   for (int i = 0; i < argc; i++){
+    if (!strcmp(argv[i], "-f"))    {filename = argv[++i];}
     if (!strcmp(argv[i], "-g"))    {startGUI = true;}
     if (!strcmp(argv[i], "-c"))    {cmd = argv[++i];}
     if (!strcmp(argv[i], "-n"))    {nevt = atoi(argv[++i]);}
@@ -42,6 +44,9 @@ int main(int argc, char** argv) {
     if (!strcmp(argv[i], "-bgN"))  {bgN  = atoi(argv[++i]);}  // number of bg particles
   }
 
+  cout << "bgE = " << bgE << endl;
+
+  RootIO *rio = RootIO::GetInstance(filename);
 
   // -- Detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = 0;
@@ -90,8 +95,8 @@ int main(int argc, char** argv) {
     G4String fileName = cmd;
     UImanager->ApplyCommand(command+fileName);
     // -- override default values in macro after executing it
-    if (bgE > -0.9) UImanager->ApplyCommand(Form("/macs0/generator/bgKinEnergy %3.1f MeV", bgE));
-    if (sgE > -0.9) UImanager->ApplyCommand(Form("/macs0/generator/sgKinEnergy %3.1f MeV", sgE));
+    if (bgE > -0.9) UImanager->ApplyCommand(Form("/macs0/generator/bgKinEnergy %7.6f MeV", bgE));
+    if (sgE > -0.9) UImanager->ApplyCommand(Form("/macs0/generator/sgKinEnergy %7.6f MeV", sgE));
     // -- run some events
     UImanager->ApplyCommand(Form("/run/beamOn %d", nevt));
   }

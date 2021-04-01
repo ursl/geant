@@ -1,6 +1,8 @@
 #ifndef INCLUDE_ROOTIO_HH
 #define INCLUDE_ROOTIO_HH 1
 
+#include <string>
+
 #include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -14,7 +16,7 @@ class RootIO  {
 public:
   virtual ~RootIO();
 
-  static RootIO* GetInstance();
+  static RootIO* GetInstance(std::string filename = "runG4.root");
   void WriteTrackerHits(std::vector<TrackerHit*>*);
   void WriteMCPHits(std::vector<MCPHit*>*);
   void Close();
@@ -28,7 +30,7 @@ public:
 
 
 protected:
-  RootIO();
+  RootIO(std::string filename = "g4run.root");
 
 private:
 

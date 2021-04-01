@@ -4,8 +4,6 @@
 
 using namespace std;
 
-#include "treeReader01.icc"
-
 
 // ----------------------------------------------------------------------
 // Run with: ./runTreeReader01 -c chains/bg-test -D root
@@ -28,6 +26,7 @@ void treeReader01::endAnalysis() {
 void treeReader01::eventProcessing() {
   initVariables();
 
+  // -- generic rudimentary analysis
   if (0) {
     cout << "----------------------------------------------------------------------" << endl;
     cout << "Found " << fpEvt->nGenCands() << " gen cands in event" << endl;
@@ -50,6 +49,165 @@ void treeReader01::eventProcessing() {
   if (nhmcp > 0) ((TH1D*)fpHistFile->Get("evts"))->Fill(3);
   if (nhtrk > 0 && nhmcp > 0) ((TH1D*)fpHistFile->Get("evts"))->Fill(4);
 
+
+  // -- call specific analysis functions
+  TGenCand *pGen(0);
+  for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
+    pGen = fpEvt->getGenCand(igen);
+    pGen->dump();
+  }
+  fillMuFinal();
+  fillHist();
+
+}
+
+// ----------------------------------------------------------------------
+void treeReader01::fillMuFinal() {
+  fMuFinal.clear();
+
+  vector<TGenCand*> mus;
+  TGenCand *pGen(0), *pMu(0), *pEle(0), *pPos(0), *pMom(0), *pDau(0);
+  double mass(-0.1);
+  for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
+    pGen = fpEvt->getGenCand(igen);
+    if (-1313 == pGen->fID) {
+      // -- undecayed Mu (propagating Mu have one daughter and therefore fDau1 not unfilled)
+      if (9999 == pGen->fDau1  && -9999 == pGen->fDau2) {
+	fMuFinal.push_back(pGen);
+      }
+      // -- Mu that are not undecayed and have more than 1 daughter
+      if ((pGen->fDau2 - pGen->fDau1 > 0) && (pGen->fDau1 < 9999) && (pGen->fDau2 > -9999)) {
+	fMuFinal.push_back(pGen);
+      }
+    }
+  }
+
+  if (1) {
+    cout << "and the final Mu list" << endl;
+    for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
+      fMuFinal[i]->dump();
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+void treeReader01::fillDaughters(TGenCand *pMu, int &idxEMuon, int &idxEAtom) {
+  if (9999 == pMu->fDau1) return;
+  if (-9999 == pMu->fDau2) return;
+
+  cout << "fillDaughters: " << idxEAtom << "  " << idxEMuon << endl;
+  // -- the numerical index does not at all correspond to the trkID (=fNumber)
+  TGenCand *pGen(0);
+  vector<int> vDau;
+  for (unsigned int j = pMu->fDau1; j <= pMu->fDau2; ++j) {
+    for (int i = 0; i < fpEvt->nGenCands(); ++i) {
+      pGen = fpEvt->getGenCand(i);
+      if (j == pGen->fNumber) {
+	vDau.push_back(i);
+	break;
+      }
+    }
+  }
+
+  for (unsigned int i = 0; i < vDau.size(); ++i) {
+    cout << "look at vDau[i]->fNumber = " << fpEvt->getGenCand(vDau[i])->fNumber
+	 << " vDau[i]->fID = " << fpEvt->getGenCand(vDau[i])->fID
+	 << endl;
+    if (-11 == fpEvt->getGenCand(vDau[i])->fID) {
+      idxEMuon = vDau[i];
+      cout << "  setting pEMuon = " << fpEvt->getGenCand(vDau[i])
+	   << "  idxEMuon = " << idxEMuon
+	   << endl;
+    }
+    if (+11 == fpEvt->getGenCand(vDau[i])->fID) {
+      idxEAtom = vDau[i];
+      cout << "  setting pEAtom = " << fpEvt->getGenCand(vDau[i])
+	   << "  idxEAtom = " << idxEAtom
+	   << endl;
+    }
+  }
+  cout  << "pMu->fNumber = " << pMu->fNumber
+	<< "  idxEMuon = " << idxEMuon
+	<< "  idxEAtom = " << idxEAtom
+	<< endl;
+}
+
+// ----------------------------------------------------------------------
+void treeReader01::fillHist() {
+  int idxEAtom(-1), idxEMuon(-1);
+  TGenCand *pMu(0), *pEMuon(0), *pEAtom(0);
+  for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
+    pMu = fMuFinal[i];
+    fillDaughters(pMu, idxEMuon, idxEAtom);
+    if (idxEMuon > -1) pEMuon = fpEvt->getGenCand(idxEMuon);
+    if (idxEAtom > -1) pEAtom = fpEvt->getGenCand(idxEAtom);
+    cout << "Filling MuFinal[" << i << "] at " << fMuFinal[i]->fNumber
+	 << " with idxEMuon = " << idxEMuon
+	 << " with idxEAtom = " << idxEAtom
+	 << " pEMuon = " << pEMuon << " pEAtom = " << pEAtom
+	 << endl;
+    if (0 == pEMuon) continue;
+    if (0 == pEAtom) continue;
+    if (9999 != pMu->fDau1) ((TH1D*)fpHistFile->Get("h5"))->Fill(pEMuon->fV.Z());
+    ((TH1D*)fpHistFile->Get("h6"))->Fill(pMu->fV.Z());
+  }
+}
+
+// ----------------------------------------------------------------------
+void treeReader01::bookHist() {
+  cout << "==> treeReader01: bookHist> " << endl;
+
+  new TH1D("evts", "events", 40, 0., 40.);
+  new TH1D("h1", "nHits", 40, 0., 40.);
+  new TH1D("h2", "nHits Trk", 40, 0., 40.);
+  new TH1D("h3", "nHits MCP", 40, 0., 40.);
+  new TH1D("h4", "nGenCands", 40, 0., 40.);
+  new TH1D("h5", "z(Mu decay) [mm]", 300, -800., 2200.);
+  new TH1D("h6", "z(Mu produced)", 300, -800., 2200.);
+
+  new TH1D("mass", "mass of e+e-", 40, -1., 99.);
+
+  // -- Reduced Tree
+  fTree = new TTree("events", "events");
+  fTree->Branch("run",      &fRun,       "run/I");
+  fTree->Branch("evt",      &fEvt,       "evt/I");
+
+  fTree->Branch("elePt",    &fElePt,    "elePt/D");
+  fTree->Branch("eleTheta", &fEleTheta, "eleTheta/D");
+  fTree->Branch("elePhi",   &fElePhi,   "elePhi/D");
+  fTree->Branch("eleE",     &fEleE,     "eleE/D");
+
+  fTree->Branch("posPt",    &fPosPt,    "posPt/D");
+  fTree->Branch("posTheta", &fPosTheta, "posTheta/D");
+  fTree->Branch("posPhi",   &fPosPhi,   "posPhi/D");
+  fTree->Branch("posE",     &fPosE,     "posE/D");
+
+  fTree->Branch("eleposM",     &fElePosMass,"eleposM/D");
+  fTree->Branch("eleposOa",    &fElePosOa,  "eleposOa/D");
+
+}
+
+
+// ----------------------------------------------------------------------
+void treeReader01::initVariables() {
+  cout << "treeReader01: initVariables: for run = " << fRun << "/evt = " << fEvt << endl;
+
+  fElePt = -1.;
+  fEleTheta = -1.;
+  fElePhi = -1.;
+  fEleE = -1.;
+  fPosPt = -1.;
+  fPosTheta = -1.;
+  fPosPhi = -1.;
+  fPosE = -1.;
+
+  fElePosMass = fElePosOa = -1.;
+
+}
+
+
+// ----------------------------------------------------------------------
+void treeReader01::doEnEpAnalysis() {
   TGenCand *pGen(0), *pEle(0), *pPos(0);
   double mass(-0.1);
   for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
@@ -122,58 +280,175 @@ void treeReader01::eventProcessing() {
   }
 }
 
+
+
+
+// ======================================================================
+// -- Below is the icc material
+// ======================================================================
+
 // ----------------------------------------------------------------------
-void treeReader01::fillHist() {
-
-
+treeReader01::treeReader01(TChain *chain, TString evtClassName) {
+  cout << "==> treeReader01: constructor..." << endl;
+  if (chain == 0) {
+    cout << "You need to pass a chain!" << endl;
+  }
+  fpChain = chain;
+  fNentries = chain->GetEntries();
+  init(evtClassName);
 }
 
 // ----------------------------------------------------------------------
-void treeReader01::bookHist() {
-  cout << "==> treeReader01: bookHist> " << endl;
+void treeReader01::init(TString evtClassName) {
+  fpEvt = new rEvent();
+  cout << "==> treeReader01: init ..." << fpEvt << endl;
+  fpChain->SetBranchAddress(evtClassName, &fpEvt);
+  initVariables();
+}
 
-  new TH1D("evts", "events", 40, 0., 40.);
-  new TH1D("h1", "nHits", 40, 0., 40.);
-  new TH1D("h2", "nHits Trk", 40, 0., 40.);
-  new TH1D("h3", "nHits MCP", 40, 0., 40.);
-  new TH1D("h4", "nGenCands", 40, 0., 40.);
+// ----------------------------------------------------------------------
+treeReader01::~treeReader01() {
+  cout << "==> treeReader01: destructor ..." << endl;
+  if (!fpChain) return;
+  delete fpChain->GetCurrentFile();
+}
 
-  new TH1D("mass", "mass of e+e-", 40, -1., 99.);
+// ----------------------------------------------------------------------
+void treeReader01::openHistFile(TString filename) {
+  fpHistFile = new TFile(filename.Data(), "RECREATE");
+  fpHistFile->cd();
+  cout << "==> treeReader01: Opened " << fpHistFile->GetName() << endl;
+}
 
-  // -- Reduced Tree
-  fTree = new TTree("events", "events");
-  fTree->Branch("run",      &fRun,       "run/I");
-  fTree->Branch("evt",      &fEvt,       "evt/I");
+// ----------------------------------------------------------------------
+void treeReader01::closeHistFile() {
+  cout << "==> treeReader01: Writing " << fpHistFile->GetName() << endl;
+  fpHistFile->cd();
+  fpHistFile->Write();
+  fpHistFile->Close();
+  delete fpHistFile;
 
-  fTree->Branch("elePt",    &fElePt,    "elePt/D");
-  fTree->Branch("eleTheta", &fEleTheta, "eleTheta/D");
-  fTree->Branch("elePhi",   &fElePhi,   "elePhi/D");
-  fTree->Branch("eleE",     &fEleE,     "eleE/D");
+}
 
-  fTree->Branch("posPt",    &fPosPt,    "posPt/D");
-  fTree->Branch("posTheta", &fPosTheta, "posTheta/D");
-  fTree->Branch("posPhi",   &fPosPhi,   "posPhi/D");
-  fTree->Branch("posE",     &fPosE,     "posE/D");
+// --------------------------------------------------------------------------------------------------
+void treeReader01::readCuts(TString filename, int dump) {
+  char  buffer[200];
+  fCutFile = filename;
+  if (dump) cout << "==> treeReader01: Reading " << fCutFile.Data() << " for cut settings" << endl;
+  sprintf(buffer, "%s", fCutFile.Data());
+  ifstream is(buffer);
+  char CutName[100];
+  float CutValue;
+  int ok(0);
 
-  fTree->Branch("eleposM",     &fElePosMass,"eleposM/D");
-  fTree->Branch("eleposOa",    &fElePosOa,  "eleposOa/D");
+  TString fn(fCutFile.Data());
 
+  if (dump) {
+    cout << "====================================" << endl;
+    cout << "==> treeReader01: Cut file  " << fCutFile.Data() << endl;
+    cout << "------------------------------------" << endl;
+  }
+
+  TH1D *hcuts = new TH1D("hcuts", "", 1000, 0., 1000.);
+  hcuts->GetXaxis()->SetBinLabel(1, fn.Data());
+  int ibin;
+
+  while (is.getline(buffer, 200, '\n')) {
+    ok = 0;
+    if (buffer[0] == '#') {continue;}
+    if (buffer[0] == '/') {continue;}
+    sscanf(buffer, "%s %f", CutName, &CutValue);
+
+    if (!strcmp(CutName, "TYPE")) {
+      TYPE = int(CutValue); ok = 1;
+      if (dump) cout << "TYPE:           " << TYPE << endl;
+    }
+
+    if (!strcmp(CutName, "PTLO")) {
+      PTLO = CutValue; ok = 1;
+      if (dump) cout << "PTLO:           " << PTLO << " GeV" << endl;
+      ibin = 11;
+      hcuts->SetBinContent(ibin, PTLO);
+      hcuts->GetXaxis()->SetBinLabel(ibin, "p_{T}^{min}(l) [GeV]");
+    }
+
+    if (!strcmp(CutName, "PTHI")) {
+      PTHI = CutValue; ok = 1;
+      if (dump) cout << "PTHI:           " << PTHI << " GeV" << endl;
+      ibin = 12;
+      hcuts->SetBinContent(ibin, PTHI);
+      hcuts->GetXaxis()->SetBinLabel(ibin, "p_{T}^{max}(l) [GeV]");
+    }
+
+
+    if (!ok) cout << "==> treeReader01: ERROR: Don't know about variable " << CutName << endl;
+  }
+
+  if (dump)  cout << "------------------------------------" << endl;
 }
 
 
 // ----------------------------------------------------------------------
-void treeReader01::initVariables() {
-  cout << "treeReader01: initVariables: for run = " << fRun << "/evt = " << fEvt << endl;
+int treeReader01::loop(int nevents, int start) {
+  int nb = 0, maxEvents(0);
 
-  fElePt = -1.;
-  fEleTheta = -1.;
-  fElePhi = -1.;
-  fEleE = -1.;
-  fPosPt = -1.;
-  fPosTheta = -1.;
-  fPosPhi = -1.;
-  fPosE = -1.;
+  cout << "==> treeReader01: Chain has a total of " << fNentries << " events" << endl;
 
-  fElePosMass = fElePosOa = -1.;
+  // -- Setup for restricted running (not yet foolproof, i.e. bugfree)
+  if (nevents < 0) {
+    maxEvents = fNentries;
+  } else {
+    cout << "==> treeReader01: Running over " << nevents << " events" << endl;
+    maxEvents = nevents;
+  }
+  if (start < 0) {
+    start = 0;
+  } else {
+    cout << "==> treeReader01: Starting at event " << start << endl;
+    if (maxEvents >  fNentries) {
+      cout << "==> treeReader01: Requested to run until event " << maxEvents << ", but will run only to end of chain at ";
+      maxEvents = fNentries;
+      cout << maxEvents << endl;
+    } else {
+      cout << "==> treeReader01: Requested to run until event " << maxEvents << endl;
+    }
+  }
+
+  // -- The main loop
+  int step(50000);
+  if (maxEvents < 1000000) step = 10000;
+  if (maxEvents < 100000)  step = 1000;
+  if (maxEvents < 10000)   step = 500;
+  if (maxEvents < 1000)    step = 100;
+
+  int treeNumber(0), oldTreeNumber(-1);
+  fpChain->GetFile(); // without this, treeNumber initially will be -1.
+  for (int jEvent = start; jEvent < maxEvents; ++jEvent) {
+    treeNumber = fpChain->GetTreeNumber();
+    if (treeNumber != oldTreeNumber) {
+      cout << "    " << Form("      %8d", jEvent) << " " << fpChain->GetFile()->GetName() << endl;
+      oldTreeNumber = treeNumber;
+    }
+
+    if (jEvent%step == 0) cout << Form(" .. Event %8d", jEvent);
+
+    fChainEvent = jEvent;
+    fpEvt->Clear();
+    nb += fpChain->GetEvent(jEvent);
+
+    fEvt = static_cast<long int>(fpEvt->fEventNumber);
+    fRun = static_cast<long int>(fpEvt->fRunNumber);
+
+    if (jEvent%step == 0) {
+      TTimeStamp ts;
+      cout  << " (run: " << Form("%8d", fRun)
+	    << ", event: " << Form("%10d", fEvt)
+	    << ", time now: " << ts.AsString("lc")
+	    << ")" << endl;
+    }
+
+    eventProcessing();
+  }
+  return 0;
 
 }

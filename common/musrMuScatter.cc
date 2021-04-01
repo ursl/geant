@@ -33,17 +33,14 @@
 
 using namespace std;
 
-musrMuScatter::musrMuScatter(const G4String& name,
-			     G4ProcessType  aType)
-               : G4VDiscreteProcess(name, aType){}
+musrMuScatter::musrMuScatter(const G4String& name, G4ProcessType  aType) : G4VDiscreteProcess(name, aType) {}
 
 musrMuScatter:: ~musrMuScatter(){}
 
 // At the end of the step, the current volume is checked and if Muonium is in a solid
 // material (except for the carbon foil where it is generated), it is stopped immediately.
 G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
-                                               const G4Step& aStep)
-{
+                                               const G4Step& aStep) {
   fParticleChange.Initialize(trackData);
 
   //! Tao - Get time information */
@@ -62,43 +59,41 @@ G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
   fParticleChange.ProposeProperTime(itime);
   fParticleChange.ProposeTrackStatus(trackData.GetTrackStatus()) ;
 
+  //  if (trackData.GetKineticEnergy() <
+
   /*! - Verify the condition of applying the process: if Mu is in a material
         different than vacuum and carbon foil, then stop it directly. */
-  if( CheckCondition(aStep))
-    {
-      fParticleChange.ProposePosition(trackData.GetStep()->GetPreStepPoint()->GetPosition());
-      fParticleChange.ProposeTrackStatus(fStopButAlive) ;
-    }
+  if (CheckCondition(aStep)) {
+    fParticleChange.ProposePosition(trackData.GetStep()->GetPreStepPoint()->GetPosition());
+    fParticleChange.ProposeTrackStatus(fStopButAlive) ;
+  }
 
   /*! - Return the changed particle object. */
   return &fParticleChange;
 }
 
 
-/*! - Muonium will be stopped as soon as it enters a material different than vacuum or C foil. */
-G4bool musrMuScatter::CheckCondition(const G4Step& aStep)
-{
+/*! - Muonium will NOT be stopped as soon as it enters a material different than vacuum or C foil. */
+G4bool musrMuScatter::CheckCondition(const G4Step& aStep) {
   G4bool condition = false;
   p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
-  if(p_name == "Muonium" && aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName()!="log_CFoil" &&
-  aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetMaterial()->GetName()!="G4_Galactic")
-    {
-      condition=true;
+  if (p_name == "Muonium"
+      && aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName() != "Target"
+      && aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetMaterial()->GetName() != "vac"
+      ) {
+    condition=true;
+    //    condition = false; //ul: do not stop
     }
   return condition;
 }
 
-
-G4double musrMuScatter::GetMeanFreePath(const G4Track&,
-					G4double,
-					G4ForceCondition* condition)
-{
+// ----------------------------------------------------------------------
+G4double musrMuScatter::GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition) {
   *condition = Forced;
-   return DBL_MAX;
+  return DBL_MAX;
 }
 
-
-void musrMuScatter::PrepareSecondary(const G4Track& track)
-{
+// ----------------------------------------------------------------------
+void musrMuScatter::PrepareSecondary(const G4Track& track) {
   aSecondary = new G4Track(DP,track.GetDynamicParticle()->GetPreAssignedDecayProperTime(),track.GetPosition());
 }

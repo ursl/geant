@@ -22,7 +22,7 @@
  ***************************************************************************/
 
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//  Muon energy loss in thin C-foil adding a Landau distribution to the energy 
+//  Muon energy loss in thin C-foil adding a Landau distribution to the energy
 //  loss
 //  Id    : musrMuEnergyLossLandau, v 1.0
 //  Author: Thomas Prokscha
@@ -41,53 +41,54 @@
 
 
 /*! musrMuEnergyLossLandau class defines the energy loss given by the Landau distribution,
-   in, for example, the thin Carbon foil of the LEM beam line 
+   in, for example, the thin Carbon foil of the LEM beam line
   */
 
 class musrMuEnergyLossLandau : public G4VDiscreteProcess
 {
  public:
-   
+
    musrMuEnergyLossLandau(const G4String& name = "MuEnergyLossLandau", // process description
 		   G4ProcessType aType = fElectromagnetic);
 
   ~musrMuEnergyLossLandau();
-  
-  //! - Main method. muon energy loss process is executed at the END of a step. */
+
+  //! - Main method. Muonium(!) energy loss process is executed at the END of a step. */
   G4VParticleChange* PostStepDoIt(
 			     const G4Track&,
 			     const G4Step&);
-  
+
   G4double GetMeanFreePath(const G4Track& aTrack,
 			   G4double previousStepSize,
 			   G4ForceCondition* condition);
 
+  // G4double PostStepGetPhysicalInteractionLength(const G4Track&t, G4double, G4double, G4double&, G4GPILSelection*);
 
   //! Condition for process application (step Object).
   G4bool CheckCondition(const G4Step& aStep);
-  
+
   //! Condition for process application (step Pointer).
   G4bool CheckCondition(const G4Step* aStep);
-  
-  
+
+
   G4String  p_name;
   G4bool condition;
-  
-  
+
+
   void GetFinalEnergy( const G4Step* aStep);
   TRandom *random;
   static double landauMPV;
   static double landauSigma;
 
   // model parameters
-  G4ParticleTable* particleTable; 
+  G4ParticleTable* particleTable;
   G4ParticleDefinition* particle;
   G4double rnd;
   G4DynamicParticle *DP;
-  
+
   //! The particle change object.
-  G4VParticleChange fParticleChange; 
- 
+  G4VParticleChange fParticleChange;
+
   void  PrepareSecondary(const G4Track&);
   G4Track* aSecondary;
 

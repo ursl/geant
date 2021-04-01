@@ -82,17 +82,16 @@ MuDecayChannel::MuDecayChannel(const G4String& theParentName, G4double theBR) : 
     SetParent("Muonium");
     SetNumberOfDaughters(4);
     SetDaughter(0, "e+");
-    SetDaughter(1, "nu_e");
+    SetDaughter(1, "nu_tau"); // this is just a test whether this decay channel is active w/o explicit mentioning in PhysicsList
     SetDaughter(2, "anti_nu_mu");
     SetDaughter(3, "e-");
+    G4cout << "MuDecayChannel:: constructor :";
+    G4cout << " parent particle is ";
+    G4cout << theParentName << G4endl;
   } else {
-#ifdef G4VERBOSE
-    if (GetVerboseLevel()>0) {
-      G4cout << "MuDecayChannel:: constructor :";
-      G4cout << " parent particle is not muon but ";
-      G4cout << theParentName << G4endl;
-    }
-#endif
+    G4cout << "MuDecayChannel:: constructor :";
+    G4cout << " parent particle is not muon but ";
+    G4cout << theParentName << G4endl;
   }
 }
 
@@ -105,9 +104,9 @@ G4DecayProducts *MuDecayChannel::DecayIt(G4double)
   // this version neglects muon polarization,and electron mass
   //              assumes the pure V-A coupling
   //              the Neutrinos are correctly V-A.
-#ifdef G4VERBOSE
-  if (GetVerboseLevel()>1) G4cout << "MuDecayChannel::DecayIt ";
-#endif
+  //#ifdef G4VERBOSE
+  if (0) G4cout << "MuDecayChannel::DecayIt! " <<  G4endl;
+  //#endif
 
   //------------------------------modified----------xran----------------
   // if (G4MT_parent == 0) FillParent();
@@ -208,12 +207,9 @@ G4DecayProducts *MuDecayChannel::DecayIt(G4double)
 
 
   // output message
-#ifdef G4VERBOSE
-  if (GetVerboseLevel()>1) {
-    G4cout << "MuDecayChannel::DecayIt ";
-    G4cout << "  create decay products in rest frame " <<G4endl;
+  if (0) {
+    G4cout << "  created decay products in rest frame " <<G4endl;
     products->DumpInfo();
   }
-#endif
   return products;
 }

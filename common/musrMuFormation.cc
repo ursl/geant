@@ -32,21 +32,37 @@
 
 using namespace std;
 
+// ----------------------------------------------------------------------
 musrMuFormation::musrMuFormation(const G4String& name, G4ProcessType aType)
                : G4VDiscreteProcess(name, aType){}
 
+// ----------------------------------------------------------------------
 musrMuFormation::~musrMuFormation(){}
 
+// ----------------------------------------------------------------------
 G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const G4Step&  aStep) {
   fParticleChange.Initialize(trackData);
 
   G4Track theNewTrack;
+  if (0)   G4cout << "START "
+		  << " ID = " << trackData.GetTrackID()
+		  << " " << trackData.GetDefinition()->GetParticleName()
+		  << " Ekin [keV] = " << trackData.GetKineticEnergy()/CLHEP::keV
+		  << " L [mm] = " << trackData.GetTrackLength()/CLHEP::mm
+		  << " Edep[keV] = " << aStep.GetTotalEnergyDeposit()/CLHEP::keV
+		  << " in " << aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName()
+		  << G4endl;
   if (CheckCondition(aStep)) {
     GetDatas(&aStep);
     G4Step theStep;
-    PrepareSecondary( trackData);
+    if ("Muonium" == particle->GetParticleName()) {
+      if (0) G4cout << " -> musrMuFormation::PostStepDoIt> rnd = " << rnd << " -> Muonium formed!!!!!!!!"
+		    << G4endl;
+    }
+    PrepareSecondary(trackData);
 
     fParticleChange.AddSecondary(aSecondary);
+    // -- the (original) muon is killed, not the Muonium!
     fParticleChange.ProposeTrackStatus(fStopAndKill) ;
   } else {
     fParticleChange.ProposeTrackStatus(trackData.GetTrackStatus()) ;
@@ -55,7 +71,7 @@ G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const
 }
 
 
-// Decide when to call the MuFormation process - i.e. for muons going through the C foil.
+// ----------------------------------------------------------------------
 G4bool musrMuFormation::CheckCondition(const G4Step& aStep) {
   G4bool condition=false;
   p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
@@ -63,40 +79,59 @@ G4bool musrMuFormation::CheckCondition(const G4Step& aStep) {
   if ((p_name == "mu+") && (logVolName=="Target")) {
       condition=true;
   }
-  //  G4cout << "musrMuFormation::CheckCondition>  condition = " << condition << " for particle " << p_name << G4endl;
+  if (0) G4cout << "condition = " << condition
+		<< " ID = " << aStep.GetTrack()->GetTrackID()
+		<< " name = " << p_name
+		<< " Ekin = " << aStep.GetTrack()->GetKineticEnergy()
+		<< G4endl;
   return condition;
 }
 
 
-G4double musrMuFormation::GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition) {
+// ----------------------------------------------------------------------
+G4double musrMuFormation::GetMeanFreePath(const G4Track&t, G4double, G4ForceCondition* condition) {
   *condition = Forced;
   return DBL_MAX;
+
+  std::string logVolName = t.GetVolume()->GetLogicalVolume()->GetName();
+  if (logVolName == "Target") {
+    return 2*CLHEP::nm;
+  }
 }
 
-
+// ----------------------------------------------------------------------
 void musrMuFormation::GetDatas(const G4Step* aStep) {
   particleTable=G4ParticleTable::GetParticleTable();
   rnd=G4UniformRand();
   G4double E = aStep->GetTrack()->GetDynamicParticle()->GetKineticEnergy()/CLHEP::keV;
-  Gonin.GetYields(E,105.658369*1000,yvector); // Energy [keV], muon mass [keV/c2], yield table
+  Gonin.GetYields(E, 105.658369*1000, yvector); // Energy [keV], muon mass [keV/c2], yield table
   G4String p_new = "Muonium";
 
-  // Positive muon
+  if (0) G4cout << "musrMuFormation::GetDatas> rnd = " << rnd
+		<< " yvector[0] = " << yvector[0] << " name = " << p_name
+		<< G4endl;
+
+  // -- muonium only formed for positive muons entering Target
   if (p_name=="mu+") {
     if (rnd < yvector[0]) {
       particle = particleTable->FindParticle(p_name) ;
+      if (0) G4cout << "musrMuFormation::GetDatas> rnd = " << rnd  << " -> stay with muon"
+		    << " yvector[0] = " << yvector[0] << " name = " << p_name
+		    << G4endl;
     } else {
       particle = particleTable->FindParticle(p_new);
-      G4cout << "musrMuFormation::GetDatas> Muonium formed!!!!!!!!" << G4endl;
+      if (0) G4cout << "musrMuFormation::GetDatas> rnd = " << rnd << " -> Muonium formed!!!!"
+		    << " E = " << E
+		    << G4endl
+		    << " DP E = " << aStep->GetTrack()->GetDynamicParticle()->GetKineticEnergy()
+		    << "   vec{|p|} = " << aStep->GetTrack()->GetDynamicParticle()->GetMomentumDirection()
+		    << G4endl;
     }
 
     // Set the new dynamic particle DP
     DP = new G4DynamicParticle(particle,
 			       aStep->GetTrack()->GetDynamicParticle()->GetMomentumDirection(),
 			       aStep->GetTrack()->GetDynamicParticle()->GetKineticEnergy());
-
-    // IMPORTANT : COPY THOSE DATA TO GET THE SAME PARTICLE PROPERTIES!!!
-    // SHOULD BE KEPT WHEN BUILDING A PARTICLE CHANGE
     DP->SetProperTime(  aStep->GetTrack()->GetDynamicParticle()->GetProperTime());
     DP->SetPolarization(aStep->GetTrack()->GetDynamicParticle()->GetPolarization().x(),
 			aStep->GetTrack()->GetDynamicParticle()->GetPolarization().y(),
@@ -108,6 +143,10 @@ void musrMuFormation::GetDatas(const G4Step* aStep) {
 
 void musrMuFormation::PrepareSecondary(const G4Track& track) {
   if (p_name=="mu+") {
+    if (0) cout << "musrMuFormation::PrepareSecondary: name = "
+		<< track.GetParticleDefinition()->GetParticleName()
+		<< " at x = " << track.GetPosition()
+		<< " with p = " << track.GetMomentum() << endl;
     aSecondary = new G4Track(DP,track.GetGlobalTime(),track.GetPosition());
   }
 }

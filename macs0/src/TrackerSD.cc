@@ -51,9 +51,9 @@ void TrackerSD::EndOfEvent(G4HCofThisEvent*) {
   G4int NbHits = fHitsCollection->entries();
   std::vector<TrackerHit*> hitsVector;
 
-  if (1) {
-    G4cout << "\n-------->Storing hits in the ROOT file: in this event there are " << NbHits
-           << " hits in the tracker chambers: " << G4endl;
+  G4cout << "-------->Storing hits in the ROOT file: there are " << NbHits
+	 << " hits in the tracker chambers " << G4endl;
+  if (0) {
     for (G4int i=0;i<NbHits;i++) {
       (*fHitsCollection)[i]->Print();
       // -- write into event/tree

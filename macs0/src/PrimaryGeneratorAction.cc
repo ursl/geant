@@ -8,6 +8,8 @@
 #include "G4ParticleDefinition.hh"
 #include "Randomize.hh"
 
+#include "TH1.h"
+
 #include "musrMuonium.hh"
 
 
@@ -44,26 +46,46 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
   // fParticleGun->GeneratePrimaryVertex(anEvent);
   // fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,-1.));
   // fParticleGun->SetParticleEnergy(1*keV);
-  G4cout << "PrimaryGeneratorAction::GeneratePrimaries with particle = "
-	 << fParticleGun->GetParticleDefinition()->GetParticleName()
-	 << " fSgNpart = " << fSgNpart
+
+  G4cout << "======================================================================"
+	 << G4endl
+	 << "==========> Event " << anEvent->GetEventID() << " start."
+	 << G4endl
+	 << "======================================================================"
 	 << G4endl;
+
+  if (fSgNpart > 0) {
+    G4cout << "PrimaryGeneratorAction::GeneratePrimaries with particle = "
+	   << fParticleGun->GetParticleDefinition()->GetParticleName()
+	   << " fSgNpart = " << fSgNpart
+	   << G4endl;
+  }
 
   for (int i = 0; i < fSgNpart; ++i) {
     fParticleGun->GeneratePrimaryVertex(anEvent);
   }
 
-  G4double z0  = -80.*cm;
+  // z0 = -40*cm  is currently at the target position
+  G4double z0  = -41.*cm;
   G4double x0  = 0*cm, y0  = 0*cm;
   G4double dx0 = 2*cm, dy0 = 2*cm;
+  //  dx0 = 0*cm, dy0 = 0*cm;
 
-  double sig =  G4RandGauss::shoot(0.,fBgNpartSigma);
+  double sig = G4RandGauss::shoot(0., fBgNpartSigma);
   int nBg = round(fBgNpart + sig);
 
-  G4cout << "PrimaryGeneratorAction::GeneratePrimaries background particles n = " << nBg
-	 << " (sig = " << sig << ")"
-	 << " with Ekin = " << fBgKinEnergy
+  std::stringstream sstream;
+  sstream.setf(std::ios::fixed);
+  sstream.precision(6);
+  sstream << fBgKinEnergy;
+
+  G4cout << "PrimaryGeneratorAction::GeneratePrimaries nbg = " << nBg
+	 << Form(" +/- %3.1f", sig)
+	 << " Ekin = " << sstream.str()
+	 << " MeV at z = " << Form("%5.2f", z0)
+	 << Form(" dx,dy =  %3.2f, %3.2f mm", dx0, dy0)
 	 << G4endl;
+
   for (int i = 0; i < nBg; ++i) {
     x0 = dx0*(G4UniformRand()-0.5);
     y0 = dy0*(G4UniformRand()-0.5);

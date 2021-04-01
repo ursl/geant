@@ -48,7 +48,7 @@ DICTHEADERS = ${READER:.o=Dict.h}
 DICTSOURCES = ${READER:.o=Dict.cc}
 
 # -- Default rules
-$(addprefix obj/,%.o) : %.cc %.hh %.icc
+$(addprefix obj/,%.o) : %.cc %.hh
 	$(CXX) $(CXXFLAGS) $(EXTHEADERS) -c $< -o $@
 
 $(addprefix obj/,%.o) : %.cc %.hh

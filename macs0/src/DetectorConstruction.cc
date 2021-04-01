@@ -22,8 +22,13 @@
 #include "G4GlobalMagFieldMessenger.hh"
 #include "G4AutoDelete.hh"
 
-#include "G4GeometryTolerance.hh"
+#include "G4PhysicalVolumeStore.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4SolidStore.hh"
+#include "G4RunManager.hh"
 #include "G4GeometryManager.hh"
+
+#include "G4GeometryTolerance.hh"
 #include "G4UserLimits.hh"
 
 #include "G4VisAttributes.hh"
@@ -52,17 +57,23 @@ DetectorConstruction::DetectorConstruction() :G4VUserDetectorConstruction(),
 					      fDetectorMessenger(0),
 					      fStepLimit(NULL),
 					      fWorldLength(0.),
-					      fTgtLength(0.), fBeampipeLength(0.),
+					      fTargetLength(0.), fBeampipeLength(0.),
 					      fBeampipeInnerRadius(5.),fBeampipeOuterRadius(5.02),
 					      fTrkLength(0.), fTrkInnerRadius(5.), fTrkOuterRadius(100.),
-					      fNbOfChambers(0), fChamberWidth(0.), fChamberSpacing(0.), fCheckOverlaps(true)
+					      fNbOfChambers(0), fChamberWidth(0.), fChamberSpacing(0.),
+					      fCheckOverlaps(true)
 {
+  G4cout << "==DetectorConstruction> c'tor called"
+	 << G4endl;
   fDetectorMessenger = new DetectorMessenger(this);
   fNbOfChambers = 2;
   fLogicChamber = new G4LogicalVolume*[fMacsTrkNum];
   fPhysiChamber = new G4VPhysicalVolume*[fMacsTrkNum];
   fLogicXtals   = new G4LogicalVolume*[fMacsXtalNum];
   fPhysiXtals   = new G4VPhysicalVolume*[fMacsXtalNum];
+
+  defineMaterials();
+
 }
 
 // ----------------------------------------------------------------------
@@ -76,11 +87,58 @@ DetectorConstruction::~DetectorConstruction() {
 
 // ----------------------------------------------------------------------
 G4VPhysicalVolume* DetectorConstruction::Construct() {
-  defineMaterials();
+  G4cout << "==DetectorConstruction::Construct>  building detector"
+	 << G4endl;
   return macs0();
 }
 
 
+// ----------------------------------------------------------------------
+void DetectorConstruction::SetTargetLength(G4double value) {
+
+  fTargetLength = value;
+  G4cout << "==DetectorConstruction::SetTargetMaterial> (re)setting target length to " << fTargetLength
+	 << G4endl;
+  G4RunManager::GetRunManager()->GeometryHasBeenModified();
+}
+
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::SetTargetMaterial(G4String materialName) {
+
+  bool custom(false);
+  if (materialName == "Aerogel") {
+    fTargetMater = fAerog;
+    custom = true;
+  } else if (materialName == "SiO2") {
+    fTargetMater = fSiO2;
+    custom = true;
+  }
+
+  if (custom) {
+    // -- change target material if target was constructed already
+    if (fLogicTarget) fLogicTarget->SetMaterial(fTargetMater);
+    G4RunManager::GetRunManager()->GeometryHasBeenModified();
+    G4cout << "==DetectorConstruction::SetTargetMaterial> (re)setting target material to " << fTargetMater->GetName()
+	   << G4endl;
+    return;
+  }
+
+  G4NistManager *nistManager = G4NistManager::Instance();
+  G4Material *pMaterial = nistManager->FindOrBuildMaterial(materialName);
+
+  if (fTargetMater != pMaterial) {
+    if (pMaterial) {
+      fTargetMater = pMaterial;
+      if (fLogicTarget) fLogicTarget->SetMaterial(fTargetMater);
+      G4RunManager::GetRunManager()->GeometryHasBeenModified();
+      G4cout << "==DetectorConstruction::SetTargetMaterial> The target is made of " << materialName << G4endl;
+    } else {
+      G4cout << "==DetectorConstruction::SetTargetMaterial> XXX  WARNING from SetTargetMaterial : "
+	     << materialName << " not found XXX" << G4endl;
+    }
+  }
+}
 
 // ----------------------------------------------------------------------
 void DetectorConstruction::defineMaterials() {
@@ -128,6 +186,11 @@ void DetectorConstruction::defineMaterials() {
   // -- Aluminum
   fBe = new G4Material("Beryllium", z=4, a=9.012182*g/mole, density=1.848*g/cm3);
 
+  // -- Carbon (fiber)
+  density = 0.145*g/cm3;
+  fC = new G4Material("CarbonFoil", density, nel=1);
+  fC->AddElement(elC, 1);
+
   // -- Aluminum
   fAl = new G4Material("Aluminum", z=13., a=26.98*g/mole, density=2.700*g/cm3);
 
@@ -142,13 +205,27 @@ void DetectorConstruction::defineMaterials() {
 
 // ----------------------------------------------------------------------
 G4VPhysicalVolume* DetectorConstruction::macs0() {
+  G4GeometryManager::GetInstance()->OpenGeometry();
+  G4PhysicalVolumeStore::GetInstance()->Clean();
+  G4LogicalVolumeStore::GetInstance()->Clean();
+  G4SolidStore::GetInstance()->Clean();
 
   // -- placeholder
   fChamberMater = fXeGas;
 
   fBeampipeMater  = fBe;
+  // -- provide default (can be overridden with mac)
   fTargetMater  = fAerog;
-  fTgtLength  = 1*cm;
+  fTargetLength  = 1*cm;
+
+  fTargetMater  = fAl;
+  fTargetLength  = 0.1*mm; // 10um
+
+  // -- EPJ, C80, 804:
+  fTargetMater  = fC;
+  fTargetLength  = 15*nm; // 15nm
+
+  //
   fTrkLength  = 100.*cm;
   fBeampipeLength = 120.*cm;
 
@@ -161,10 +238,10 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 
 
   fWorldLength= 420.0*cm;
-  G4GeometryManager::GetInstance()->SetWorldMaximumExtent(fWorldLength);
-  G4cout << "==========> Computed tolerance = "
-         << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
-         << " mm" << G4endl;
+  // G4GeometryManager::GetInstance()->SetWorldMaximumExtent(fWorldLength);
+  // G4cout << "==========> Computed tolerance = "
+  //        << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/mm
+  //        << " mm" << G4endl;
 
   fBeampipeInnerRadius = 3.0*cm;
   fBeampipeOuterRadius = 3.1*cm;
@@ -172,7 +249,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 
   fTrkInnerRadius = 5.0*cm;
   fTrkOuterRadius = 100.0*cm;
-  G4double tgtHalfLength  = 0.5*fTgtLength;    // Half length of the Target
+  G4double tgtHalfLength  = 0.5*fTargetLength;    // Half length of the Target
   G4double trkHalfLength  = 0.5*fTrkLength;
   G4double beampipeHalfLength  = 0.5*fBeampipeLength;
 
@@ -189,7 +266,8 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // -- Beampipe
   // ------------------------------
   G4ThreeVector positionBeampipe = G4ThreeVector(0., 0., -10.*cm);
-  fSolidBeampipe = new G4Tubs("Beampipe", fBeampipeInnerRadius, fBeampipeOuterRadius, beampipeHalfLength, 0.*deg, 360.*deg);
+  fSolidBeampipe = new G4Tubs("Beampipe", fBeampipeInnerRadius, fBeampipeOuterRadius, beampipeHalfLength,
+			      0.*deg, 360.*deg);
   fLogicBeampipe = new G4LogicalVolume(fSolidBeampipe,fBeampipeMater, "Beampipe", 0, 0, 0);
   fPhysiBeampipe = new G4PVPlacement(0, positionBeampipe, fLogicBeampipe, "Beampipe", fLogicWorld, false, 0, true);
   G4VisAttributes *pBp  = new G4VisAttributes;
@@ -197,7 +275,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   //  pBp->SetForceLineSegmentsPerCircle(6);
   //  pBp->SetForceAuxEdgeVisible(true);
   pBp->SetLineWidth(0.01);
-  pBp->SetForceSolid(true);
+  pBp->SetForceSolid(false);
   fLogicBeampipe->SetVisAttributes(pBp);
 
   G4cout << "Beampipe is " << fBeampipeLength/cm << "cm of " << fBeampipeMater->GetName() << G4endl;
@@ -207,17 +285,19 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // -- Target
   // ------------------------------
   //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength+tgtHalfLength);
-  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -0.5*trkHalfLength);
+  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength + 10.*cm);
   fSolidTarget = new G4Box("Target", 2*cm, 2*cm, tgtHalfLength);
   fLogicTarget = new G4LogicalVolume(fSolidTarget, fTargetMater, "Target", 0, 0, 0);
   fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
+
+  fLogicTarget->SetUserLimits(new G4UserLimits(0.1*tgtHalfLength));
 
   G4VisAttributes *pVA  = new G4VisAttributes;
   pVA->SetColour(G4Colour(0.1, 0.8, 0.1));
   pVA->SetForceSolid(true);
   fLogicTarget->SetVisAttributes(pVA);
 
-  G4cout << "Target is " << fTgtLength/cm << "cm of " << fTargetMater->GetName()
+  G4cout << "Target is " << fTargetLength/cm << "cm of " << fTargetMater->GetName()
 	 << " with logical name ->" << fLogicTarget->GetName() << "<-"
 	 << G4endl;
 
@@ -261,7 +341,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 
   // -- shielding
   G4ThreeVector positionShield = G4ThreeVector(0., 0., 70.*cm);
-  fSolidShield = new G4Tubs("shielding", 10.0*cm, 150.*cm, 2*cm, 0.*deg, 360.*deg);
+  fSolidShield = new G4Tubs("shielding", 10.0*cm, 150.*cm, 5*cm, 0.*deg, 360.*deg);
   fLogicShield = new G4LogicalVolume(fSolidShield, fAl, "Shield", 0, 0, 0);
   fPhysiShield = new G4PVPlacement(0, positionShield, fLogicShield, "Shield", fLogicWorld, false, 0, true);
 
@@ -293,15 +373,21 @@ void DetectorConstruction::SetMagField(G4double fieldValue) {
 // ----------------------------------------------------------------------
 void DetectorConstruction::ConstructSDandField() {
 
-  // Sensitive detectors
-  TrackerSD* aTrackerSD = new TrackerSD("macs0/TrackerChamberSD", "TrackerHitsCollection");
-  G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
-  SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
+  // -- Sensitive detectors
 
-  MCPSD* aMCPSD = new MCPSD("macs0/MCPSD", "MCPHitsCollection");
-  G4SDManager::GetSDMpointer()->AddNewDetector(aMCPSD);
-  SetSensitiveDetector("lMCP", aMCPSD, true);
+  // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
+  if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/TrackerChamberSD", false)) {
+    TrackerSD* aTrackerSD = new TrackerSD("/macs0/TrackerChamberSD", "TrackerHitsCollection");
+    G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
+    SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
+  }
 
+  // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
+  if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/MCPSD", false)) {
+    MCPSD* aMCPSD = new MCPSD("/macs0/MCPSD", "MCPHitsCollection");
+    G4SDManager::GetSDMpointer()->AddNewDetector(aMCPSD);
+    SetSensitiveDetector("lMCP", aMCPSD, true);
+  }
 
   fpMagField = new MagneticField();
   fpFieldMgr = new G4FieldManager();
@@ -346,7 +432,7 @@ void DetectorConstruction::makeAccel() {
 // ----------------------------------------------------------------------
 void DetectorConstruction::makeEndDetector() {
 
-  G4double orMCP = fTrspOuterRadius;
+  G4double orMCP = 2*fTrspOuterRadius;
   G4double lMCP =   0.1*cm;
   auto p0 = new G4Tubs("MCP", 0., orMCP, lMCP, 0.*deg, 360.*deg);
   fLogicMCP = new G4LogicalVolume(p0, fAl, "lMCP");
@@ -376,14 +462,15 @@ void DetectorConstruction::makeEndDetector() {
 void DetectorConstruction::makeSplitTrspTube() {
 
   fTrspOuterRadius = 8.*cm;
-  fTrspLength1 = fTrspLength2 = 60.*cm;
+  fTrspLength1 = 60.*cm;
+  fTrspLength2 = 30.*cm;
   G4double pRtor = 40.*cm;
   fTrspMater  = fAl;
   G4double trkHalfLength  = 0.5*fTrkLength;
 
   G4ThreeVector positionTrsp = G4ThreeVector(0, 0, 2.*trkHalfLength - 0.25*fTrspLength1);
   G4Tubs  *part1 = new G4Tubs("Trsp1", fTrspOuterRadius-0.1*cm, fTrspOuterRadius, 0.5*fTrspLength1, 0.*deg, 360.*deg);
-  G4Tubs  *part3 = new G4Tubs("Trsp3", fTrspOuterRadius-0.1*cm, fTrspOuterRadius, 0.5*fTrspLength2, 0.*deg, 360.*deg);
+  G4Tubs  *part3 = new G4Tubs("Trsp3", 2*fTrspOuterRadius-0.1*cm, 2*fTrspOuterRadius, 0.5*fTrspLength2, 0.*deg, 360.*deg);
 
 
   // -- trafo for part3

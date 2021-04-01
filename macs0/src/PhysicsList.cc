@@ -59,6 +59,7 @@
 #include "../common/Mu3eMuonRadiativeDecayChannelWithSpin.hh"
 
 #include "../common/musrMuonium.hh"
+#include "../common/MuDecayChannel.hh"
 #include "../common/musrMuEnergyLossLandau.hh"
 #include "../common/musrMuFormation.hh"
 #include "../common/musrMuScatter.hh"
@@ -94,8 +95,9 @@ void PhysicsList::ConstructParticle() {
   G4LeptonConstructor::ConstructParticle();
   G4MesonConstructor::ConstructParticle();
 
+  // -- set up Muonium decays
   musrMuonium::MuoniumDefinition();
-
+  MuDecayChannel *MuDecay = new MuDecayChannel("Muonium", 1.);
 
   // -- set up muon decays
   G4double radbr10MeV = 0.014;
@@ -119,6 +121,7 @@ void PhysicsList::ConstructParticle() {
 						  fMuonPolarization, isICWeighted);
 
   auto table = new G4DecayTable();
+  //  table->Insert(MuDecay); // this is not required?!
   table->Insert(michel);
   table->Insert(raddecay);
   table->Insert(intconv);
@@ -214,11 +217,18 @@ void PhysicsList::ConstructProcess() {
       helper->RegisterProcess(new G4hPairProduction, particle);
     } else if (particleName == "Muonium") {
       G4ProcessManager* pmanager = particle->GetProcessManager();
-      G4VProcess* aMuScatt = new musrMuScatter();
-      pmanager->AddProcess(aMuScatt);
-      pmanager->SetProcessOrdering(aMuScatt, idxPostStep, 1);
-      pmanager->AddProcess(new musrMuEnergyLossLandau);
-
+      if (1) {
+	G4cout << "PhysicsList::ConstructProcess(): particle->GetParticleName() = "
+	       << particle->GetParticleName()
+	       << " registering  musrMuEnergyLossLandau process" << G4endl;
+	// -- musrMuScatter should better be called musrMuStop
+	// G4VProcess* aMuScatt = new musrMuScatter();
+	// pmanager->AddProcess(aMuScatt);
+	G4VProcess *aMuEnergyLossLandau = new musrMuEnergyLossLandau();
+	pmanager->AddProcess(aMuEnergyLossLandau);
+	// -- this is essential for getting this process activated:
+	pmanager->SetProcessOrdering(aMuEnergyLossLandau, idxPostStep, 1);
+      }
     } else if (!particle->IsShortLived()
 	       && particle->GetPDGCharge() != 0
 	       && particle->GetParticleName() != "chargedgeantino"

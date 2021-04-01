@@ -49,7 +49,7 @@
 /vis/modeling/trajectories/create/drawByParticleID
 /vis/modeling/trajectories/drawByParticleID-0/set e- cyan
 /vis/modeling/trajectories/drawByParticleID-0/set e+ red
-/vis/modeling/trajectories/drawByParticleID-0/set gamma white
+/vis/modeling/trajectories/drawByParticleID-0/set gamma green
 /vis/modeling/trajectories/drawByParticleID-0/setRGBA nu_e 0.8 0.6 0.8 1
 /vis/modeling/trajectories/drawByParticleID-0/setRGBA anti_nu_e 0.8 0.6 0.8 1
 /vis/modeling/trajectories/drawByParticleID-0/setRGBA nu_mu 0.6 0.8 0.8 1
@@ -76,8 +76,6 @@
 # ----------------------------------------------------------------------
 # -- physics setup (from run.mac)
 /tracking/verbose 0
-
-
 /tracking/storeTrajectory 2
 
 
@@ -85,10 +83,16 @@
 /macs0/field/value -0.0048 tesla
 
 # -- muon beam
-/macs0/generator/bgKinEnergy 26.2 MeV
-/macs0/generator/bgKinEnergySigma 2.2 MeV
+#/macs0/generator/bgKinEnergy 1 MeV
+/macs0/generator/bgKinEnergy 5 keV
+/macs0/generator/bgKinEnergySigma 0. keV
 /macs0/generator/bgNpart 5
 /macs0/generator/bgNpartSigma 0
+
+# -- configure target
+# materials examples: G4_Al, G4_Ti, G4_Cu, G4_C, G4_Ca, G4_Cr, G4_Ni, G4_Cu
+#?? /macs0/det/setTargetMaterial G4_Cu
+#?? /macs0/det/setTargetLength 0.001 mm
 
 # -- (signal) Muonium source and decay
 #/gun/position 0 0 0 cm
@@ -107,11 +111,11 @@
 # 2: BR: 3.40000000000000e-05 [intconv]:    e+ e- e+ anti_nu_mu nu_e
 /particle/select mu+
 /particle/property/decay/select 0
-/particle/property/decay/br 0
+/particle/property/decay/br 1
 /particle/property/decay/select 1
 /particle/property/decay/br 0
 /particle/property/decay/select 2
-/particle/property/decay/br 1
+/particle/property/decay/br 0
 /particle/property/decay/dump
 
 # -- turn on internal conversion
@@ -126,4 +130,4 @@
 #/gun/direction 0 0 1
 
 # -- running with 20000 requires patience for startup!
-/run/beamOn 1
+#/run/beamOn 1

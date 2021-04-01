@@ -33,11 +33,15 @@ public:
   const
   G4VPhysicalVolume* GetTracker() {return fPhysiTracker;};
   G4double GetTrackerFullLength() {return fTrkLength;};
-  G4double GetTargetFullLength()  {return fTgtLength;};
+  G4double GetTargetFullLength()  {return fTargetLength;};
   G4double GetWorldFullLength()   {return fWorldLength;};
 
   void defineMaterials();
+  // -- communications methods
   void SetMagField(G4double);
+  void SetTargetMaterial(G4String);
+  void SetTargetLength(G4double);
+
   // -- everything split, with B field
   void makeSplitTrspTube();
   // -- decrepit: everything connected, but without B field
@@ -49,7 +53,7 @@ public:
 
 private:
   // -- Materials
-  G4Material *fVac, *fAir, *fAl, *fBe, *fPb, *fSiO2,
+  G4Material *fVac, *fAir, *fAl, *fC, *fBe, *fPb, *fSiO2,
     *fXeGas, *fAerog;
 
   // -- world
@@ -113,7 +117,7 @@ private:
   G4UserLimits* fStepLimit;            // pointer to user step limits
 
   G4double fWorldLength;
-  G4double fTgtLength, fBeampipeLength;
+  G4double fTargetLength, fBeampipeLength;
   G4double fBeampipeOuterRadius, fBeampipeInnerRadius, fTrkLength, fTrkOuterRadius, fTrkInnerRadius;
   G4int fNbOfChambers;
   G4double fChamberWidth;

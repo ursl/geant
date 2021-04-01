@@ -9,13 +9,15 @@
 
 static RootIO* instance = 0;
 
+using namespace std;
+
 // ----------------------------------------------------------------------
-RootIO::RootIO() {
+RootIO::RootIO(string filename) {
   fNevents = 0;
   TSystem ts;
   gSystem->Load("libClassesDict");
 
-  fFile = TFile::Open("g4run3.root","RECREATE");
+  fFile = TFile::Open(filename.c_str(), "RECREATE");
 
 
   fTree = new TTree("gen", "gen");
@@ -32,10 +34,11 @@ RootIO::~RootIO() {
   Close();
 }
 
+
 // ----------------------------------------------------------------------
-RootIO* RootIO::GetInstance() {
+RootIO* RootIO::GetInstance(string filename) {
   if (instance == 0)   {
-    instance = new RootIO();
+    instance = new RootIO(filename);
   }
   return instance;
 }

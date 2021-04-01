@@ -22,7 +22,9 @@ private:
   G4UIdirectory*             fDir;
   G4UIdirectory*             fDetDir;
   G4UIcmdWithAString*        fTargMatCmd;
-  G4UIcmdWithAString*        fChamMatCmd;
+  G4UIcmdWithADoubleAndUnit* fTargLenCmd;
+  G4UIcmdWithAString*        fModMatCmd;
+  G4UIcmdWithADoubleAndUnit* fModLenCmd;
 };
 
 #endif

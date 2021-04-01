@@ -41,6 +41,14 @@ public:
   virtual void       fillHist();
   virtual void       setVerbosity(int f) {std::cout << Form("setVerbosity(%d)", f) << std::endl;  fVerbose = f;}
 
+  // -- study
+  void fillMuFinal();
+  void fillDaughters(TGenCand *pMu, int &idxEMuon, int &idxEAtom);
+
+  // -- study in the context of mu3e for invariant mass of e+ Bhabha scattering on e-
+  void doEnEpAnalysis();
+
+
   int fVerbose;
 
 protected:
@@ -58,6 +66,9 @@ protected:
   int          fEvt;           // current event number; filled in treeReader01::loop()
   int          fRun;           // current run number; filled in treeReader01::loop()
 
+
+  // -- vector with non-propagating Mu
+  std::vector<TGenCand*> fMuFinal;
 
   // -- Histogram pointers
   TTree       *fTree;
