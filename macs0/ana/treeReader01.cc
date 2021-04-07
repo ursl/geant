@@ -54,7 +54,7 @@ void treeReader01::eventProcessing() {
   TGenCand *pGen(0);
   for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
     pGen = fpEvt->getGenCand(igen);
-    pGen->dump();
+    pGen->dump(0);
   }
   fillMuFinal();
   fillHist();
@@ -85,7 +85,7 @@ void treeReader01::fillMuFinal() {
   if (1) {
     cout << "and the final Mu list" << endl;
     for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
-      fMuFinal[i]->dump();
+      fMuFinal[i]->dump(0);
     }
   }
 }
@@ -163,7 +163,7 @@ void treeReader01::bookHist() {
   new TH1D("h3", "nHits MCP", 40, 0., 40.);
   new TH1D("h4", "nGenCands", 40, 0., 40.);
   new TH1D("h5", "z(Mu decay) [mm]", 300, -800., 2200.);
-  new TH1D("h6", "z(Mu produced)", 300, -800., 2200.);
+  new TH1D("h6", "z(Mu produced) [mm]", 300, -800., 2200.);
 
   new TH1D("mass", "mass of e+e-", 40, -1., 99.);
 
