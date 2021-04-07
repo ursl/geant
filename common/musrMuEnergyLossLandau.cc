@@ -68,6 +68,16 @@ G4VParticleChange* musrMuEnergyLossLandau::PostStepDoIt(const G4Track& trackData
   fParticleChange.Initialize(trackData);
   //  G4cout << "musrMuEnergyLossLandau::PostStepDoIt" << G4endl;
 
+  // -- check whether Mu hit the endplate. If yes, stop and decay it there.
+  p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
+  std::string logVolName = aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName();
+  if (p_name == "Muonium" && ((logVolName == "Endplate"))) {
+    fParticleChange.Initialize(trackData);
+    //    fParticleChange.ProposeTrackStatus(fStopAndKill) ;
+    fParticleChange.ProposeTrackStatus(fStopButAlive) ;
+    return &fParticleChange;
+  }
+
   G4Track theNewTrack;
   if (CheckCondition(aStep)) {
     GetFinalEnergy(&aStep);
