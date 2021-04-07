@@ -30,7 +30,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   G4int n_trajectories = 0;
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
 
-  bool DBX(true);
+  bool DBX(false);
   double px, py, pz, m, ekin, etot, vx, vy, vz;
   int pdgid, pid, tid;
 
@@ -54,7 +54,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     ekin  = trj->GetInitialKineticEnergy();
     etot  = TMath::Sqrt(px*px + py*py + pz*pz + m*m);
     if (DBX) G4cout <<
-	       Form("%3d ID= %+5d trkId= %2d parentID= %2d (E, p)= %+7.2f/%+7.3f/%+7.3f/%+7.3f ekin= %7.4f v=(%+4.3f, %+4.3f, %+13.8f)",
+	       Form(":%4d ID= %+5d trkId=%4d parentID=%4d (E, p)= %+7.2f/%+7.3f/%+7.3f/%+7.3f ekin= %7.4f v=(%+8.3f, %+8.3f, %+14.8f)",
 		    i, pdgid, tid, pid, etot,
 		    px, py, pz, ekin,
 		    vx, vy, vz
