@@ -2,6 +2,8 @@
 
 #include "TRandom.h"
 
+#define MMUON 105.658305
+
 using namespace std;
 
 
@@ -54,6 +56,13 @@ void treeReader01::eventProcessing() {
   TGenCand *pGen(0);
   for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
     pGen = fpEvt->getGenCand(igen);
+    if ((0 == pGen->fMom1) && (-13 == pGen->fID)) {
+      double gamma = pGen->fP.E()/MMUON;
+      //      double ekin = (gamma-1)*MMUON;
+      double ekin = 1.e3*(pGen->fP.E() - MMUON); // in keV
+      cout << "gamma = " << gamma << " ekin = " << ekin << endl;
+      ((TH1D*)fpHistFile->Get("h7"))->Fill(ekin);
+    }
     pGen->dump(0);
   }
   fillMuFinal();
@@ -164,6 +173,11 @@ void treeReader01::bookHist() {
   new TH1D("h4", "nGenCands", 40, 0., 40.);
   new TH1D("h5", "z(Mu decay) [mm]", 300, -800., 2200.);
   new TH1D("h6", "z(Mu produced) [mm]", 300, -800., 2200.);
+
+  new TH1D("h7", "mu+(beam) Ekin [keV]", 100, 0., 100.);
+  new TH1D("h8", "Mu decay length [mm]", 100, 0., 10.);
+  new TH1D("h9", "Mu momentum [MeV]", 100, 0., 10.);
+  new TH1D("h10", "proper decay time", 100, 0., 10.);
 
   new TH1D("mass", "mass of e+e-", 40, -1., 99.);
 
