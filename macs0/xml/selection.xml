@@ -5,6 +5,7 @@
 <class name="TrackerHit"/>
 <class name="MCPHit"/>
 <class name="TGenCand"/>
+<class name="TGenVtx"/>
 <class name="THit"/>
 <class name="rEvent"/>
 <class name="std::vector<TrackerHit*>"/>

@@ -5,6 +5,7 @@
 #include "TClonesArray.h"
 
 #include "TGenCand.hh"
+#include "TGenVtx.hh"
 #include "THit.hh"
 
 
@@ -20,6 +21,13 @@ public:
   TGenCand*           addGenCand();
   void                dumpGenBlock();
   void                clearGenBlock();
+
+  // ----------------------------------------------------------------------
+  int                 nGenVtx() {return fnGenVtx;}
+  TGenVtx*            getGenVtx(int n);
+  TGenVtx*            addGenVtx();
+  void                dumpVtxBlock();
+  void                clearVtxBlock();
 
   // ----------------------------------------------------------------------
   int                 nHits() {return fnHits;}
@@ -42,6 +50,9 @@ public:
   // -- the TClonesArray's
   int               fnGenCands;
   TClonesArray      *fGenCands;   //->
+
+  int               fnGenVtx;
+  TClonesArray      *fGenVtx;     //->
 
   int               fnHits;
   TClonesArray      *fHits;       //->

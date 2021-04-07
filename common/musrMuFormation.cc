@@ -30,6 +30,8 @@
 
 #include "musrMuFormation.hh"
 
+#include "RootIO.hh"
+
 using namespace std;
 
 // ----------------------------------------------------------------------
@@ -60,6 +62,16 @@ G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const
 		    << G4endl;
     }
     PrepareSecondary(trackData);
+    RootIO *rio = RootIO::GetInstance();
+    TGenVtx *pVtx = rio->getEvent()->addGenVtx();
+    pVtx->fNumber = rio->getEvent()->nGenVtx()-1;
+    pVtx->fID = -1313;
+    pVtx->fvMom.push_back(trackData.GetTrackID());
+    pVtx->fvDau.push_back(aSecondary->GetTrackID());
+    pVtx->fTime = trackData.GetGlobalTime();
+    pVtx->fV.SetX(trackData.GetPosition().x());
+    pVtx->fV.SetY(trackData.GetPosition().y());
+    pVtx->fV.SetZ(trackData.GetPosition().z());
 
     fParticleChange.AddSecondary(aSecondary);
     // -- the (original) muon is killed, not the Muonium!

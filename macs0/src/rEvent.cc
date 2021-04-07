@@ -4,6 +4,7 @@
 
 
 #define NGENCAND 10000
+#define NGENVTX  1000
 #define NHITS 10000
 
 ClassImp(rEvent)
@@ -14,6 +15,7 @@ using namespace std;
 rEvent::rEvent() {
 
   fGenCands  = new TClonesArray("TGenCand", NGENCAND);
+  fGenVtx    = new TClonesArray("TGenVtx", NGENVTX);
   fHits      = new TClonesArray("THit", NHITS);
 
   Clear();
@@ -47,12 +49,28 @@ void rEvent::clearGenBlock() {
   }
   fGenCands->Clear();
   fnGenCands = 0;
+
+  TGenVtx *pGenVtx;
+  for (int i = 0; i < fnGenVtx; i++) {
+    pGenVtx = getGenVtx(i);
+    pGenVtx->clear();
+  }
+  fGenVtx->Clear();
+  fnGenVtx = 0;
+
 }
+
 
 // ----------------------------------------------------------------------
 TGenCand* rEvent::getGenCand(Int_t n) {
   return (TGenCand*)fGenCands->UncheckedAt(n);
 }
+
+// ----------------------------------------------------------------------
+TGenVtx* rEvent::getGenVtx(Int_t n) {
+  return (TGenVtx*)fGenVtx->UncheckedAt(n);
+}
+
 
 // ----------------------------------------------------------------------
 TGenCand* rEvent::addGenCand() {
@@ -63,11 +81,26 @@ TGenCand* rEvent::addGenCand() {
 }
 
 // ----------------------------------------------------------------------
+TGenVtx* rEvent::addGenVtx() {
+  TClonesArray& d = *fGenVtx;
+  new(d[d.GetLast()+1]) TGenVtx();
+  ++fnGenVtx;
+  return (TGenVtx*)d[d.GetLast()];
+}
+
+
+// ----------------------------------------------------------------------
 void rEvent::dumpGenBlock() {
   TGenCand *pGenCand;
   for (int i = 0; i < fnGenCands; i++) {
     pGenCand = getGenCand(i);
     pGenCand->dump();
+  }
+
+  TGenVtx *pGenVtx;
+  for (int i = 0; i < fnGenVtx; i++) {
+    pGenVtx = getGenVtx(i);
+    pGenVtx->dump();
   }
 }
 
