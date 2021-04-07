@@ -360,6 +360,37 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   makeAccel();
   makeEndDetector();
 
+
+  // ----------------------------------------------------------------------
+  // -- Endplates (as a stop for the undecayed Muonia)
+  // ----------------------------------------------------------------------
+  G4ThreeVector positionEndplate = G4ThreeVector(0., 0., worldHalfLength-0.5*cm);
+  fSolidEndplate = new G4Box("Endplate", 200*cm, 200*cm, 0.1*cm);
+  fLogicEndplate = new G4LogicalVolume(fSolidEndplate, fTargetMater, "Endplate", 0, 0, 0);
+  fPhysiEndplate = new G4PVPlacement(0, positionEndplate, fLogicEndplate, "Endplate", fLogicWorld, false, 0, true);
+
+  fLogicEndplate->SetUserLimits(new G4UserLimits(0.001*mm));
+
+  G4ThreeVector positionEndplateF = G4ThreeVector(0., 0., -(worldHalfLength-0.5*cm));
+  fSolidEndplateF = new G4Box("Endplate", 200*cm, 200*cm, 0.1*cm);
+  fLogicEndplateF = new G4LogicalVolume(fSolidEndplateF, fTargetMater, "Endplate", 0, 0, 0);
+  fPhysiEndplateF = new G4PVPlacement(0, positionEndplateF, fLogicEndplateF, "Endplate", fLogicWorld, false, 0, true);
+
+  fLogicEndplateF->SetUserLimits(new G4UserLimits(0.001*mm));
+
+
+  G4VisAttributes *pVA1  = new G4VisAttributes;
+  pVA1->SetColour(G4Colour(0.9, 0.9, 0.9));
+  pVA1->SetForceSolid(true);
+  fLogicEndplate->SetVisAttributes(pVA1);
+  fLogicEndplateF->SetVisAttributes(pVA1);
+
+  G4cout << "Endplates are " <<  "0.1cm of " << fTargetMater->GetName()
+	 << " with logical name ->" << fLogicEndplate->GetName() << "<-"
+	 << G4endl;
+
+
+
   return fPhysiWorld;
 }
 

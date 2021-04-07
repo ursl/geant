@@ -67,6 +67,15 @@ private:
   G4VPhysicalVolume* fPhysiTarget;
   G4Material*        fTargetMater;
 
+
+  // -- endplates
+  G4Box*             fSolidEndplate;
+  G4LogicalVolume*   fLogicEndplate;
+  G4VPhysicalVolume* fPhysiEndplate;
+  G4Box*             fSolidEndplateF;
+  G4LogicalVolume*   fLogicEndplateF;
+  G4VPhysicalVolume* fPhysiEndplateF;
+
   // -- beampipe
   G4Tubs*            fSolidBeampipe;
   G4LogicalVolume*   fLogicBeampipe;
