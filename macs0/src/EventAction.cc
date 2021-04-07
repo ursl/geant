@@ -70,10 +70,23 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     pGen->fDau2   = -9999;
     pGen->fStatus = 0;
     pGen->fQ      = trj->GetCharge();
+    pGen->fMass   = trj->GetParticleDefinition()->GetPDGMass();
     pGen->fP.SetXYZT(px, py, pz, etot);
     pGen->fV.SetXYZ(trj->GetPoint(0)->GetPosition().x(),
 		    trj->GetPoint(0)->GetPosition().y(),
 		    trj->GetPoint(0)->GetPosition().z());
+    // -- store production vertex of e+ from Mu (i.e. the Mu decay vertex)
+    if ((11 == pdgid) && (1313 == TMath::Abs(getParticleID(pid, evt)))) {
+      TGenVtx *pVtx = rio->getEvent()->addGenVtx();
+      pVtx->fNumber = rio->getEvent()->nGenVtx()-1;
+      pVtx->fID = -131300;
+      pVtx->fvMom.push_back(trj->GetParentID());
+      pVtx->fvDau.push_back(trj->GetTrackID());
+      //      pVtx->fTime = trj->GetGlobalTime();
+      pVtx->fV.SetXYZ(trj->GetPoint(0)->GetPosition().x(),
+		      trj->GetPoint(0)->GetPosition().y(),
+		      trj->GetPoint(0)->GetPosition().z());
+    }
   }
 
   // -- now determine the daughter index pointers
@@ -96,4 +109,22 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   rio->fillTree();
 
   rio->getEvent()->Clear();
+}
+
+// ----------------------------------------------------------------------
+G4int EventAction::getParticleID(G4int idx, const G4Event *evt) {
+  G4int mid(-1);
+
+  G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
+  G4int n_trajectories = 0;
+  if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
+
+  for (G4int i = 0; i < n_trajectories; ++i) {
+    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+    if (idx == trj->GetTrackID()) {
+      mid = trj->GetPDGEncoding();
+      break;
+    }
+  }
+  return mid;
 }
