@@ -67,7 +67,13 @@ void treeReader01::eventProcessing() {
   }
   fillMuFinal();
   fillHist();
-
+  cout << "----------------------------------------------------------------------" << endl;
+  cout << "vtx: " << endl;
+  TGenVtx *pVtx;
+  for (int ivtx = 0; ivtx < fpEvt->nGenVtx(); ++ivtx) {
+    pVtx = fpEvt->getGenVtx(ivtx);
+    pVtx->dump();
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -154,10 +160,22 @@ void treeReader01::fillHist() {
 	 << " with idxEMuon = " << idxEMuon
 	 << " with idxEAtom = " << idxEAtom
 	 << " pEMuon = " << pEMuon << " pEAtom = " << pEAtom
+	 << " pMu->fMass = " << pMu->fMass
 	 << endl;
     if (0 == pEMuon) continue;
     if (0 == pEAtom) continue;
-    if (9999 != pMu->fDau1) ((TH1D*)fpHistFile->Get("h5"))->Fill(pEMuon->fV.Z());
+    if (pEMuon) {
+      double zdecay = pEMuon->fV.Z();
+      double fl = (pMu->fV - pEMuon->fV).Mag();
+      double t  = MMUON*fl/pMu->fP.Rho()/(1000.*TMath::C()); // mm
+      ((TH1D*)fpHistFile->Get("h5"))->Fill(zdecay);
+      ((TH1D*)fpHistFile->Get("h8"))->Fill(fl);
+      ((TH1D*)fpHistFile->Get("h9"))->Fill(pMu->fP.Rho());
+      ((TH2D*)fpHistFile->Get("m10"))->Fill(t, zdecay);
+      if (zdecay > -400 && zdecay < 2095.) {
+	((TH1D*)fpHistFile->Get("h10"))->Fill(t);
+      }
+    }
     ((TH1D*)fpHistFile->Get("h6"))->Fill(pMu->fV.Z());
   }
 }
@@ -171,13 +189,14 @@ void treeReader01::bookHist() {
   new TH1D("h2", "nHits Trk", 40, 0., 40.);
   new TH1D("h3", "nHits MCP", 40, 0., 40.);
   new TH1D("h4", "nGenCands", 40, 0., 40.);
-  new TH1D("h5", "z(Mu decay) [mm]", 300, -800., 2200.);
-  new TH1D("h6", "z(Mu produced) [mm]", 300, -800., 2200.);
+  new TH1D("h5", "z(Mu decay) [mm]", 500, -2200., 2200.);
+  new TH1D("h6", "z(Mu produced) [mm]", 500, -2200., 2200.);
 
   new TH1D("h7", "mu+(beam) Ekin [keV]", 100, 0., 100.);
-  new TH1D("h8", "Mu decay length [mm]", 100, 0., 10.);
+  new TH1D("h8", "Mu decay length [mm]", 100, 0., 5000.);
   new TH1D("h9", "Mu momentum [MeV]", 100, 0., 10.);
-  new TH1D("h10", "proper decay time", 100, 0., 10.);
+  new TH1D("h10", "proper decay time", 100, 0., 1.e-5);
+  new TH2D("m10", "proper decay time vs. z", 100, 0., 1.e-5, 100, -2200., 2200.);
 
   new TH1D("mass", "mass of e+e-", 40, -1., 99.);
 

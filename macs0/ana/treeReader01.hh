@@ -18,6 +18,7 @@
 #include "include/rEvent.hh"
 #include "include/THit.hh"
 #include "include/TGenCand.hh"
+#include "include/TGenVtx.hh"
 
 #define DR      57.29577951
 
