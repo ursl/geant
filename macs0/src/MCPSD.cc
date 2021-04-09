@@ -53,9 +53,9 @@ void MCPSD::EndOfEvent(G4HCofThisEvent*) {
 
   G4cout << "-------->Storing hits in the ROOT file: there are " << NbHits
 	 << " hits in the MCP chambers: " << G4endl;
-  if (0) {
+  if (1) {
     for (G4int i=0;i<NbHits;i++) {
-      (*fHitsCollection)[i]->Print();
+      if (0) (*fHitsCollection)[i]->Print();
       // -- write into event/tree
       THit *hit = RootIO::GetInstance()->getEvent()->addHit();
       hit->fNumber  = RootIO::GetInstance()->getEvent()->nHits() - 1;
@@ -70,7 +70,7 @@ void MCPSD::EndOfEvent(G4HCofThisEvent*) {
     }
   }
 
-  if (0) {
+  if (1) {
     for (G4int i=0;i<NbHits;i++) hitsVector.push_back((*fHitsCollection)[i]);
     RootIO::GetInstance()->WriteMCPHits(&hitsVector);
   }
