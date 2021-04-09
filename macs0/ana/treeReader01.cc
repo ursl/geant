@@ -16,6 +16,7 @@ using namespace std;
 // ----------------------------------------------------------------------
 void treeReader01::startAnalysis() {
   cout << "treeReader01: startAnalysis: ..." << endl;
+  DBX = true;
 }
 
 // ----------------------------------------------------------------------
@@ -29,7 +30,7 @@ void treeReader01::eventProcessing() {
   initVariables();
 
   // -- generic rudimentary analysis
-  if (0) {
+  if (DBX) {
     cout << "----------------------------------------------------------------------" << endl;
     cout << "Found " << fpEvt->nGenCands() << " gen cands in event" << endl;
     cout << "Found " << fpEvt->nHits() << " hits in event" << endl;
@@ -57,23 +58,31 @@ void treeReader01::eventProcessing() {
   for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
     pGen = fpEvt->getGenCand(igen);
     if ((0 == pGen->fMom1) && (-13 == pGen->fID)) {
-      double gamma = pGen->fP.E()/MMUON;
-      //      double ekin = (gamma-1)*MMUON;
       double ekin = 1.e3*(pGen->fP.E() - MMUON); // in keV
-      cout << "gamma = " << gamma << " ekin = " << ekin << endl;
       ((TH1D*)fpHistFile->Get("h7"))->Fill(ekin);
     }
-    pGen->dump(0);
+    if (DBX) pGen->dump(0);
   }
   fillMuFinal();
   fillHist();
-  cout << "----------------------------------------------------------------------" << endl;
-  cout << "vtx: " << endl;
+  if (DBX) {
+    cout << "----------------------------------------------------------------------" << endl;
+    cout << "vtx: " << endl;
+  }
   TGenVtx *pVtx;
   for (int ivtx = 0; ivtx < fpEvt->nGenVtx(); ++ivtx) {
     pVtx = fpEvt->getGenVtx(ivtx);
-    pVtx->dump();
+    if (DBX) pVtx->dump();
   }
+  if (DBX) {
+    cout << "----------------------------------------------------------------------" << endl;
+    cout << "hits: " << endl;
+    for (int i = 0; i < fpEvt->nHits(); ++i) {
+      pHit = fpEvt->getHit(i);
+      if (DBX) pHit->dump();
+    }
+  }
+
 }
 
 // ----------------------------------------------------------------------
@@ -97,13 +106,173 @@ void treeReader01::fillMuFinal() {
     }
   }
 
-  if (1) {
+  if (DBX) {
     cout << "and the final Mu list" << endl;
     for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
       fMuFinal[i]->dump(0);
     }
   }
 }
+
+
+// ----------------------------------------------------------------------
+void treeReader01::fillHist() {
+  int idxEAtom(-1), idxEMuon(-1);
+  TGenCand *pMu(0), *pEMuon(0), *pEAtom(0);
+  vector<int> signalTrkId;
+  for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
+    pMu = fMuFinal[i];
+    idxEAtom = idxEMuon = -1;
+    fillDaughters(pMu, idxEMuon, idxEAtom);
+    if (idxEMuon > -1) pEMuon = fpEvt->getGenCand(idxEMuon);
+    if (idxEAtom > -1) pEAtom = fpEvt->getGenCand(idxEAtom);
+    if (0 == pEMuon) continue;
+    if (0 == pEAtom) continue;
+
+    double zdecay = pEMuon->fV.Z();
+
+    signalTrkId.push_back(pEMuon->fNumber);
+    signalTrkId.push_back(pEAtom->fNumber);
+
+    if (DBX)
+      cout << "Filling MuFinal[" << i << "] at " << fMuFinal[i]->fNumber
+	   << " with idxEMuon = " << idxEMuon << " (fNumber = " << pEMuon->fNumber << ") "
+	   << " with idxEAtom = " << idxEAtom << " (fNumber = " << pEAtom->fNumber << ") "
+	   << " pEMuon = " << pEMuon << " pEAtom = " << pEAtom
+	   << " zdecay = " << zdecay
+	   << endl;
+
+    double fl = (pMu->fV - pEMuon->fV).Mag();
+    double t  = MMUON*fl/pMu->fP.Rho()/(1000.*TMath::C()); // mm
+    ((TH1D*)fpHistFile->Get("h5"))->Fill(zdecay);
+    ((TH1D*)fpHistFile->Get("h8"))->Fill(fl);
+    ((TH1D*)fpHistFile->Get("h9"))->Fill(pMu->fP.Rho());
+    ((TH2D*)fpHistFile->Get("m10"))->Fill(t, zdecay);
+
+    // -- hits in tracker (ID == 0) and MCP (ID == 1)
+    int emtrk = nHits(pEMuon->fNumber, 0);
+    int emmcp = nHits(pEMuon->fNumber, 1); // this should be zero
+
+    int eatrk = nHits(pEAtom->fNumber, 0); // this should be zero
+    int eamcp = nHits(pEAtom->fNumber, 1);
+    cout << "emtrk = " << emtrk << " emmcp = " << emmcp << " eatrk = " << eatrk << " eamcp = " << eamcp << endl;
+    if (zdecay > -400 && zdecay < 2095.) {
+      ((TH1D*)fpHistFile->Get("h10"))->Fill(t);
+      ((TH1D*)fpHistFile->Get("hits"))->Fill(0., eatrk);
+      ((TH1D*)fpHistFile->Get("hits"))->Fill(1., eamcp);
+
+      ((TH1D*)fpHistFile->Get("hits"))->Fill(10., emtrk);
+      ((TH1D*)fpHistFile->Get("hits"))->Fill(11., emmcp);
+
+      ((TH1D*)fpHistFile->Get("acc"))->Fill(0.);
+      if (emtrk > 0) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(1.);
+      }
+      if (eamcp > 0) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(2.);
+      }
+      if (emtrk > 0 && eamcp > 0) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(3.);
+      }
+    }
+
+    ((TH1D*)fpHistFile->Get("h6"))->Fill(pMu->fV.Z());
+  }
+
+
+  // -- fill signal and background hits
+  THit *pHit(0);
+  int strk(0), smcp(0), btrk(0), bmcp(0);
+  for (int i = 0; i < fpEvt->nHits(); ++i) {
+    pHit = fpEvt->getHit(i);
+    if (signalTrkId.end() != find(signalTrkId.begin(), signalTrkId.end(), pHit->fTrack)) {
+      if (0 == pHit->fDetId) {
+	((TH1D*)fpHistFile->Get("e0"))->Fill(pHit->fEdep);
+	++strk;
+      } else if (1 == pHit->fDetId) {
+	((TH1D*)fpHistFile->Get("e1"))->Fill(pHit->fEdep);
+	++smcp;
+      }
+    } else {
+      if (0 == pHit->fDetId) {
+	++btrk;
+      } else if (1 == pHit->fDetId) {
+	++bmcp;
+      }
+    }
+  }
+  ((TH1D*)fpHistFile->Get("s0"))->Fill(strk);
+  ((TH1D*)fpHistFile->Get("s1"))->Fill(smcp);
+  ((TH1D*)fpHistFile->Get("b0"))->Fill(btrk);
+  ((TH1D*)fpHistFile->Get("b1"))->Fill(bmcp);
+
+}
+
+// ----------------------------------------------------------------------
+void treeReader01::bookHist() {
+  cout << "==> treeReader01: bookHist> " << endl;
+
+  new TH1D("evts", "events", 40, 0., 40.);
+  new TH1D("h1", "nHits", 40, 0., 40.);
+  new TH1D("h2", "nHits Trk", 40, 0., 40.);
+  new TH1D("h3", "nHits MCP", 40, 0., 40.);
+
+  new TH1D("s0", "nHits Trk (signal)", 40, 0., 40.);
+  new TH1D("e0", "energy Trk (signal)", 100, 0., 0.2);
+  new TH1D("s1", "nHits MCP (signal)", 40, 0., 40.);
+  new TH1D("e1", "energy MCP (signal)", 100, 0., 0.2);
+
+  new TH1D("b0", "nHits Trk (background)", 40, 0., 40.);
+  new TH1D("b1", "nHits MCP (background)", 40, 0., 40.);
+
+  new TH1D("h4", "nGenCands", 40, 0., 40.);
+  new TH1D("h5", "z(Mu decay) [mm]", 440, -2200., 2200.); // cm binning
+  new TH1D("h6", "z(Mu produced) [mm]", 440, -2200., 2200.);
+
+  new TH1D("h7", "mu+(beam) Ekin [keV]", 100, 0., 100.);
+  new TH1D("h8", "Mu decay length [mm]", 100, 0., 5000.);
+  new TH1D("h9", "Mu momentum [MeV]", 100, 0., 10.);
+  new TH1D("h10", "proper decay time", 100, 0., 1.e-5);
+  new TH2D("m10", "proper decay time vs. z", 100, 0., 1.e-5, 100, -2200., 2200.);
+
+
+  new TH1D("hits", "hits counter", 40, 0., 40.);
+  new TH1D("acc", "acc counter", 40, 0., 40.);
+
+  new TH1D("mass", "mass of e+e-", 40, -1., 99.);
+
+  // -- Reduced Tree
+  fTree = new TTree("events", "events");
+  fTree->Branch("run",      &fRun,       "run/I");
+  fTree->Branch("evt",      &fEvt,       "evt/I");
+
+  fTree->Branch("elePt",    &fElePt,    "elePt/D");
+  fTree->Branch("eleTheta", &fEleTheta, "eleTheta/D");
+  fTree->Branch("elePhi",   &fElePhi,   "elePhi/D");
+  fTree->Branch("eleE",     &fEleE,     "eleE/D");
+
+  fTree->Branch("posPt",    &fPosPt,    "posPt/D");
+  fTree->Branch("posTheta", &fPosTheta, "posTheta/D");
+  fTree->Branch("posPhi",   &fPosPhi,   "posPhi/D");
+  fTree->Branch("posE",     &fPosE,     "posE/D");
+
+  fTree->Branch("eleposM",     &fElePosMass,"eleposM/D");
+  fTree->Branch("eleposOa",    &fElePosOa,  "eleposOa/D");
+
+}
+
+// ----------------------------------------------------------------------
+int treeReader01::nHits(int trkidx, int detid) {
+  int nhit(0);
+
+  THit *pHit(0);
+  for (int i = 0; i < fpEvt->nHits(); ++i) {
+    pHit = fpEvt->getHit(i);
+    if ((trkidx == pHit->fTrack) && (detid == pHit->fDetId)) ++nhit;
+  }
+  return nhit;
+}
+
 
 // ----------------------------------------------------------------------
 void treeReader01::fillDaughters(TGenCand *pMu, int &idxEMuon, int &idxEAtom) {
@@ -146,80 +315,6 @@ void treeReader01::fillDaughters(TGenCand *pMu, int &idxEMuon, int &idxEAtom) {
 	<< "  idxEAtom = " << idxEAtom
 	<< endl;
 }
-
-// ----------------------------------------------------------------------
-void treeReader01::fillHist() {
-  int idxEAtom(-1), idxEMuon(-1);
-  TGenCand *pMu(0), *pEMuon(0), *pEAtom(0);
-  for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
-    pMu = fMuFinal[i];
-    fillDaughters(pMu, idxEMuon, idxEAtom);
-    if (idxEMuon > -1) pEMuon = fpEvt->getGenCand(idxEMuon);
-    if (idxEAtom > -1) pEAtom = fpEvt->getGenCand(idxEAtom);
-    cout << "Filling MuFinal[" << i << "] at " << fMuFinal[i]->fNumber
-	 << " with idxEMuon = " << idxEMuon
-	 << " with idxEAtom = " << idxEAtom
-	 << " pEMuon = " << pEMuon << " pEAtom = " << pEAtom
-	 << " pMu->fMass = " << pMu->fMass
-	 << endl;
-    if (0 == pEMuon) continue;
-    if (0 == pEAtom) continue;
-    if (pEMuon) {
-      double zdecay = pEMuon->fV.Z();
-      double fl = (pMu->fV - pEMuon->fV).Mag();
-      double t  = MMUON*fl/pMu->fP.Rho()/(1000.*TMath::C()); // mm
-      ((TH1D*)fpHistFile->Get("h5"))->Fill(zdecay);
-      ((TH1D*)fpHistFile->Get("h8"))->Fill(fl);
-      ((TH1D*)fpHistFile->Get("h9"))->Fill(pMu->fP.Rho());
-      ((TH2D*)fpHistFile->Get("m10"))->Fill(t, zdecay);
-      if (zdecay > -400 && zdecay < 2095.) {
-	((TH1D*)fpHistFile->Get("h10"))->Fill(t);
-      }
-    }
-    ((TH1D*)fpHistFile->Get("h6"))->Fill(pMu->fV.Z());
-  }
-}
-
-// ----------------------------------------------------------------------
-void treeReader01::bookHist() {
-  cout << "==> treeReader01: bookHist> " << endl;
-
-  new TH1D("evts", "events", 40, 0., 40.);
-  new TH1D("h1", "nHits", 40, 0., 40.);
-  new TH1D("h2", "nHits Trk", 40, 0., 40.);
-  new TH1D("h3", "nHits MCP", 40, 0., 40.);
-  new TH1D("h4", "nGenCands", 40, 0., 40.);
-  new TH1D("h5", "z(Mu decay) [mm]", 500, -2200., 2200.);
-  new TH1D("h6", "z(Mu produced) [mm]", 500, -2200., 2200.);
-
-  new TH1D("h7", "mu+(beam) Ekin [keV]", 100, 0., 100.);
-  new TH1D("h8", "Mu decay length [mm]", 100, 0., 5000.);
-  new TH1D("h9", "Mu momentum [MeV]", 100, 0., 10.);
-  new TH1D("h10", "proper decay time", 100, 0., 1.e-5);
-  new TH2D("m10", "proper decay time vs. z", 100, 0., 1.e-5, 100, -2200., 2200.);
-
-  new TH1D("mass", "mass of e+e-", 40, -1., 99.);
-
-  // -- Reduced Tree
-  fTree = new TTree("events", "events");
-  fTree->Branch("run",      &fRun,       "run/I");
-  fTree->Branch("evt",      &fEvt,       "evt/I");
-
-  fTree->Branch("elePt",    &fElePt,    "elePt/D");
-  fTree->Branch("eleTheta", &fEleTheta, "eleTheta/D");
-  fTree->Branch("elePhi",   &fElePhi,   "elePhi/D");
-  fTree->Branch("eleE",     &fEleE,     "eleE/D");
-
-  fTree->Branch("posPt",    &fPosPt,    "posPt/D");
-  fTree->Branch("posTheta", &fPosTheta, "posTheta/D");
-  fTree->Branch("posPhi",   &fPosPhi,   "posPhi/D");
-  fTree->Branch("posE",     &fPosE,     "posE/D");
-
-  fTree->Branch("eleposM",     &fElePosMass,"eleposM/D");
-  fTree->Branch("eleposOa",    &fElePosOa,  "eleposOa/D");
-
-}
-
 
 // ----------------------------------------------------------------------
 void treeReader01::initVariables() {

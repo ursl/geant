@@ -45,6 +45,7 @@ public:
   // -- study
   void fillMuFinal();
   void fillDaughters(TGenCand *pMu, int &idxEMuon, int &idxEAtom);
+  int  nHits(int trkidx, int detid);
 
   // -- study in the context of mu3e for invariant mass of e+ Bhabha scattering on e-
   void doEnEpAnalysis();
@@ -73,6 +74,8 @@ protected:
 
   // -- Histogram pointers
   TTree       *fTree;
+
+  bool DBX;
 
   // -- Cut values
   double PTLO, PTHI;
