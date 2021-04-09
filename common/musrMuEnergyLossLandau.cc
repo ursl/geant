@@ -41,8 +41,11 @@ musrMuEnergyLossLandau::musrMuEnergyLossLandau(const G4String& name, G4ProcessTy
 
 musrMuEnergyLossLandau::~musrMuEnergyLossLandau(){}
 
-double musrMuEnergyLossLandau::landauMPV   = 0.1;
-double musrMuEnergyLossLandau::landauSigma = 0.1;
+// double musrMuEnergyLossLandau::landauMPV   = 0.1;
+// double musrMuEnergyLossLandau::landauSigma = 0.1;
+
+double musrMuEnergyLossLandau::landauMPV   = 0.04;
+double musrMuEnergyLossLandau::landauSigma = 0.02;
 
 
 // G4double musrMuEnergyLossLandau::PostStepGetPhysicalInteractionLength(const G4Track&  track,
