@@ -18,6 +18,9 @@
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
+#include "TrackingAction.hh"
+#include "StackingAction.hh"
+#include "SteppingAction.hh"
 #include "PhysicsList.hh"
 
 #include "RootIO.hh"
@@ -78,6 +81,11 @@ int main(int argc, char** argv) {
   runManager->SetUserAction(new PrimaryGeneratorAction(detector));
   runManager->SetUserAction(new RunAction);
   runManager->SetUserAction(new EventAction);
+
+  // Test:
+  runManager->SetUserAction(new StackingAction);
+  runManager->SetUserAction(new SteppingAction);
+  runManager->SetUserAction(new TrackingAction);
 
   runManager->Initialize();
 

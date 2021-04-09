@@ -3,6 +3,7 @@
 #include "ChamberParameterisation.hh"
 #include "MagneticField.hh"
 #include "ElectricFieldSetup.hh"
+#include "RegionInformation.hh"
 #include "TrackerSD.hh"
 #include "MCPSD.hh"
 
@@ -30,6 +31,9 @@
 
 #include "G4GeometryTolerance.hh"
 #include "G4UserLimits.hh"
+
+#include "G4Region.hh"
+#include "G4RegionStore.hh"
 
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
@@ -262,6 +266,12 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   fLogicWorld = new G4LogicalVolume(fSolidWorld, fVac, "World", 0, 0, 0);
   fPhysiWorld = new G4PVPlacement(0, G4ThreeVector(), fLogicWorld, "World", 0, false, 0, true);
 
+  G4Region* defaultRegion = (*(G4RegionStore::GetInstance()))[0];
+  RegionInformation* defaultRInfo = new RegionInformation();
+  defaultRInfo->SetWorld();
+  defaultRInfo->Print();
+  defaultRegion->SetUserInformation(defaultRInfo);
+
   // ------------------------------
   // -- Beampipe
   // ------------------------------
@@ -333,6 +343,14 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 					    fCheckOverlaps);              // checking overlaps
 
   }
+
+
+  G4Region* trackerRegion = new G4Region("TrackerRegion");
+  RegionInformation* trackerInfo = new RegionInformation();
+  trackerInfo->SetTracker();
+  trackerRegion->SetUserInformation(trackerInfo);
+  fLogicTracker->SetRegion(trackerRegion);
+  trackerRegion->AddRootLogicalVolume(fLogicTracker);
 
 
   G4double maxStep = 0.5*fChamberWidth;
