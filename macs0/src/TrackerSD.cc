@@ -32,7 +32,7 @@ G4bool TrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
   if (edep==0.) return false;
 
-  if (0) G4cout << "==========> TrackerSD::ProcessHits> new hit added " << G4endl;
+  if (0) G4cout << "==========> TrackerSD::ProcessHits> new hit added aStep = " << aStep << G4endl;
   TrackerHit *newHit = new TrackerHit();
   newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
   newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchable()->GetReplicaNumber());
