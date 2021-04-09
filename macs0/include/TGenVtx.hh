@@ -30,7 +30,7 @@ public:
   std::vector<int> fvDau;          // daughter indices
 
   TVector3       fV;
-  double         fTime;
+  double         fLocalTime, fGlobalTime;
 
 private:
 

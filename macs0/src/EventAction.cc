@@ -4,6 +4,9 @@
 #include "G4EventManager.hh"
 #include "G4TrajectoryContainer.hh"
 #include "G4Trajectory.hh"
+
+#include "Trajectory.hh"
+
 #include "G4ios.hh"
 
 #include "RootIO.hh"
@@ -30,18 +33,19 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   G4int n_trajectories = 0;
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
 
-  bool DBX(false);
+  bool DBX(true);
   double px, py, pz, m, ekin, etot, vx, vy, vz;
   int pdgid, pid, tid;
 
   if (DBX) G4cout << "----------------------------------------------------------------------" << G4endl;
   for (G4int i = 0; i < n_trajectories; ++i) {
-    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
-    ekin = trj->GetInitialKineticEnergy();
+    //    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+    Trajectory* trj = (Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+    ekin = 0.; //trj->GetInitialKineticEnergy();
 
     tid   = trj->GetTrackID();
     pid   = trj->GetParentID();
-    m     = trj->GetParticleDefinition()->GetPDGMass();
+    m     = 0.; //trj->GetParticleDefinition()->GetPDGMass();
     pdgid = trj->GetPDGEncoding();
 
     px    = trj->GetInitialMomentum().x();
@@ -51,7 +55,6 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     vy    = trj->GetPoint(0)->GetPosition().y();
     vz    = trj->GetPoint(0)->GetPosition().z();
 
-    ekin  = trj->GetInitialKineticEnergy();
     etot  = TMath::Sqrt(px*px + py*py + pz*pz + m*m);
     if (DBX) G4cout <<
 	       Form(":%4d ID= %+5d trkId=%4d parentID=%4d (E, p)= %+7.2f/%+7.3f/%+7.3f/%+7.3f ekin= %7.4f v=(%+8.3f, %+8.3f, %+14.8f)",
@@ -70,7 +73,9 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     pGen->fDau2   = -9999;
     pGen->fStatus = 0;
     pGen->fQ      = trj->GetCharge();
-    pGen->fMass   = trj->GetParticleDefinition()->GetPDGMass();
+    pGen->fMass   = m;
+    pGen->fLocalTime  = trj->GetLocalTime();
+    pGen->fGlobalTime = trj->GetGlobalTime();
     pGen->fP.SetXYZT(px, py, pz, etot);
     pGen->fV.SetXYZ(trj->GetPoint(0)->GetPosition().x(),
 		    trj->GetPoint(0)->GetPosition().y(),
@@ -82,7 +87,8 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
       pVtx->fID = -131300;
       pVtx->fvMom.push_back(trj->GetParentID());
       pVtx->fvDau.push_back(trj->GetTrackID());
-      //      pVtx->fTime = trj->GetGlobalTime();
+      pVtx->fLocalTime  = trj->GetLocalTime();
+      pVtx->fGlobalTime = trj->GetGlobalTime();
       pVtx->fV.SetXYZ(trj->GetPoint(0)->GetPosition().x(),
 		      trj->GetPoint(0)->GetPosition().y(),
 		      trj->GetPoint(0)->GetPosition().z());
@@ -115,16 +121,17 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 G4int EventAction::getParticleID(G4int idx, const G4Event *evt) {
   G4int mid(-1);
 
-  G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
-  G4int n_trajectories = 0;
-  if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
+  // G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
+  // G4int n_trajectories = 0;
+  // if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
 
-  for (G4int i = 0; i < n_trajectories; ++i) {
-    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
-    if (idx == trj->GetTrackID()) {
-      mid = trj->GetPDGEncoding();
-      break;
-    }
-  }
+  // for (G4int i = 0; i < n_trajectories; ++i) {
+  //   //    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+  //   Trajectory* trj=(Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+  //   if (idx == trj->GetTrackID()) {
+  //     mid = trj->GetPDGEncoding();
+  //     break;
+  //   }
+  // }
   return mid;
 }

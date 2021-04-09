@@ -10,36 +10,37 @@ TGenCand::TGenCand() { }
 TGenCand::TGenCand(Int_t Option) { }
 
 TGenCand::TGenCand(const  TGenCand &other) {
-  fID     = other.fID;
-  fNumber = other.fNumber;
-  fStatus = other.fStatus;
-  fMom1   = other.fMom1;
-  fMom2   = other.fMom2;
-  fDau1   = other.fDau1;
-  fDau2   = other.fDau2;
-  fTag    = other.fTag;
-  fQ      = other.fQ;
-  fP      = other.fP;
-  fMass   = other.fMass;
-  fV      = other.fV;
-  fTime   = other.fTime;
+  fID         = other.fID;
+  fNumber     = other.fNumber;
+  fStatus     = other.fStatus;
+  fMom1       = other.fMom1;
+  fMom2       = other.fMom2;
+  fDau1       = other.fDau1;
+  fDau2       = other.fDau2;
+  fTag        = other.fTag;
+  fQ          = other.fQ;
+  fP          = other.fP;
+  fMass       = other.fMass;
+  fV          = other.fV;
+  fGlobalTime = other.fGlobalTime;
+  fLocalTime  = other.fLocalTime;
 }
 
 
 void TGenCand::dump(int printPt) {
   char line[200];
   if (1 == printPt) {
-    sprintf(line, "%4d %+6d S%2d mom(%4d,%4d) dau(%5d,%5d) p/t=%8.3f(%+9.3f,%+9.3f,%+9.3f) v=(%+10.4f,%+10.4f,%+13.6f)",
+    sprintf(line, "%4d %+6d S%2d mom(%4d,%4d) dau(%5d,%5d) p/t=%8.3f(%+9.3f,%+9.3f,%+9.3f) v=(%+10.4f,%+10.4f,%+13.6f), t=%13.11f",
 	    fNumber, fID, fStatus, fMom1, fMom2, fDau1, fDau2,
 	    fP.Rho(),
 	    fP.Perp(), (fP.Perp()>0.01?fP.Eta():99.), fP.Phi(),
-	    fV.X(), fV.Y(), fV.Z());
+	    fV.X(), fV.Y(), fV.Z(), fGlobalTime);
   } else {
-    sprintf(line, "%4d %+6d S%2d mom(%4d,%4d) dau(%5d,%5d) p/c=%8.3f(%+9.3f,%+9.3f,%+9.3f) v=(%+10.4f,%+10.4f,%+13.6f)",
+    sprintf(line, "%4d %+6d S%2d mom(%4d,%4d) dau(%5d,%5d) p/c=%8.3f(%+9.3f,%+9.3f,%+9.3f) v=(%+10.4f,%+10.4f,%+13.6f), t=%13.11f",
 	    fNumber, fID, fStatus, fMom1, fMom2, fDau1, fDau2,
 	    fP.Rho(),
 	    fP.X(), fP.Y(), fP.Z(),
-	    fV.X(), fV.Y(), fV.Z());
+	    fV.X(), fV.Y(), fV.Z(), fGlobalTime);
 
   }
   cout << line << endl;

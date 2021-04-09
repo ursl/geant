@@ -68,7 +68,8 @@ G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const
     pVtx->fID = -1313;
     pVtx->fvMom.push_back(trackData.GetTrackID());
     pVtx->fvDau.push_back(aSecondary->GetTrackID());
-    pVtx->fTime = trackData.GetGlobalTime();
+    pVtx->fGlobalTime = trackData.GetGlobalTime();
+    pVtx->fLocalTime = trackData.GetLocalTime();
     pVtx->fV.SetX(trackData.GetPosition().x());
     pVtx->fV.SetY(trackData.GetPosition().y());
     pVtx->fV.SetZ(trackData.GetPosition().z());
@@ -152,7 +153,7 @@ void musrMuFormation::GetDatas(const G4Step* aStep) {
   }
 }
 
-
+// ----------------------------------------------------------------------
 void musrMuFormation::PrepareSecondary(const G4Track& track) {
   if (p_name=="mu+") {
     if (0) cout << "musrMuFormation::PrepareSecondary: name = "

@@ -33,7 +33,8 @@ public:
   double         fMass;
 
   TVector3       fV;
-  double         fTime;
+  double         fLocalTime;
+  double         fGlobalTime;
 
 private:
 
