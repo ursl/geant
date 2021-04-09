@@ -47,15 +47,7 @@
 #/vis/modeling/trajectories/drawByCharge-0/set 0 white
 
 /vis/modeling/trajectories/create/drawByParticleID
-/vis/modeling/trajectories/drawByParticleID-0/set e- cyan
-/vis/modeling/trajectories/drawByParticleID-0/set e+ red
-/vis/modeling/trajectories/drawByParticleID-0/set gamma green
-/vis/modeling/trajectories/drawByParticleID-0/setRGBA nu_e 0.8 0.6 0.8 1
-/vis/modeling/trajectories/drawByParticleID-0/setRGBA anti_nu_e 0.8 0.6 0.8 1
-/vis/modeling/trajectories/drawByParticleID-0/setRGBA nu_mu 0.6 0.8 0.8 1
-/vis/modeling/trajectories/drawByParticleID-0/setRGBA anti_nu_mu 0.6 0.8 0.8 1
-/vis/modeling/trajectories/drawByParticleID-0/set neutron gray
-/vis/modeling/trajectories/drawByParticleID-0/set Mu yellow
+# defined in src/Trajectory.cc
 
 /vis/modeling/trajectories/drawByParticleID-0/default/setDrawStepPts true
 /vis/modeling/trajectories/drawByParticleID-0/default/setStepPtsSize 2
