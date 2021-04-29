@@ -75,7 +75,6 @@
 /macs0/field/value -0.0048 tesla
 
 # -- muon beam
-#/macs0/generator/bgKinEnergy 1 MeV
 /macs0/generator/bgKinEnergy 5 keV
 /macs0/generator/bgKinEnergySigma 0. keV
 /macs0/generator/bgNpart 5
