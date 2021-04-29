@@ -3,8 +3,8 @@
 /run/initialize
 
 # only with 10.6.x: /process/had/verbose 0
-/control/verbose 0
-/run/verbose 0
+#/control/verbose 0
+#/run/verbose 0
 
 # Use this open statement to create an OpenGL view:
 /vis/open OGL 1000x1000-0+0

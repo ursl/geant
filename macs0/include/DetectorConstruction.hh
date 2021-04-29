@@ -38,6 +38,7 @@ public:
 
   void defineMaterials();
   void parseCmd(G4String cmd);
+  void setVerbose(int v) {fVerbose = v;}
 
   // -- communications methods
   void SetMagField(G4double);
@@ -56,6 +57,7 @@ public:
   void makeTarget();
 
 private:
+  int fVerbose;
   // -- Materials
   G4Material *fVac, *fAir, *fAl, *fC, *fBe, *fPb, *fSiO2,
     *fXeGas, *fAerog;

@@ -45,17 +45,19 @@ class G4Event;
 
 /// Event action for the persistency example
 
-class EventAction : public G4UserEventAction
-{
-  public:
-    EventAction();
-   ~EventAction();
+class EventAction : public G4UserEventAction {
+public:
+  EventAction();
+  ~EventAction();
 
-  public:
+public:
   virtual void BeginOfEventAction(const G4Event*);
   virtual void EndOfEventAction(const G4Event*);
   G4int getParticleID(G4int, const G4Event *);
+  void setVerbose(int v) {fVerbose = v;}
 
+private:
+  int fVerbose;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

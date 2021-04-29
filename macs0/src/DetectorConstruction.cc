@@ -56,6 +56,7 @@ G4ThreadLocal G4FieldManager* DetectorConstruction::fpFieldMgr = 0;
 
 // ----------------------------------------------------------------------
 DetectorConstruction::DetectorConstruction() :G4VUserDetectorConstruction(),
+					      fVerbose(0),
 					      fSolidWorld(0), fLogicWorld(0), fPhysiWorld(0),
 					      fSolidTarget(0), fLogicTarget(0), fPhysiTarget(0), fTargetMater(0),
 					      fSolidBeampipe(0), fLogicBeampipe(0), fPhysiBeampipe(0),
@@ -110,25 +111,25 @@ void DetectorConstruction::parseCmd(G4String filename) {
     // -- search for target material
     if (string::npos != sline.find(tmat)) {
       size_t start_pos = sline.find(tmat) + tmat.size();
-      cout << "Found tmat at position " << start_pos << endl;
+      if (fVerbose > 9) cout << "Found tmat at position " << start_pos << endl;
       string material = sline.substr(start_pos);
-      cout << "material ->" << material << "<-" << endl;
+      if (fVerbose > 0) cout << "material ->" << material << "<-" << endl;
       SetTargetMaterial(material);
     }
     // -- search for target length
     if (string::npos != sline.find(tlen)) {
       size_t start_pos = sline.find(tlen) + tlen.size();
-      cout << "Found tlen at position " << start_pos << endl;
+      if (fVerbose > 9) cout << "Found tlen at position " << start_pos << endl;
       string length = sline.substr(start_pos);
-      cout << "length ->" << length << "<-" << endl;
+      if (fVerbose > 9) cout << "length ->" << length << "<-" << endl;
 
       start_pos = length.find(" ");
       string unit = length.substr(start_pos + 1);
       //      SetTargetLength(lenmm);
-      cout << "unit ->" << unit << "<-" << endl;
+      if (fVerbose > 9) cout << "unit ->" << unit << "<-" << endl;
 
       string number = length.substr(0, length.find(unit)-1);
-      cout << "number ->" <<  number << "<-" << endl;
+      if (fVerbose > 9) cout << "number ->" <<  number << "<-" << endl;
       double s(1.);
       if ("mm" == unit) {
 	s = 1.;
@@ -141,7 +142,7 @@ void DetectorConstruction::parseCmd(G4String filename) {
       }
       G4double unitnumber = stod(number)*s;
       SetTargetLength(unitnumber);
-      cout << "setTargetLength(" << unitnumber << ")" << endl;
+      if (fVerbose > 0) cout << "setTargetLength(" << unitnumber << ")" << endl;
     }
   }
 
@@ -155,8 +156,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
   G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
 
-  G4cout << "==DetectorConstruction::Construct>  building detector"
-	 << G4endl;
+  if (fVerbose > 0) G4cout << "==DetectorConstruction::Construct>  building detector" << G4endl;
   return macs0();
 }
 
@@ -165,8 +165,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 void DetectorConstruction::SetTargetLength(G4double value) {
 
   fTargetLength = value;
-  G4cout << "==DetectorConstruction::SetTargetMaterial> (re)setting target length to " << fTargetLength
-	 << G4endl;
+  if (fVerbose > 0) {
+    G4cout << "==DetectorConstruction::SetTargetMaterial> (re)setting target length to " << fTargetLength
+	   << G4endl;
+  }
 }
 
 
@@ -469,14 +471,14 @@ void DetectorConstruction::ConstructSDandField() {
 
   // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
   if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/TrackerChamberSD", false)) {
-    TrackerSD* aTrackerSD = new TrackerSD("/macs0/TrackerChamberSD", "TrackerHitsCollection");
+    TrackerSD* aTrackerSD = new TrackerSD("/macs0/TrackerChamberSD", "TrackerHitsCollection", fVerbose);
     G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
     SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
   }
 
   // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
   if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/MCPSD", false)) {
-    MCPSD* aMCPSD = new MCPSD("/macs0/MCPSD", "MCPHitsCollection");
+    MCPSD* aMCPSD = new MCPSD("/macs0/MCPSD", "MCPHitsCollection", fVerbose);
     G4SDManager::GetSDMpointer()->AddNewDetector(aMCPSD);
     SetSensitiveDetector("lMCP", aMCPSD, true);
   }

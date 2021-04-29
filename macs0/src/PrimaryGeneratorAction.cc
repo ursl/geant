@@ -15,7 +15,7 @@
 
 // ----------------------------------------------------------------------
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC):
-  G4VUserPrimaryGeneratorAction(), fParticleGun(0), fMyDetector(myDC),
+  G4VUserPrimaryGeneratorAction(), fVerbose(0), fParticleGun(0), fMyDetector(myDC),
   fSgNpart(0), fBgNpart(1), fBgNpartSigma(0.),
   fSgKinEnergy(1.0), fSgKinEnergySigma(1.1),
   fBgKinEnergy(26.1), fBgKinEnergySigma(1.1) {
@@ -23,7 +23,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC):
 
   G4ParticleDefinition* particle  = musrMuonium::MuoniumDefinition();
   fParticleGun->SetParticleDefinition(particle);
-
   auto particleTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* backgroundParticle = particleTable->FindParticle("mu+");
   fBackgroundGun = new G4ParticleGun();
@@ -47,20 +46,23 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
   // fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,-1.));
   // fParticleGun->SetParticleEnergy(1*keV);
 
-  G4cout << "======================================================================"
-	 << G4endl
-	 << "==========> Event " << anEvent->GetEventID() << " start."
-	 << G4endl
-	 << "======================================================================"
-	 << G4endl;
+  static int first(1);
 
-  if (fSgNpart > 0) {
-    G4cout << "PrimaryGeneratorAction::GeneratePrimaries with particle = "
-	   << fParticleGun->GetParticleDefinition()->GetParticleName()
-	   << " fSgNpart = " << fSgNpart
+  if ((fVerbose > 0) || (1 == first)) {
+    G4cout << "======================================================================"
+	   << G4endl
+	   << "==========> Event " << anEvent->GetEventID() << " start."
+	   << G4endl
+	   << "======================================================================"
 	   << G4endl;
-  }
 
+    if (fSgNpart > 0) {
+      G4cout << "PrimaryGeneratorAction::GeneratePrimaries with particle = "
+	     << fParticleGun->GetParticleDefinition()->GetParticleName()
+	     << " fSgNpart = " << fSgNpart
+	     << G4endl;
+    }
+  }
   for (int i = 0; i < fSgNpart; ++i) {
     fParticleGun->GeneratePrimaryVertex(anEvent);
   }
@@ -79,12 +81,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
   sstream.precision(6);
   sstream << fBgKinEnergy;
 
-  G4cout << "PrimaryGeneratorAction::GeneratePrimaries nbg = " << nBg
-	 << Form(" +/- %3.1f", sig)
-	 << " Ekin = " << sstream.str()
-	 << " MeV at z = " << Form("%5.2f", z0)
-	 << Form(" dx,dy =  %3.2f, %3.2f mm", dx0, dy0)
-	 << G4endl;
+  if ((fVerbose > 0) || (1 == first)) {
+    G4cout << "PrimaryGeneratorAction::GeneratePrimaries nbg = " << nBg
+	   << Form(" +/- %3.1f", sig)
+	   << " Ekin = " << sstream.str()
+	   << " MeV at z = " << Form("%5.2f", z0)
+	   << Form(" dx,dy =  %3.2f, %3.2f mm", dx0, dy0)
+	   << G4endl;
+  }
 
   for (int i = 0; i < nBg; ++i) {
     x0 = dx0*(G4UniformRand()-0.5);
@@ -95,6 +99,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
     fBackgroundGun->SetParticleEnergy(fBgKinEnergy);
 
     fBackgroundGun->GeneratePrimaryVertex(anEvent);
+  }
+
+  // -- turn first false after first call
+  if (1 == first) {
+    first = 0;
   }
 }
 

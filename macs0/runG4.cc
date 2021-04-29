@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
   // -- command line arguments
   bool startGUI(false);
-  int nevt(100);
+  int nevt(100), verbose(0);
   float sgE(-1.), bgE(-1.);
   int sgN(-1.), bgN(-1.);
   G4String cmd("vis.mac"), filename("g4run.root");
@@ -45,11 +45,11 @@ int main(int argc, char** argv) {
     if (!strcmp(argv[i], "-bgE"))  {bgE  = atof(argv[++i]);}  // energy of bg particles
     if (!strcmp(argv[i], "-sgN"))  {sgN  = atoi(argv[++i]);}  // number of sg particles
     if (!strcmp(argv[i], "-bgN"))  {bgN  = atoi(argv[++i]);}  // number of bg particles
+    if (!strcmp(argv[i], "-v"))    {verbose = atoi(argv[++i]);}
   }
 
-  cout << "bgE = " << bgE << endl;
-
   RootIO *rio = RootIO::GetInstance(filename);
+  if (verbose > 0) rio->setVerbose(verbose);
 
   // -- Detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = 0;
@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
 
   // -- Detector construction
   DetectorConstruction* detector = new DetectorConstruction;
+  if (verbose > 0) detector->setVerbose(verbose);
   detector->parseCmd(cmd);
 
   runManager->SetUserInitialization(detector);
@@ -90,6 +91,14 @@ int main(int argc, char** argv) {
   runManager->SetUserAction(new TrackingAction);
 
   runManager->Initialize();
+
+  if (verbose > 0) {
+    ((EventAction*)runManager->GetUserEventAction())->setVerbose(verbose);
+    ((RunAction*)runManager->GetUserRunAction())->setVerbose(verbose);
+    ((PrimaryGeneratorAction*)runManager->GetUserPrimaryGeneratorAction())->setVerbose(verbose);
+
+    ((StackingAction*)runManager->GetUserStackingAction())->setVerbose(verbose);
+}
 
   // -- Initialize visualization
   G4VisManager* visManager = new G4VisExecutive;

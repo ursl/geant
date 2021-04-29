@@ -10,7 +10,7 @@ class G4HCofThisEvent;
 // ----------------------------------------------------------------------
 class MCPSD : public G4VSensitiveDetector {
   public:
-  MCPSD(const G4String& name, const G4String& hitsCollectionName);
+  MCPSD(const G4String& name, const G4String& hitsCollectionName, int verbose = 0);
   ~MCPSD();
 
   virtual void Initialize(G4HCofThisEvent*);
@@ -19,6 +19,7 @@ class MCPSD : public G4VSensitiveDetector {
 
 private:
   MCPHitsCollection* fHitsCollection;
+  int fVerbose;
 };
 
 #endif

@@ -12,7 +12,7 @@
 #include "RootIO.hh"
 
 // ----------------------------------------------------------------------
-EventAction::EventAction(): G4UserEventAction() { }
+EventAction::EventAction(): G4UserEventAction(), fVerbose(0) { }
 
 // ----------------------------------------------------------------------
 EventAction::~EventAction() {
@@ -20,7 +20,7 @@ EventAction::~EventAction() {
 
 // ----------------------------------------------------------------------
 void EventAction::BeginOfEventAction(const G4Event*evt) {
-  //  G4cout << "==========> Event " << evt->GetEventID() << " start." << G4endl;
+  G4cout << "==========> Event " << evt->GetEventID() << " start." << G4endl;
 }
 
 // ----------------------------------------------------------------------
@@ -33,7 +33,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   G4int n_trajectories = 0;
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
 
-  bool DBX(true);
+  bool DBX(fVerbose>0);
   double px, py, pz, m, ekin, etot, vx, vy, vz;
   int pdgid, pid, tid;
 

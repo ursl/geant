@@ -17,10 +17,12 @@ public:
   virtual G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack);
   virtual void NewStage();
   virtual void PrepareNewEvent();
+  void setVerbose(int v) {fVerbose = v;}
 
 private:
 
   G4int fStage;
+  int   fVerbose;
 };
 
 #endif

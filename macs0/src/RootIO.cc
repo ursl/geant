@@ -12,8 +12,7 @@ static RootIO* instance = 0;
 using namespace std;
 
 // ----------------------------------------------------------------------
-RootIO::RootIO(string filename) {
-  fNevents = 0;
+RootIO::RootIO(string filename):fNevents(0), fVerbose(0) {
   TSystem ts;
   gSystem->Load("libClassesDict");
 
@@ -26,7 +25,6 @@ RootIO::RootIO(string filename) {
   fEvent = new rEvent;
   rEvent::Class()->SetCanSplit(1);
   fTree->Branch("rEvent", "rEvent", &fEvent, 64000, 99);
-
 }
 
 // ----------------------------------------------------------------------
@@ -49,7 +47,7 @@ void RootIO::clear() {
 
 // ----------------------------------------------------------------------
 void RootIO::fillTree() {
-  G4cout << "Filling tree with ngen = " << fEvent->nGenCands() << G4endl;
+  if (fVerbose > 0) G4cout << "Filling tree with ngen = " << fEvent->nGenCands() << G4endl;
   if (0) {
     fTree->Print();
   }
@@ -65,7 +63,7 @@ void RootIO::WriteTrackerHits(std::vector<TrackerHit*>* hcont) {
   std::string stevt = "Event_" + os.str();
   const char* chevt = stevt.c_str();
 
-  G4cout << "writing " << stevt << G4endl;
+  if (fVerbose > 0) G4cout << "writing " << stevt << G4endl;
   fFile->WriteObject(hcont, chevt);
 }
 
@@ -78,7 +76,7 @@ void RootIO::WriteMCPHits(std::vector<MCPHit*>* hcont) {
   std::string stevt = "Event_" + os.str();
   const char* chevt = stevt.c_str();
 
-  G4cout << "writing " << stevt << G4endl;
+  if (fVerbose > 0) G4cout << "writing " << stevt << G4endl;
   fFile->WriteObject(hcont, chevt);
 }
 

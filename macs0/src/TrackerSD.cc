@@ -8,9 +8,10 @@
 #include "RootIO.hh"
 
 // ----------------------------------------------------------------------
-TrackerSD::TrackerSD(const G4String& name, const G4String& hitsCollectionName) :
+TrackerSD::TrackerSD(const G4String& name, const G4String& hitsCollectionName, int verbose) :
   G4VSensitiveDetector(name),
-  fHitsCollection(NULL) {
+  fHitsCollection(NULL),
+  fVerbose(verbose) {
   collectionName.insert(hitsCollectionName);
 }
 
@@ -32,7 +33,9 @@ G4bool TrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
   if (edep==0.) return false;
 
-  if (0) G4cout << "==========> TrackerSD::ProcessHits> new hit added aStep = " << aStep << G4endl;
+  if (fVerbose > 9) G4cout << "==========> TrackerSD::ProcessHits> new hit added aStep = " << aStep
+			   << " at " << aStep->GetPostStepPoint()->GetPosition()
+			   << G4endl;
   TrackerHit *newHit = new TrackerHit();
   newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
   newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchable()->GetReplicaNumber());
@@ -51,8 +54,9 @@ void TrackerSD::EndOfEvent(G4HCofThisEvent*) {
   G4int NbHits = fHitsCollection->entries();
   std::vector<TrackerHit*> hitsVector;
 
-  G4cout << "-------->Storing hits in the ROOT file: there are " << NbHits
-	 << " hits in the tracker chambers " << G4endl;
+  if (fVerbose > 0) G4cout << "-------->Storing hits in the ROOT file: there are " << NbHits
+			   << " hits in the tracker chambers "
+			   << G4endl;
   if (1) {
     for (G4int i=0;i<NbHits;i++) {
       if (0) (*fHitsCollection)[i]->Print();

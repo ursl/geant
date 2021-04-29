@@ -26,7 +26,9 @@ public:
   void fillTree();
   void clear();
 
-  static const int NGENMAX = 100;
+  void setVerbose(int v) {fVerbose = v;}
+
+  static const int NGENMAX = 1000;
 
 
 protected:
@@ -38,7 +40,7 @@ private:
   TTree*  fTree;
   rEvent* fEvent;
   int fNevents;
-
+  int fVerbose;
 
 };
 #endif // INCLUDE_ROOTIO_HH

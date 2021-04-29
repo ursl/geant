@@ -17,8 +17,10 @@ public:
 
 public:
   virtual void GeneratePrimaries(G4Event*);
+  void setVerbose(int v) {fVerbose = v;}
 
 private:
+  int      fVerbose;
   G4int    fSgNpart;
   G4int    fBgNpart;
   G4double fBgNpartSigma;

@@ -13,7 +13,7 @@
 #include "G4ios.hh"
 
 // ----------------------------------------------------------------------
-StackingAction::StackingAction():G4UserStackingAction(), fStage(0){
+StackingAction::StackingAction():G4UserStackingAction(), fStage(0), fVerbose(0) {
 }
 
 // ----------------------------------------------------------------------
@@ -58,14 +58,16 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track * aTra
 // ----------------------------------------------------------------------
 void StackingAction::NewStage() {
   // G4cout << "+++++++++++ Stage " << fStage << G4endl;
-  if (0 == fStage)  {
-    // display trajetory information in the tracking region
-    G4cout << G4endl;
-    G4cout << "Tracks in tracking region have been processed. -- Stage 0 over."
-           << G4endl;
-    G4cout << G4endl;
-  } else  {
-    G4cout << "StackingAction::NewStage> fStage != 0" << G4endl;
+  if (fVerbose > 0) {
+    if (0 == fStage)  {
+      // display trajetory information in the tracking region
+      G4cout << G4endl;
+      G4cout << "Tracks in tracking region have been processed. -- Stage 0 over."
+	     << G4endl;
+      G4cout << G4endl;
+    } else  {
+      G4cout << "StackingAction::NewStage> fStage != 0" << G4endl;
+    }
   }
 
   if (stackManager->GetNUrgentTrack()) {
