@@ -37,6 +37,8 @@ public:
   G4double GetWorldFullLength()   {return fWorldLength;};
 
   void defineMaterials();
+  void parseCmd(G4String cmd);
+
   // -- communications methods
   void SetMagField(G4double);
   void SetTargetMaterial(G4String);
@@ -50,6 +52,8 @@ public:
   void makeAccel();
   // -- MCP and xtals
   void makeEndDetector();
+  // -- target
+  void makeTarget();
 
 private:
   // -- Materials

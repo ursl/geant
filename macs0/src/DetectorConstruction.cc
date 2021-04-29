@@ -1,3 +1,9 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cstdlib>
+#include <math.h>
+
 #include "DetectorConstruction.hh"
 #include "DetectorMessenger.hh"
 #include "ChamberParameterisation.hh"
@@ -40,6 +46,8 @@
 
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
+
+using namespace std;
 
 
 G4ThreadLocal MagneticField* DetectorConstruction::fpMagField = 0;
@@ -90,7 +98,63 @@ DetectorConstruction::~DetectorConstruction() {
 }
 
 // ----------------------------------------------------------------------
+void DetectorConstruction::parseCmd(G4String filename) {
+
+  ifstream INS;
+  string sline;
+  INS.open(filename);
+  string tmat("/det/setTargetMaterial ");
+  string tlen("/det/setTargetLength ");
+  while (getline(INS, sline)) {
+    if (0 == sline.find("#")) continue;
+    // -- search for target material
+    if (string::npos != sline.find(tmat)) {
+      size_t start_pos = sline.find(tmat) + tmat.size();
+      cout << "Found tmat at position " << start_pos << endl;
+      string material = sline.substr(start_pos);
+      cout << "material ->" << material << "<-" << endl;
+      SetTargetMaterial(material);
+    }
+    // -- search for target length
+    if (string::npos != sline.find(tlen)) {
+      size_t start_pos = sline.find(tlen) + tlen.size();
+      cout << "Found tlen at position " << start_pos << endl;
+      string length = sline.substr(start_pos);
+      cout << "length ->" << length << "<-" << endl;
+
+      start_pos = length.find(" ");
+      string unit = length.substr(start_pos + 1);
+      //      SetTargetLength(lenmm);
+      cout << "unit ->" << unit << "<-" << endl;
+
+      string number = length.substr(0, length.find(unit)-1);
+      cout << "number ->" <<  number << "<-" << endl;
+      double s(1.);
+      if ("mm" == unit) {
+	s = 1.;
+      } else if ("cm" == unit) {
+	s = 10.;
+      } else if ("nm" == unit) {
+	s = 1.e-6;
+      } else if ("um" == unit) {
+	s = 1.e-3;
+      }
+      G4double unitnumber = stod(number)*s;
+      SetTargetLength(unitnumber);
+      cout << "setTargetLength(" << unitnumber << ")" << endl;
+    }
+  }
+
+  INS.close();
+}
+
+// ----------------------------------------------------------------------
 G4VPhysicalVolume* DetectorConstruction::Construct() {
+  G4GeometryManager::GetInstance()->OpenGeometry();
+  G4PhysicalVolumeStore::GetInstance()->Clean();
+  G4LogicalVolumeStore::GetInstance()->Clean();
+  G4SolidStore::GetInstance()->Clean();
+
   G4cout << "==DetectorConstruction::Construct>  building detector"
 	 << G4endl;
   return macs0();
@@ -103,44 +167,37 @@ void DetectorConstruction::SetTargetLength(G4double value) {
   fTargetLength = value;
   G4cout << "==DetectorConstruction::SetTargetMaterial> (re)setting target length to " << fTargetLength
 	 << G4endl;
-  G4RunManager::GetRunManager()->GeometryHasBeenModified();
 }
 
 
 // ----------------------------------------------------------------------
 void DetectorConstruction::SetTargetMaterial(G4String materialName) {
 
+  // -- if custom is set, material defined in this class is used!
   bool custom(false);
+
   if (materialName == "Aerogel") {
     fTargetMater = fAerog;
     custom = true;
   } else if (materialName == "SiO2") {
     fTargetMater = fSiO2;
     custom = true;
+  } else if (materialName == "Cfoil") {
+    fTargetMater = fC;
+    custom = true;
   }
 
-  if (custom) {
-    // -- change target material if target was constructed already
-    if (fLogicTarget) fLogicTarget->SetMaterial(fTargetMater);
-    G4RunManager::GetRunManager()->GeometryHasBeenModified();
-    G4cout << "==DetectorConstruction::SetTargetMaterial> (re)setting target material to " << fTargetMater->GetName()
-	   << G4endl;
-    return;
-  }
+  if (custom) return;
 
   G4NistManager *nistManager = G4NistManager::Instance();
   G4Material *pMaterial = nistManager->FindOrBuildMaterial(materialName);
 
-  if (fTargetMater != pMaterial) {
-    if (pMaterial) {
-      fTargetMater = pMaterial;
-      if (fLogicTarget) fLogicTarget->SetMaterial(fTargetMater);
-      G4RunManager::GetRunManager()->GeometryHasBeenModified();
-      G4cout << "==DetectorConstruction::SetTargetMaterial> The target is made of " << materialName << G4endl;
-    } else {
-      G4cout << "==DetectorConstruction::SetTargetMaterial> XXX  WARNING from SetTargetMaterial : "
-	     << materialName << " not found XXX" << G4endl;
-    }
+  if (pMaterial) {
+    fTargetMater = pMaterial;
+    G4cout << "==DetectorConstruction::SetTargetMaterial> The target is made of " << materialName << G4endl;
+  } else {
+    G4cout << "==DetectorConstruction::SetTargetMaterial> XXX  WARNING from SetTargetMaterial : "
+	   << materialName << " not found XXX" << G4endl;
   }
 }
 
@@ -190,7 +247,7 @@ void DetectorConstruction::defineMaterials() {
   // -- Aluminum
   fBe = new G4Material("Beryllium", z=4, a=9.012182*g/mole, density=1.848*g/cm3);
 
-  // -- Carbon (fiber)
+  // -- Carbon (fiber? foil??)
   density = 0.145*g/cm3;
   fC = new G4Material("CarbonFoil", density, nel=1);
   fC->AddElement(elC, 1);
@@ -219,15 +276,17 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 
   fBeampipeMater  = fBe;
   // -- provide default (can be overridden with mac)
-  fTargetMater  = fAerog;
-  fTargetLength  = 1*cm;
+  if (0) {
+    fTargetMater  = fAerog;
+    fTargetLength  = 1*cm;
 
-  fTargetMater  = fAl;
-  fTargetLength  = 0.1*mm; // 10um
+    fTargetMater  = fAl;
+    fTargetLength  = 0.1*mm; // 10um
 
-  // -- EPJ, C80, 804:
-  fTargetMater  = fC;
-  fTargetLength  = 15*nm; // 15nm
+    // -- EPJ, C80, 804:
+    fTargetMater  = fC;
+    fTargetLength  = 15*nm; // 15nm
+  }
 
   //
   fTrkLength  = 100.*cm;
@@ -253,7 +312,6 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 
   fTrkInnerRadius = 5.0*cm;
   fTrkOuterRadius = 100.0*cm;
-  G4double tgtHalfLength  = 0.5*fTargetLength;    // Half length of the Target
   G4double trkHalfLength  = 0.5*fTrkLength;
   G4double beampipeHalfLength  = 0.5*fBeampipeLength;
 
@@ -288,28 +346,13 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   pBp->SetForceSolid(false);
   fLogicBeampipe->SetVisAttributes(pBp);
 
-  G4cout << "Beampipe is " << fBeampipeLength/cm << "cm of " << fBeampipeMater->GetName() << G4endl;
+  G4cout << "Beampipe is " << fBeampipeLength/mm << "mm of " << fBeampipeMater->GetName() << G4endl;
 
 
   // ------------------------------
   // -- Target
   // ------------------------------
-  //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength+tgtHalfLength);
-  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength + 10.*cm);
-  fSolidTarget = new G4Box("Target", 2*cm, 2*cm, tgtHalfLength);
-  fLogicTarget = new G4LogicalVolume(fSolidTarget, fTargetMater, "Target", 0, 0, 0);
-  fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
-
-  fLogicTarget->SetUserLimits(new G4UserLimits(0.1*tgtHalfLength));
-
-  G4VisAttributes *pVA  = new G4VisAttributes;
-  pVA->SetColour(G4Colour(0.1, 0.8, 0.1));
-  pVA->SetForceSolid(true);
-  fLogicTarget->SetVisAttributes(pVA);
-
-  G4cout << "Target is " << fTargetLength/cm << "cm of " << fTargetMater->GetName()
-	 << " with logical name ->" << fLogicTarget->GetName() << "<-"
-	 << G4endl;
+  makeTarget();
 
   // ------------------------------
   // -- Tracker
@@ -403,7 +446,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   fLogicEndplate->SetVisAttributes(pVA1);
   fLogicEndplateF->SetVisAttributes(pVA1);
 
-  G4cout << "Endplates are " <<  "0.1cm of " << fTargetMater->GetName()
+  G4cout << "Endplates are " <<  "1mm of " << fTargetMater->GetName()
 	 << " with logical name ->" << fLogicEndplate->GetName() << "<-"
 	 << G4endl;
 
@@ -612,4 +655,29 @@ void DetectorConstruction::makeCombinedTrspTube() {
   pVA->SetColour(G4Colour(0.8, 0.8, 0.8));
   pVA->SetForceSolid(true);
   fLogicTrsp->SetVisAttributes(pVA);
+}
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::makeTarget() {
+  //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength+tgtHalfLength);
+
+  G4double zposition = -0.5*fTrkLength + 10.*cm;
+
+  G4ThreeVector positionTarget = G4ThreeVector(0., 0., zposition);
+  G4double tgtHalfLength       = 0.5*fTargetLength;    // Half length of the Target
+
+  G4Box* fSolidTarget             = new G4Box("Target", 2*cm, 2*cm, tgtHalfLength);
+  G4LogicalVolume* fLogicTarget   = new G4LogicalVolume(fSolidTarget, fTargetMater, "Target", 0, 0, 0);
+  G4VPhysicalVolume* fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
+
+  fLogicTarget->SetUserLimits(new G4UserLimits(0.1*tgtHalfLength));
+
+  G4VisAttributes *pVA  = new G4VisAttributes;
+  pVA->SetColour(G4Colour(0.1, 0.8, 0.1));
+  pVA->SetForceSolid(true);
+  fLogicTarget->SetVisAttributes(pVA);
+
+  G4cout << "Target is " << fTargetLength/mm << "mm of " << fTargetMater->GetName()
+	 << " with logical name ->" << fLogicTarget->GetName() << "<-"
+	 << G4endl;
 }

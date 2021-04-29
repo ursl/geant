@@ -69,6 +69,8 @@ int main(int argc, char** argv) {
 
   // -- Detector construction
   DetectorConstruction* detector = new DetectorConstruction;
+  detector->parseCmd(cmd);
+
   runManager->SetUserInitialization(detector);
 
   // G4VModularPhysicsList* physicsList = new FTFP_BERT;
