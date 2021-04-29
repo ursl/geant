@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
   int nevt(100), verbose(0);
   float sgE(-1.), bgE(-1.);
   int sgN(-1.), bgN(-1.);
-  G4String cmd("vis.mac"), filename("g4run.root");
+  G4String cmd("vis.mac"), filename("nada");
   for (int i = 0; i < argc; i++){
     if (!strcmp(argv[i], "-f"))    {filename = argv[++i];}
     if (!strcmp(argv[i], "-g"))    {startGUI = true;}
@@ -47,6 +47,14 @@ int main(int argc, char** argv) {
     if (!strcmp(argv[i], "-bgN"))  {bgN  = atoi(argv[++i]);}  // number of bg particles
     if (!strcmp(argv[i], "-v"))    {verbose = atoi(argv[++i]);}
   }
+
+  if ("nada" == filename) {
+    filename = cmd;
+    size_t pos1 = filename.find(".mac");
+    filename = filename.substr(0, pos1);
+    filename += ".root";
+  }
+  cout << "filename: " << filename <<endl;
 
   RootIO *rio = RootIO::GetInstance(filename);
   if (verbose > 0) rio->setVerbose(verbose);
