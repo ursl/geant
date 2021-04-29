@@ -6,7 +6,7 @@
 //
 // Usage:
 // ../swift/mkMacFiles.swift -f vis.mac -n basename  -s /macs0/det/setTargetLength=5\ nm,10\ nm,15\ nm
-//                          [-p /macs0/det/setTargetMaterial=Cfoil] [-p /macs0/generator/bgKinEnergy=26\ MeV]
+//                          [-p /macs0/det/setTargetMaterial=Cfoil] [-p /macs0/generator/bgKinEnergy\ =26\ MeV]
 //
 // History: 2021/04/29 First shot
 //
@@ -32,7 +32,7 @@ func mkMacFile(basename: String, macname: String, contents: [String]) {
             sline = line
             for p in patterns.keys {
                 if line.contains(p) {
-                    sline = p + " " + patterns[p]!
+                    sline = p.replacingOccurrences(of: " ", with: "") + " " + patterns[p]!
                     continue
                 }
             }
