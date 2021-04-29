@@ -83,8 +83,9 @@
 
 # -- configure target
 # materials examples: G4_Al, G4_Ti, G4_Cu, G4_C, G4_Ca, G4_Cr, G4_Ni, G4_Cu
-#?? /macs0/det/setTargetMaterial G4_Cu
-#?? /macs0/det/setTargetLength 0.001 mm
+#                     Aerogel, SiO2, Cfoil
+/macs0/det/setTargetMaterial Cfoil
+/macs0/det/setTargetLength 15 nm
 
 # -- (signal) Muonium source and decay
 #/gun/position 0 0 0 cm
