@@ -10,6 +10,7 @@
 #include "G4ios.hh"
 
 #include "RootIO.hh"
+#include <TTimeStamp.h>
 
 // ----------------------------------------------------------------------
 EventAction::EventAction(): G4UserEventAction(), fVerbose(0) { }
@@ -20,7 +21,10 @@ EventAction::~EventAction() {
 
 // ----------------------------------------------------------------------
 void EventAction::BeginOfEventAction(const G4Event*evt) {
-  G4cout << "==========> Event " << evt->GetEventID() << " start." << G4endl;
+  TTimeStamp ts;
+  G4cout << "==========> Event " << evt->GetEventID() << " start, time now: "
+	 << ts.AsString("lc")
+	 << G4endl;
 }
 
 // ----------------------------------------------------------------------

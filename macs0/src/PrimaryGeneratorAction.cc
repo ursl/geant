@@ -51,7 +51,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
   if ((fVerbose > 0) || (1 == first)) {
     G4cout << "======================================================================"
 	   << G4endl
-	   << "==========> Event " << anEvent->GetEventID() << " start."
+	   << "==========> PrimaryGeneratorAction::GeneratePrimaries " << anEvent->GetEventID() << " start."
 	   << G4endl
 	   << "======================================================================"
 	   << G4endl;
