@@ -1,34 +1,3 @@
-/***************************************************************************
- *  musrSim - the program for the simulation of (mainly) muSR instruments. *
- *          More info on http://lmu.web.psi.ch/simulation/index.html .     *
- *          musrSim is based od Geant4 (http://geant4.web.cern.ch/geant4/) *
- *                                                                         *
- *  Copyright (C) 2009 by Paul Scherrer Institut, 5232 Villigen PSI,       *
- *                                                       Switzerland       *
- *                                                                         *
- *  This program is free software; you can redistribute it and/or modify   *
- *  it under the terms of the GNU General Public License as published by   *
- *  the Free Software Foundation; either version 2 of the License, or      *
- *  (at your option) any later version.                                    *
- *                                                                         *
- *  This program is distributed in the hope that it will be useful,        *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
- *  GNU General Public License for more details.                           *
- *                                                                         *
- *  You should have received a copy of the GNU General Public License      *
- *  along with this program; if not, write to the Free Software            *
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.              *
- ***************************************************************************/
-
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//  Muonium "Scattering"
-//  Id    : musrMuScatter.cc, v 1.4
-//  Author: Taofiq PARAISO, T. Shiroka
-//  Date  : 2007-12
-//  Notes : Simplified model for Mu scattering. Spin effects have been excluded.
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
 #include "musrMuScatter.hh"
 
 using namespace std;
@@ -37,10 +6,8 @@ musrMuScatter::musrMuScatter(const G4String& name, G4ProcessType  aType) : G4VDi
 
 musrMuScatter:: ~musrMuScatter(){}
 
-// At the end of the step, the current volume is checked and if Muonium is in a solid
-// material (except for the carbon foil where it is generated), it is stopped immediately.
-G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
-                                               const G4Step& aStep) {
+// ----------------------------------------------------------------------
+G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData, const G4Step& aStep) {
   fParticleChange.Initialize(trackData);
 
   //! Tao - Get time information */
@@ -61,8 +28,6 @@ G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
 
   //  if (trackData.GetKineticEnergy() <
 
-  /*! - Verify the condition of applying the process: if Mu is in a material
-        different than vacuum and carbon foil, then stop it directly. */
   if (CheckCondition(aStep)) {
     fParticleChange.ProposePosition(trackData.GetStep()->GetPreStepPoint()->GetPosition());
     fParticleChange.ProposeTrackStatus(fStopButAlive) ;
@@ -73,7 +38,8 @@ G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData,
 }
 
 
-/*! - Muonium will NOT be stopped as soon as it enters a material different than vacuum or C foil. */
+// ----------------------------------------------------------------------
+// -- Muonium will be stopped as soon as it enters a material different than vacuum or target.
 G4bool musrMuScatter::CheckCondition(const G4Step& aStep) {
   G4bool condition = false;
   p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
