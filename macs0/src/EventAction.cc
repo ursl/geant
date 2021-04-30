@@ -22,9 +22,15 @@ EventAction::~EventAction() {
 // ----------------------------------------------------------------------
 void EventAction::BeginOfEventAction(const G4Event*evt) {
   TTimeStamp ts;
-  G4cout << "==========> Event " << evt->GetEventID() << " start, time now: "
-	 << ts.AsString("lc")
-	 << G4endl;
+  int every(1);
+  if (0 == fVerbose) {
+    every = 100;
+  }
+  if (0 == evt->GetEventID()%every) {
+    G4cout << "==========> Event " << Form("%6d", evt->GetEventID()) << " start, time now: "
+	   << ts.AsString("lc")
+	   << G4endl;
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -45,11 +51,11 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
   for (G4int i = 0; i < n_trajectories; ++i) {
     //    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
     Trajectory* trj = (Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
-    ekin = 0.; //trj->GetInitialKineticEnergy();
+    ekin = trj->GetKineticEnergy();
 
     tid   = trj->GetTrackID();
     pid   = trj->GetParentID();
-    m     = 0.; //trj->GetParticleDefinition()->GetPDGMass();
+    m     = trj->GetMass();
     pdgid = trj->GetPDGEncoding();
 
     px    = trj->GetInitialMomentum().x();
@@ -60,13 +66,6 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     vz    = trj->GetPoint(0)->GetPosition().z();
 
     etot  = TMath::Sqrt(px*px + py*py + pz*pz + m*m);
-    if (DBX) G4cout <<
-	       Form(":%4d ID= %+5d trkId=%4d parentID=%4d (E, p)= %+7.2f/%+7.3f/%+7.3f/%+7.3f ekin= %7.4f v=(%+8.3f, %+8.3f, %+14.8f)",
-		    i, pdgid, tid, pid, etot,
-		    px, py, pz, ekin,
-		    vx, vy, vz
-		    )
-		    << G4endl;
 
     TGenCand* pGen =  rio->getEvent()->addGenCand();
     pGen->fID = pdgid;
@@ -84,6 +83,16 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     pGen->fV.SetXYZ(trj->GetPoint(0)->GetPosition().x(),
 		    trj->GetPoint(0)->GetPosition().y(),
 		    trj->GetPoint(0)->GetPosition().z());
+
+    if (DBX) G4cout <<
+	       Form(":%4d ID= %+5d trkId=%4d parentID=%4d (E, p)= %+7.2f/%+7.3f/%+7.3f/%+7.3f ekin= %11.8fMeV v=(%+8.3f, %+8.3f, %+14.8f), t = %f",
+		    i, pdgid, tid, pid, etot,
+		    px, py, pz, ekin,
+		    vx, vy, vz,
+		    trj->GetGlobalTime()
+		    )
+		    << G4endl;
+
     // -- store production vertex of e+ from Mu (i.e. the Mu decay vertex)
     if ((11 == pdgid) && (1313 == TMath::Abs(getParticleID(pid, evt)))) {
       TGenVtx *pVtx = rio->getEvent()->addGenVtx();

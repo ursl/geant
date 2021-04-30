@@ -54,6 +54,7 @@ Trajectory::Trajectory(const G4Track* aTrack) : G4VTrajectory(), fPositionRecord
   fVertexPosition = aTrack->GetPosition();
   fGlobalTime = aTrack->GetGlobalTime();
   fLocalTime = aTrack->GetLocalTime();
+  fKineticEnergy = aTrack->GetKineticEnergy();
 }
 
 
@@ -212,8 +213,7 @@ std::vector<G4AttValue>* Trajectory::CreateAttValues() const {
 
 // ----------------------------------------------------------------------
 void Trajectory::AppendStep(const G4Step* aStep) {
-   fPositionRecord->push_back(
-       new G4TrajectoryPoint(aStep->GetPostStepPoint()->GetPosition() ));
+  fPositionRecord->push_back(new G4TrajectoryPoint(aStep->GetPostStepPoint()->GetPosition()));
 }
 
 // ----------------------------------------------------------------------

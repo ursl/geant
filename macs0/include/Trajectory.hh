@@ -46,21 +46,23 @@ public:
   virtual G4VTrajectoryPoint* GetPoint(G4int i) const { return (*fPositionRecord)[i]; }
   virtual G4double GetLocalTime() const { return fLocalTime; }
   virtual G4double GetGlobalTime() const { return fGlobalTime; }
+  virtual G4double GetKineticEnergy() const { return fKineticEnergy; }
 
- private:
-   TrajectoryPointContainer* fPositionRecord;
-   G4int                        fTrackID;
-   G4int                        fParentID;
-   G4int                        fTrackStatus;
-   G4ParticleDefinition*        fParticleDefinition;
-   G4String                     fParticleName;
-   G4double                     fPDGCharge;
-   G4double                     fPDGMass;
-   G4int                        fPDGEncoding;
-   G4ThreeVector                fMomentum;
-   G4ThreeVector                fVertexPosition;
-   G4double                     fGlobalTime;
-   G4double                     fLocalTime;
+private:
+  TrajectoryPointContainer* fPositionRecord;
+  G4int                        fTrackID;
+  G4int                        fParentID;
+  G4int                        fTrackStatus;
+  G4ParticleDefinition*        fParticleDefinition;
+  G4String                     fParticleName;
+  G4double                     fPDGCharge;
+  G4double                     fPDGMass;
+  G4int                        fPDGEncoding;
+  G4ThreeVector                fMomentum;
+  G4double                     fKineticEnergy;
+  G4ThreeVector                fVertexPosition;
+  G4double                     fGlobalTime;
+  G4double                     fLocalTime;
 
 };
 
