@@ -110,10 +110,10 @@ G4bool musrMuEnergyLossLandau::CheckCondition(const G4Step& aStep) {
 // ----------------------------------------------------------------------
 G4double musrMuEnergyLossLandau::GetMeanFreePath(const G4Track&t,  G4double, G4ForceCondition* condition1) {
   *condition1 = Forced;
-  std::string logVolName = t.GetVolume()->GetLogicalVolume()->GetName();
-  if (logVolName == "Target") {
-    return 2*CLHEP::nm;
-  }
+  // std::string logVolName = t.GetVolume()->GetLogicalVolume()->GetName();
+  // if (logVolName == "Target") {
+  //   return 2*CLHEP::nm;
+  // }
   return DBL_MAX;
 }
 

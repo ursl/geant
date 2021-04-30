@@ -659,6 +659,7 @@ void DetectorConstruction::makeCombinedTrspTube() {
   fLogicTrsp->SetVisAttributes(pVA);
 }
 
+
 // ----------------------------------------------------------------------
 void DetectorConstruction::makeTarget() {
   //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength+tgtHalfLength);
@@ -672,7 +673,7 @@ void DetectorConstruction::makeTarget() {
   G4LogicalVolume* fLogicTarget   = new G4LogicalVolume(fSolidTarget, fTargetMater, "Target", 0, 0, 0);
   G4VPhysicalVolume* fPhysiTarget = new G4PVPlacement(0, positionTarget, fLogicTarget, "Target", fLogicWorld, false, 0, true);
 
-  fLogicTarget->SetUserLimits(new G4UserLimits(0.1*tgtHalfLength));
+  fLogicTarget->SetUserLimits(new G4UserLimits(0.2*tgtHalfLength));
 
   G4VisAttributes *pVA  = new G4VisAttributes;
   pVA->SetColour(G4Colour(0.1, 0.8, 0.1));
