@@ -52,17 +52,21 @@ void treeReader01::eventProcessing() {
   if (nhmcp > 0) ((TH1D*)fpHistFile->Get("evts"))->Fill(3);
   if (nhtrk > 0 && nhmcp > 0) ((TH1D*)fpHistFile->Get("evts"))->Fill(4);
 
-
-  // -- call specific analysis functions
+  // -- count initial state muons
   TGenCand *pGen(0);
+  int nPrimaryMuons(0);
   for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
     pGen = fpEvt->getGenCand(igen);
-    if ((0 == pGen->fMom1) && (-13 == pGen->fID)) {
+    if (-13 == pGen->fID && -1 == pGen->fMom1) {
+      ++nPrimaryMuons;
       double ekin = 1.e3*(pGen->fP.E() - MMUON); // in keV
       ((TH1D*)fpHistFile->Get("h7"))->Fill(ekin);
+      if (DBX) pGen->dump(0);
     }
-    if (DBX) pGen->dump(0);
   }
+  ((TH1D*)fpHistFile->Get("nmuons"))->Fill(nPrimaryMuons);
+
+  // -- call specific analysis functions
   fillMuFinal();
   fillHist();
   if (DBX) {
@@ -118,8 +122,9 @@ void treeReader01::fillMuFinal() {
 // ----------------------------------------------------------------------
 void treeReader01::fillHist() {
   int idxEAtom(-1), idxEMuon(-1);
-  TGenCand *pMu(0), *pEMuon(0), *pEAtom(0);
+  TGenCand *pGen(0), *pMu(0), *pEMuon(0), *pEAtom(0);
   vector<int> signalTrkId;
+
   for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
     pMu = fMuFinal[i];
     idxEAtom = idxEMuon = -1;
@@ -213,6 +218,7 @@ void treeReader01::bookHist() {
   cout << "==> treeReader01: bookHist> " << endl;
 
   new TH1D("evts", "events", 40, 0., 40.);
+  new TH1D("nmuons", "nmuons", 100, 0., 100.);
   new TH1D("h1", "nHits", 40, 0., 40.);
   new TH1D("h2", "nHits Trk", 40, 0., 40.);
   new TH1D("h3", "nHits MCP", 40, 0., 40.);
