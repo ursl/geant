@@ -47,33 +47,14 @@ musrMuEnergyLossLandau::~musrMuEnergyLossLandau(){}
 double musrMuEnergyLossLandau::landauMPV   = 0.04;
 double musrMuEnergyLossLandau::landauSigma = 0.02;
 
-
-// G4double musrMuEnergyLossLandau::PostStepGetPhysicalInteractionLength(const G4Track&  track,
-// 								      G4double, //  previousStepSize
-// 								      G4double  currentMinimumStep,
-// 								      G4double& currentSafety,
-// 								      G4GPILSelection* selection ) {
-
-//   G4cout << "musrMuEnergyLossLandau::PostStepGetPhysicalInteractionLength" << endl;
-//   G4double pathlength = 0.5*CLHEP::nm;
-//   std::string logVolName = track.GetVolume()->GetLogicalVolume()->GetName();
-//   if (logVolName == "Target") {
-//     return pathlength;
-//   } else if  (logVolName == "vac") {
-//     return 10*CLHEP::cm;
-//   }
-//   return 1*CLHEP::cm;
-// }
-
-
 // ----------------------------------------------------------------------
 G4VParticleChange* musrMuEnergyLossLandau::PostStepDoIt(const G4Track& trackData, const G4Step&  aStep) {
   fParticleChange.Initialize(trackData);
   //  G4cout << "musrMuEnergyLossLandau::PostStepDoIt" << G4endl;
 
   // -- check whether Mu hit the endplate. If yes, stop and decay it there.
-  p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
-  std::string logVolName = aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName();
+  p_name = trackData.GetDefinition()->GetParticleName(); // particle name
+  std::string logVolName = trackData.GetVolume()->GetLogicalVolume()->GetName();
   if (p_name == "Muonium" && ((logVolName == "Endplate"))) {
     fParticleChange.Initialize(trackData);
     //    fParticleChange.ProposeTrackStatus(fStopAndKill) ;
@@ -81,11 +62,44 @@ G4VParticleChange* musrMuEnergyLossLandau::PostStepDoIt(const G4Track& trackData
     return &fParticleChange;
   }
 
-  G4Track theNewTrack;
-  if (CheckCondition(aStep)) {
-    GetFinalEnergy(&aStep);
-    G4Step theStep;
-    PrepareSecondary(trackData);
+  // -- unwrapped:  if (CheckCondition(aStep)) {
+  if (p_name == "Muonium" && ((logVolName=="Target"))) {
+
+    // -- unwrapped:  GetFinalEnergy(&aStep);
+    particleTable = G4ParticleTable::GetParticleTable();
+    G4double Eloss, Efinal;
+    G4double E = trackData.GetDynamicParticle()->GetKineticEnergy()/CLHEP::keV;
+
+    do {
+      Eloss = random->Landau(landauMPV,landauSigma);
+      if (Eloss > 0.) break;
+    } while (1);
+
+    Efinal = E - Eloss;
+    if (Efinal < 0. ) Efinal = 0.;
+    if (0) G4cout << "musrMuEnergyLossLandau::GetFinalEnergy: "
+		  << " E, Eloss, Efinal = " << E << ", " << Eloss << ", "  << Efinal
+		  << G4endl;
+
+    particle = particleTable->FindParticle(p_name) ;
+
+    // Set the new dynamic particle DP
+    DP = new G4DynamicParticle(particle,
+			       trackData.GetDynamicParticle()->GetMomentumDirection(),
+			       Efinal/1000.);
+
+    DP->SetProperTime(  trackData.GetDynamicParticle()->GetProperTime());
+    DP->SetPolarization(trackData.GetDynamicParticle()->GetPolarization().x(),
+			trackData.GetDynamicParticle()->GetPolarization().y(),
+			trackData.GetDynamicParticle()->GetPolarization().z());
+    DP->SetPreAssignedDecayProperTime(trackData.GetDynamicParticle()->GetPreAssignedDecayProperTime());
+
+    //G4Step theStep;
+    // NOTE: This is where I should change everything!
+    //       - model this according to
+    // -- unwrapped:  PrepareSecondary(trackData);
+    aSecondary = new G4Track(DP, trackData.GetGlobalTime(), trackData.GetPosition());
+
     fParticleChange.AddSecondary(aSecondary);
     fParticleChange.ProposeTrackStatus(fStopAndKill) ;
   } else {
@@ -98,11 +112,6 @@ G4VParticleChange* musrMuEnergyLossLandau::PostStepDoIt(const G4Track& trackData
 // ----------------------------------------------------------------------
 G4bool musrMuEnergyLossLandau::CheckCondition(const G4Step& aStep) {
   condition=false;
-  p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
-  std::string logVolName = aStep.GetTrack()->GetVolume()->GetLogicalVolume()->GetName();
-  if (p_name == "Muonium" && ((logVolName=="Target"))) {
-    condition=true;
-  }
   return condition;
 }
 
@@ -120,38 +129,6 @@ G4double musrMuEnergyLossLandau::GetMeanFreePath(const G4Track&t,  G4double, G4F
 
 // ----------------------------------------------------------------------
 void musrMuEnergyLossLandau::GetFinalEnergy(const G4Step* aStep) {
-  particleTable=G4ParticleTable::GetParticleTable();
-  G4double Eloss, Efinal;
-  G4double E = aStep->GetTrack()->GetDynamicParticle()->GetKineticEnergy()/CLHEP::keV;
-
-  // Muonium
-  if (p_name=="Muonium") {
-    do {
-      Eloss = random->Landau(landauMPV,landauSigma);
-      if (Eloss > 0.) break;
-    } while (1);
-
-    Efinal = E - Eloss;
-    if (Efinal < 0. ) Efinal = 0.;
-    if (0) G4cout << "musrMuEnergyLossLandau::GetFinalEnergy: "
-		  << " E, Eloss, Efinal = " << E << ", " << Eloss << ", "  << Efinal
-		  << G4endl;
-
-    particle = particleTable->FindParticle(p_name) ;
-
-    // Set the new dynamic particle DP
-    DP = new G4DynamicParticle(particle,
-			       aStep->GetTrack()->GetDynamicParticle()->GetMomentumDirection(),
-			       Efinal/1000.);
-
-    /*    IMPORTANT : COPY THOSE DATA TO GET THE SAME PARTICLE PROPERTIES!!!
-	  SHOULD BE KEPT WHEN BUILDING A PARTICLE CHANGE  */
-    DP->SetProperTime(  aStep->GetTrack()->GetDynamicParticle()->GetProperTime());
-    DP->SetPolarization(aStep->GetTrack()->GetDynamicParticle()->GetPolarization().x(),
-			aStep->GetTrack()->GetDynamicParticle()->GetPolarization().y(),
-			aStep->GetTrack()->GetDynamicParticle()->GetPolarization().z());
-    DP->SetPreAssignedDecayProperTime(aStep->GetTrack()->GetDynamicParticle()->GetPreAssignedDecayProperTime());
-  }
 }
 
 
@@ -160,4 +137,6 @@ void musrMuEnergyLossLandau::PrepareSecondary(const G4Track& track) {
   if (p_name == "Muonium") {
     aSecondary = new G4Track(DP, track.GetGlobalTime(), track.GetPosition());
   }
+  // ?? does this work against the memory leak? No!
+  //  delete DP;
 }

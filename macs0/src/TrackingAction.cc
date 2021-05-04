@@ -30,8 +30,8 @@ void TrackingAction::PostUserTrackingAction(const G4Track* aTrack) {
     size_t nSeco = secondaries->size();
     if (nSeco > 0) {
       for(size_t i=0; i<nSeco; i++) {
-        TrackInformation* infoNew = new TrackInformation(info);
-        (*secondaries)[i]->SetUserInformation(infoNew);
+	TrackInformation* infoNew = new TrackInformation(info);
+	(*secondaries)[i]->SetUserInformation(infoNew);
       }
     }
   }

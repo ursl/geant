@@ -95,8 +95,8 @@ MuDecayChannel::MuDecayChannel(const G4String& theParentName, G4double theBR) : 
   }
 }
 
-MuDecayChannel::~MuDecayChannel()
-{
+MuDecayChannel::~MuDecayChannel() {
+  delete feAtomic;
 }
 
 G4DecayProducts *MuDecayChannel::DecayIt(G4double)

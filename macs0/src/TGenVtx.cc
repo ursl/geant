@@ -20,12 +20,15 @@ TGenVtx::TGenVtx(const  TGenVtx &other) {
   fGlobalTime = other.fGlobalTime;
 }
 
+TGenVtx::~TGenVtx() {
+  clear();
+}
 
 // ----------------------------------------------------------------------
 void TGenVtx::clear() {
   int vinit[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-  std::vector<int> fvMom(vinit, vinit + sizeof(vinit) / sizeof(int) );
-  std::vector<int> fvDau(vinit, vinit + sizeof(vinit) / sizeof(int) );
+  fvMom = std::vector<int>(vinit, vinit + sizeof(vinit) / sizeof(int) );
+  fvDau = std::vector<int>(vinit, vinit + sizeof(vinit) / sizeof(int) );
 
   fID = fNumber = fStatus = fTag = -1;
   fQ = -9999;
@@ -35,6 +38,7 @@ void TGenVtx::clear() {
 }
 
 
+// ----------------------------------------------------------------------
 void TGenVtx::dump(int printOption) {
   char line[200];
   if (1 == printOption) {

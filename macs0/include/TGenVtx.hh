@@ -17,7 +17,7 @@ public:
   TGenVtx();
   TGenVtx(int Option);
   TGenVtx(const TGenVtx &);
-  ~TGenVtx() { };
+  ~TGenVtx();
   void     clear();
 
   // ----------------------------------------------------------------------
