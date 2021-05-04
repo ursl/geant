@@ -25,12 +25,13 @@ public :
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
   // -- main analysis methods, local and overriding
-  void makeAll(std::string what = "all");
-  void loadFiles(std::string afiles);
-  void resetHistograms(bool deleteThem = false);
+  void   makeAll(std::string what = "all");
+  void   loadFiles(std::string afiles);
+  void   resetHistograms(bool deleteThem = false);
 
 
-  void scanAnalyses();
+  void   scanAnalyses();
+  double totalMuons(TH1 *h);
 };
 
 #endif

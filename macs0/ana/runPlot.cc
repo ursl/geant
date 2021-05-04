@@ -25,14 +25,14 @@ int main(int argc, char *argv[]) {
 
   string progName  = argv[0];
 
-  string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada"), syear("0");
+  string dir("results"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada"), syear("0");
   int year(0);
 
   // -- command line arguments
   for (int i = 0; i < argc; i++){                             //
     if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}         //
     if (!strcmp(argv[i], "-p"))  {plot  = argv[++i];}         //
-    if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];} //
+    if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];} // output
     if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}         //
   }
 
