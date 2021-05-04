@@ -4,17 +4,20 @@
 // takes a mac file and produces variations of it defined in a map
 //
 //
-// Usage:
+// Usage/examples:
 // ../swift/mkMacFiles.swift -f vis.mac -n basename  -s /macs0/det/setTargetLength=5\ nm,10\ nm,15\ nm
 //                          [-p /macs0/det/setTargetMaterial=Cfoil] [-p /macs0/generator/bgKinEnergy\ =26\ MeV]
 //
-// History: 2021/04/29 First shot
+// ../swift/mkMacFiles.swift -m 1
 //
+// History: 2021/04/29 First shot
+//          2021/05/04 add modes to combine various runs
 // ----------------------------------------------------------------------
 
 import Foundation
 
 // -- definition of scan and other parameter variations
+let dbx = false
 var scanPar = ""
 var scanVals: [String] = []
 var patterns: [String: String] = [:]
@@ -27,7 +30,7 @@ func mkMacFile(basename: String, macname: String, contents: [String]) {
 
     // -- loop over scan points
     for idx in scanVals {
-        print("idx: \(idx)")
+        if dbx {print("idx: \(idx)")}
         for line in contents {
             sline = line
             for p in patterns.keys {
@@ -88,31 +91,35 @@ func readMacFile(_ filename: String) -> [String] {
 
 // ----------------------------------------------------------------------
 func main() {
+    //    print("mkMacFiles   ->\(CommandLine.arguments)<-")
     // -- check that both arguments are given
-    guard CommandLine.arguments.count > 3 else {
+    guard CommandLine.arguments.count > 2 else {
         print("usage: \(CommandLine.arguments[0]) -s /macs0/det/setTargetLength=5\\ nm,15\\ nm -p /macs0/det/setTargetMaterial=Cfoil -p /macs0/generator/bgKinEnergy=50\\ keV -n basename -f file.mac")
         return
     }
 
+    var mode = 0
     var macname = ""
     var basename = "basename"
 
     // -- command line parsing
-    while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "f:n:p:s:"), option != -1 {
+    while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "f:m:n:p:s:"), option != -1 {
         switch UnicodeScalar(CUnsignedChar(option)) {
         case "f":
             macname = String(cString: optarg)
+        case "m":
+            mode = Int(String(cString: optarg)) ?? 0
         case "n":
             basename = String(cString: optarg)
         case "p":
             let words = String(cString: optarg).components(separatedBy: "=")
-            print("-> words: \(words)")
+            if dbx {print("-> words: \(words)")}
             if 2 == words.count {
                 patterns[words[0]] = words[1]
             }
         case "s":
             let words = String(cString: optarg).components(separatedBy: "=")
-            print("-> scan: \(words)")
+            if dbx {print("-> scan: \(words)")}
             if 2 == words.count {
                 let steps = words[1].components(separatedBy: ",")
                 scanPar = words[0]
@@ -123,9 +130,73 @@ func main() {
         }
     }
 
-    let sfile = readMacFile(macname)
 
+    // 210504: setup for initial scan
+    if 1 == mode {
+        let arguments = [["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
+                          "-p", "/macs0/det/setTargetMaterial=Aerogel",
+                          "-p", "/macs0/generator/bgKinEnergy =26 MeV",
+                          "-n", "aerogel-26MeV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
+                           "-p", "/macs0/det/setTargetMaterial=Aerogel",
+                           "-p", "/macs0/generator/bgKinEnergy =5 MeV",
+                           "-n", "aerogel-5MeV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
+                           "-p", "/macs0/det/setTargetMaterial=Aerogel",
+                           "-p", "/macs0/generator/bgKinEnergy =50 keV",
+                           "-n", "aerogel-50keV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
+                           "-p", "/macs0/det/setTargetMaterial=Aerogel",
+                           "-p", "/macs0/generator/bgKinEnergy =500 keV",
+                           "-n", "aerogel-500keV", "-f", "vis.mac"]
+
+                        , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
+                           "-p", "/macs0/det/setTargetMaterial=Cfoil",
+                           "-p", "/macs0/generator/bgKinEnergy =5 keV",
+                           "-n", "Cfoil-5keV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
+                           "-p", "/macs0/det/setTargetMaterial=Cfoil",
+                           "-p", "/macs0/generator/bgKinEnergy =10 keV",
+                           "-n", "Cfoil-10keV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
+                           "-p", "/macs0/det/setTargetMaterial=Cfoil",
+                           "-p", "/macs0/generator/bgKinEnergy =15 keV",
+                           "-n", "Cfoil-15keV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
+                           "-p", "/macs0/det/setTargetMaterial=Cfoil",
+                           "-p", "/macs0/generator/bgKinEnergy =50 keV",
+                           "-n", "Cfoil-50keV", "-f", "vis.mac"]
+
+                        , ["-s", "/macs0/det/setTargetLength=500 nm,750 nm,1500 nm",
+                           "-p", "/macs0/det/setTargetMaterial=G4_Al",
+                           "-p", "/macs0/generator/bgKinEnergy =1 MeV",
+                           "-n", "Al-1MeV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=500 nm,750 nm,1500 nm",
+                           "-p", "/macs0/det/setTargetMaterial=G4_Al",
+                           "-p", "/macs0/generator/bgKinEnergy =5 MeV",
+                           "-n", "Al-5MeV", "-f", "vis.mac"]
+                        , ["-s", "/macs0/det/setTargetLength=500 nm,750 nm,1500 nm",
+                           "-p", "/macs0/det/setTargetMaterial=G4_Al",
+                           "-p", "/macs0/generator/bgKinEnergy =10 MeV",
+                           "-n", "Al-10MeV", "-f", "vis.mac"]
+        ]
+
+        for args in arguments {
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/Users/ursl/fsx/geant4/geant4.10.04.p02/muamu/macs0/swift/mkMacFiles.swift")
+            task.arguments = args
+            do {
+                try task.run()
+            } catch {
+                print("could not run task")
+            }
+        }
+        return
+    }
+
+    let sfile = readMacFile(macname)
     mkMacFile(basename: basename, macname: macname, contents: sfile)
+
 }
 
 // ----------------------------------------------------------------------
