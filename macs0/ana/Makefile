@@ -31,8 +31,8 @@ endif
 
 CXXFLAGS      = -g -O0 -Wall -fPIC -pipe
 LD            = $(CXX)
-LDFLAGS       = -g
-SOFLAGS       = -shared
+LDFLAGS       = -g #?? -Wl -rpath$(ROOTSYS)
+SOFLAGS       = -shared  #?? -Wl -rpath
 
 CXXFLAGS     += $(ROOTCFLAGS)
 GLIBS         = $(filter-out -lz, $(ROOTGLIBS)) -lTMVA -lTMVAGui -lRooFitCore -lRooFit
@@ -41,7 +41,7 @@ EXTHEADERS    = -I.. -I$(UTIL)
 
 # -- Files
 #CSTUFF =
-READER = treeReader01.o
+READER = treeReader01.o plotResults.o # plotClass.o
 
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
@@ -79,8 +79,9 @@ all: vars prep lib bin
 lib: prep $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
 	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
-bin: lib obj/runTreeReader01.o
+bin: lib obj/runTreeReader01.o  obj/runPlot.o
 	$(LD) $(LDFLAGS) -o bin/runTreeReader01 obj/runTreeReader01.o $(GLIBS) lib/libAnaClasses.so ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
+	$(LD) $(LDFLAGS) -o bin/runPlot obj/runPlot.o $(GLIBS) lib/libAnaClasses.so  ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
 # -- preparatory setup
 prep:
@@ -90,7 +91,7 @@ prep:
 
 # -- clean up
 clean:
-	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runTreeReader01.o)
+	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runTreeReader01.o runPlot.o)
 	rm -f $(DICTHEADERS)  $(DICTSOURCES)
 	rm -f bin/*
 	rm -f lib/*
