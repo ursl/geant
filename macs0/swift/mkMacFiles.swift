@@ -70,7 +70,7 @@ func readMacFile(_ filename: String) -> [String] {
     do {
         contents = try String(contentsOf: url)
     } catch {
-        print("now what?")
+        print("now what? problems with \(filename)")
     }
 
     let lines = contents.components(separatedBy: "\n")
