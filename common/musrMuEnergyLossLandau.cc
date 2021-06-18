@@ -53,9 +53,13 @@ G4VParticleChange* musrMuEnergyLossLandau::PostStepDoIt(const G4Track& trackData
   //  G4cout << "musrMuEnergyLossLandau::PostStepDoIt" << G4endl;
 
   // -- check whether Mu hit the endplate. If yes, stop and decay it there.
-  p_name = trackData.GetDefinition()->GetParticleName(); // particle name
+  G4String p_name = trackData.GetDefinition()->GetParticleName(); // particle name
+  if (p_name != "Muonium") {
+    return &fParticleChange;
+  }
+
   std::string logVolName = trackData.GetVolume()->GetLogicalVolume()->GetName();
-  if (p_name == "Muonium" && ((logVolName == "Endplate"))) {
+  if (logVolName == "Endplate") {
     fParticleChange.Initialize(trackData);
     //    fParticleChange.ProposeTrackStatus(fStopAndKill) ;
     fParticleChange.ProposeTrackStatus(fStopButAlive) ;
@@ -63,7 +67,7 @@ G4VParticleChange* musrMuEnergyLossLandau::PostStepDoIt(const G4Track& trackData
   }
 
   // -- unwrapped:  if (CheckCondition(aStep)) {
-  if (p_name == "Muonium" && ((logVolName=="Target"))) {
+  if (logVolName == "Target") {
 
     // -- unwrapped:  GetFinalEnergy(&aStep);
     particleTable = G4ParticleTable::GetParticleTable();
@@ -110,13 +114,6 @@ G4VParticleChange* musrMuEnergyLossLandau::PostStepDoIt(const G4Track& trackData
 
 
 // ----------------------------------------------------------------------
-G4bool musrMuEnergyLossLandau::CheckCondition(const G4Step& aStep) {
-  condition=false;
-  return condition;
-}
-
-
-// ----------------------------------------------------------------------
 G4double musrMuEnergyLossLandau::GetMeanFreePath(const G4Track&t,  G4double, G4ForceCondition* condition1) {
   *condition1 = Forced;
   // std::string logVolName = t.GetVolume()->GetLogicalVolume()->GetName();
@@ -124,19 +121,4 @@ G4double musrMuEnergyLossLandau::GetMeanFreePath(const G4Track&t,  G4double, G4F
   //   return 2*CLHEP::nm;
   // }
   return DBL_MAX;
-}
-
-
-// ----------------------------------------------------------------------
-void musrMuEnergyLossLandau::GetFinalEnergy(const G4Step* aStep) {
-}
-
-
-// ----------------------------------------------------------------------
-void musrMuEnergyLossLandau::PrepareSecondary(const G4Track& track) {
-  if (p_name == "Muonium") {
-    aSecondary = new G4Track(DP, track.GetGlobalTime(), track.GetPosition());
-  }
-  // ?? does this work against the memory leak? No!
-  //  delete DP;
 }

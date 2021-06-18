@@ -1,13 +1,13 @@
-#include "musrMuScatter.hh"
+#include "musrMuStop.hh"
 
 using namespace std;
 
-musrMuScatter::musrMuScatter(const G4String& name, G4ProcessType  aType) : G4VDiscreteProcess(name, aType) {}
+musrMuStop::musrMuStop(const G4String& name, G4ProcessType  aType) : G4VDiscreteProcess(name, aType) {}
 
-musrMuScatter:: ~musrMuScatter(){}
+musrMuStop:: ~musrMuStop(){}
 
 // ----------------------------------------------------------------------
-G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData, const G4Step& aStep) {
+G4VParticleChange* musrMuStop::PostStepDoIt(const G4Track& trackData, const G4Step& aStep) {
   fParticleChange.Initialize(trackData);
 
   //! Tao - Get time information */
@@ -40,7 +40,7 @@ G4VParticleChange* musrMuScatter::PostStepDoIt(const G4Track& trackData, const G
 
 // ----------------------------------------------------------------------
 // -- Muonium will be stopped as soon as it enters a material different than vacuum or target.
-G4bool musrMuScatter::CheckCondition(const G4Step& aStep) {
+G4bool musrMuStop::CheckCondition(const G4Step& aStep) {
   G4bool condition = false;
   p_name = aStep.GetTrack()->GetDefinition()->GetParticleName(); // particle name
   if (p_name == "Muonium"
@@ -54,12 +54,12 @@ G4bool musrMuScatter::CheckCondition(const G4Step& aStep) {
 }
 
 // ----------------------------------------------------------------------
-G4double musrMuScatter::GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition) {
+G4double musrMuStop::GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition) {
   *condition = Forced;
   return DBL_MAX;
 }
 
 // ----------------------------------------------------------------------
-void musrMuScatter::PrepareSecondary(const G4Track& track) {
+void musrMuStop::PrepareSecondary(const G4Track& track) {
   aSecondary = new G4Track(DP,track.GetDynamicParticle()->GetPreAssignedDecayProperTime(),track.GetPosition());
 }

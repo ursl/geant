@@ -24,7 +24,6 @@
 
 // -- process
 #include <boost/algorithm/string.hpp>
-
 #include "G4ProcessManager.hh"
 
 #include <G4PhotoElectricEffect.hh>
@@ -62,7 +61,7 @@
 #include "../common/MuDecayChannel.hh"
 #include "../common/musrMuEnergyLossLandau.hh"
 #include "../common/musrMuFormation.hh"
-#include "../common/musrMuScatter.hh"
+#include "../common/musrMuStop.hh"
 
 // ----------------------------------------------------------------------
 PhysicsList::PhysicsList() : G4VUserPhysicsList(){

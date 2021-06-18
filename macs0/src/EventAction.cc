@@ -45,16 +45,15 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 
   bool DBX(fVerbose>0);
   double px, py, pz, m, ekin, etot, vx, vy, vz;
-  int pdgid, pid, tid;
+  int pdgid, parentIdx, tIdx;
 
   if (DBX) G4cout << "----------------------------------------------------------------------" << G4endl;
   for (G4int i = 0; i < n_trajectories; ++i) {
-    //    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
     Trajectory* trj = (Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
     ekin = trj->GetKineticEnergy();
 
-    tid   = trj->GetTrackID();
-    pid   = trj->GetParentID();
+    tIdx   = trj->GetTrackID();
+    parentIdx   = trj->GetParentID();
     m     = trj->GetMass();
     pdgid = trj->GetPDGEncoding();
 
@@ -85,8 +84,8 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 		    trj->GetPoint(0)->GetPosition().z());
 
     if (DBX) G4cout <<
-	       Form(":%4d ID= %+5d trkId=%4d parentID=%4d (E, p)= %+7.2f/%+7.3f/%+7.3f/%+7.3f ekin= %11.8fMeV v=(%+8.3f, %+8.3f, %+14.8f), t = %f",
-		    i, pdgid, tid, pid, etot,
+	       Form("%4d: ID= %+5d trkId=%4d parentIdx=%4d (E, p)= %+7.2f/%+7.3f/%+7.3f/%+7.3f ekin= %11.8fMeV v=(%+8.3f, %+8.3f, %+14.8f), t = %f",
+		    i, pdgid, tIdx, parentIdx, etot,
 		    px, py, pz, ekin,
 		    vx, vy, vz,
 		    trj->GetGlobalTime()
@@ -94,7 +93,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 		    << G4endl;
 
     // -- store production vertex of e+ from Mu (i.e. the Mu decay vertex)
-    if ((11 == pdgid) && (1313 == TMath::Abs(getParticleID(pid, evt)))) {
+    if ((11 == pdgid) && (1313 == TMath::Abs(getParticleID(parentIdx, evt)))) {
       TGenVtx *pVtx = rio->getEvent()->addGenVtx();
       pVtx->fNumber = rio->getEvent()->nGenVtx()-1;
       pVtx->fID = -131300;
@@ -134,17 +133,17 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 G4int EventAction::getParticleID(G4int idx, const G4Event *evt) {
   G4int mid(-1);
 
-  // G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
-  // G4int n_trajectories = 0;
-  // if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
+  G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
+  G4int n_trajectories = 0;
+  if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
 
-  // for (G4int i = 0; i < n_trajectories; ++i) {
-  //   //    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
-  //   Trajectory* trj=(Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
-  //   if (idx == trj->GetTrackID()) {
-  //     mid = trj->GetPDGEncoding();
-  //     break;
-  //   }
-  // }
+  for (G4int i = 0; i < n_trajectories; ++i) {
+    //    G4Trajectory* trj=(G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+    Trajectory* trj=(Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+    if (idx == trj->GetTrackID()) {
+      mid = trj->GetPDGEncoding();
+      break;
+    }
+  }
   return mid;
 }

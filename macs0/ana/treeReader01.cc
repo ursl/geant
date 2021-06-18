@@ -135,6 +135,7 @@ void treeReader01::fillHist() {
     if (0 == pEAtom) continue;
 
     double zdecay = pEMuon->fV.Z();
+    double ekin = 1.e3*(pMu->fP.E() - MMUON); // in keV
 
     signalTrkId.push_back(pEMuon->fNumber);
     signalTrkId.push_back(pEAtom->fNumber);
@@ -161,8 +162,15 @@ void treeReader01::fillHist() {
     int eatrk = nHits(pEAtom->fNumber, 0); // this should be zero
     int eamcp = nHits(pEAtom->fNumber, 1);
     cout << "emtrk = " << emtrk << " emmcp = " << emmcp << " eatrk = " << eatrk << " eamcp = " << eamcp << endl;
+    if (zdecay > -392.) {
+      ((TH1D*)fpHistFile->Get("muprod"))->Fill(0.);
+    }
+
     if (zdecay > -400 && zdecay < 2095.) {
       ((TH1D*)fpHistFile->Get("h10"))->Fill(t);
+      ((TH1D*)fpHistFile->Get("h17"))->Fill(ekin);
+      ((TH1D*)fpHistFile->Get("h18"))->Fill(fl);
+      ((TH1D*)fpHistFile->Get("h19"))->Fill(pMu->fP.Rho());
       ((TH1D*)fpHistFile->Get("hits"))->Fill(0., eatrk);
       ((TH1D*)fpHistFile->Get("hits"))->Fill(1., eamcp);
 
@@ -233,17 +241,25 @@ void treeReader01::bookHist() {
 
   new TH1D("h4", "nGenCands", 40, 0., 40.);
   new TH1D("h5", "z(Mu decay) [mm]", 440, -2200., 2200.); // cm binning
-  new TH1D("h6", "z(Mu produced) [mm]", 440, -2200., 2200.);
+  new TH1D("h6", "z(Mu produced) [mm]", 20000, -410., -390.);
 
-  new TH1D("h7", "mu+(beam) Ekin [keV]", 100, 0., 100.);
+  new TH1D("h7", "mu+(beam) Ekin [keV]", 300, 0., 30000.);
   new TH1D("h8", "Mu decay length [mm]", 100, 0., 5000.);
   new TH1D("h9", "Mu momentum [MeV]", 100, 0., 10.);
+  new TH1D("h7", "mu+(beam) Ekin [keV]", 300, 0., 30000.);
+
   new TH1D("h10", "proper decay time", 100, 0., 1.e-5);
   new TH2D("m10", "proper decay time vs. z", 100, 0., 1.e-5, 100, -2200., 2200.);
+
+  // -- histograms for Mu decayed in decay volume
+  new TH1D("h17", "mu+(beam) Ekin [keV]", 100, 0., 100.);
+  new TH1D("h18", "Mu decay length [mm]", 100, 0., 5000.);
+  new TH1D("h19", "Mu momentum [MeV]", 100, 0., 10.);
 
 
   new TH1D("hits", "hits counter", 40, 0., 40.);
   new TH1D("acc", "acc counter", 40, 0., 40.);
+  new TH1D("muprod", "Mu produced", 40, 0., 40.);
 
   new TH1D("mass", "mass of e+e-", 40, -1., 99.);
 

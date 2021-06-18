@@ -64,18 +64,7 @@ class musrMuEnergyLossLandau : public G4VDiscreteProcess
 
   // G4double PostStepGetPhysicalInteractionLength(const G4Track&t, G4double, G4double, G4double&, G4GPILSelection*);
 
-  //! Condition for process application (step Object).
-  G4bool CheckCondition(const G4Step& aStep);
 
-  //! Condition for process application (step Pointer).
-  G4bool CheckCondition(const G4Step* aStep);
-
-
-  G4String  p_name;
-  G4bool condition;
-
-
-  void GetFinalEnergy( const G4Step* aStep);
   TRandom *random;
   static double landauMPV;
   static double landauSigma;

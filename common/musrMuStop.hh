@@ -23,30 +23,30 @@
 
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 //  Muonium "Scattering"
-//  Id    : musrMuScatter.hh, v 1.4
+//  Id    : musrMuStop.hh, v 1.4
 //  Author: Taofiq PARAISO, T. Shiroka
 //  Date  : 2007-12
 //  Notes : Simplified model for Mu scattering. Spin effects have been excluded.
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 /*!
- * musrMuScatter class defines the Muonium scattering process. It implements a very 
- * basic model which assumes Muonium looses its electron as soon as it enters any 
+ * musrMuStop class defines the Muonium scattering process. It implements a very
+ * basic model which assumes Muonium looses its electron as soon as it enters any
  * material (except for vacuum and CFoil). The class has only a PostStepDoIt method.
  * The in-flight Muonium spin precession has been supressed. */
 
-#ifndef musrMuScatter_h
-#define musrMuScatter_h 1
+#ifndef musrMuStop_h
+#define musrMuStop_h 1
 
 #include "G4VDiscreteProcess.hh"
 
-class musrMuScatter : public G4VDiscreteProcess
+class musrMuStop : public G4VDiscreteProcess
 {
  public:
-   musrMuScatter(const G4String& name="MuScatt", // process description
+   musrMuStop(const G4String& name="MuScatt", // process description
 		G4ProcessType aType = fGeneral);
-  
-  ~musrMuScatter();
+
+  ~musrMuStop();
 
   //! \mm The actions are taken at the end of the step.
   G4VParticleChange* PostStepDoIt(const G4Track&,
@@ -55,17 +55,17 @@ class musrMuScatter : public G4VDiscreteProcess
   G4double GetMeanFreePath(const G4Track& aTrack,
 			   G4double previousStepSize,
 			   G4ForceCondition* condition);
-  
+
   //! The condition for applying the process.
   G4bool CheckCondition(const G4Step& aStep);
 
-  
+
   G4bool   condition;
   G4double itime, gtime, ftime,deltatime;
   G4String p_name;
   G4DynamicParticle *DP;
-  G4ParticleChange  fParticleChange; 
- 
+  G4ParticleChange  fParticleChange;
+
   void  PrepareSecondary(const G4Track&);
   G4Track* aSecondary;
 

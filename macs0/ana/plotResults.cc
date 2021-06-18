@@ -63,15 +63,18 @@ void plotResults::makeAll(string what) {
 // ----------------------------------------------------------------------
 void plotResults::scanAnalyses() {
   vector<string> target;
-  target.push_back("cFoil");
+  target.push_back("Cfoil");
   target.push_back("aerogel");
+  target.push_back("Al");
 
   map<string, vector<string> > venergy;
-  venergy.insert(make_pair("cFoil", vector<string>{"5kev", "10kev", "15kev"}));
-  venergy.insert(make_pair("aerogel", vector<string>{"50kev", "500kev", "5MeV", "26MeV"}));
+  venergy.insert(make_pair("Cfoil", vector<string>{"5keV", "10keV", "15keV", "50keV"}));
+  venergy.insert(make_pair("aerogel", vector<string>{"50keV", "500keV", "5MeV", "26MeV"}));
+  venergy.insert(make_pair("Al", vector<string>{"1MeV", "5MeV", "10MeV"}));
   map<string, vector<string> > vthickness;
-  vthickness.insert(make_pair("cFoil", vector<string>{"5nm", "10nm", "15nm"}));
-  vthickness.insert(make_pair("aerogel", vector<string>{"10um", "100um", "1000um", "2000um"}));
+  vthickness.insert(make_pair("Cfoil", vector<string>{"5nm", "10nm", "15nm"}));
+  vthickness.insert(make_pair("aerogel", vector<string>{"10um", "100um", "1mm", "8mm"}));
+  vthickness.insert(make_pair("Al", vector<string>{"1500nm", "750nm", "500nm"}));
 
   makeCanvas(4);
   c3->cd();
@@ -87,6 +90,12 @@ void plotResults::scanAnalyses() {
 			vthickness[target[i]].size(), 0., vthickness[target[i]].size());
     setTitles(h2, "#mu^{+} Beam Energy", "Target thickness", 0.04, 1.2, 2.3);
 
+    TH2D *h3 = new TH2D(Form("muprod_%s", target[i].c_str()), Form("Mu production (%s)", target[i].c_str()),
+			venergy[target[i]].size(), 0., venergy[target[i]].size(),
+			vthickness[target[i]].size(), 0., vthickness[target[i]].size());
+    setTitles(h3, "#mu^{+} Beam Energy", "Target thickness", 0.04, 1.2, 2.3);
+
+
     for (unsigned j = 0; j < venergy[target[i]].size(); ++j) {
       h2->GetXaxis()->SetBinLabel(j+1, venergy[target[i]].at(j).c_str());
       for (unsigned k = 0; k < vthickness[target[i]].size(); ++k) {
@@ -98,15 +107,24 @@ void plotResults::scanAnalyses() {
 
 	TFile *f = TFile::Open(filename.c_str());
 	TH1D *h1 = (TH1D*)f->Get("acc");
+	TH1D *hp = (TH1D*)f->Get("muprod");
 	TH1D *hm = (TH1D*)f->Get("nmuons");
 	double nacc = h1->GetBinContent(h1->FindBin(0.01));
+	double npro = hp->GetBinContent(hp->FindBin(0.01));
 	double nmuons = totalMuons(hm);
 	double acc = nacc/nmuons;
 	double acce= dEff(static_cast<int>(nacc), static_cast<int>(nmuons));
 	h2->SetBinContent(j+1, k+1, acc);
 	h2->SetBinError(j+1, k+1, acce);
+
+	double epro = npro/nmuons;
+	double eproe= dEff(static_cast<int>(npro), static_cast<int>(nmuons));
+	h3->SetBinContent(j+1, k+1, epro);
+	h3->SetBinError(j+1, k+1, eproe);
+
 	cout << filename << " nacc: " << nacc << " nmuons: " << nmuons
 	     << " acc: " << acc << " +/- " << acce
+	     << " epro: " << epro << " +/- " << eproe
 	     << endl;
 	f->Close();
       }
@@ -114,6 +132,10 @@ void plotResults::scanAnalyses() {
 
     h2->Draw("texte");
     savePad(Form("acc_%s.pdf", target[i].c_str()));
+
+    h2->Draw("texte");
+    savePad(Form("muprod_%s.pdf", target[i].c_str()));
+
   }
 
 }

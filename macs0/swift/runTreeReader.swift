@@ -5,9 +5,10 @@
 //
 //
 // Usage:
-// ../swift/runTreeReader.swift [-d ../_build] [-l] -p pattern
+// ../swift/runTreeReader.swift [-d ../_build] [-l] -p pattern1,pattern2
 //
 // History: 2021/05/04 First shot
+//          2021/05/18 allow comma-separated list of patterns
 //
 // ----------------------------------------------------------------------
 
@@ -60,16 +61,25 @@ func main() {
         }
     }
 
-    let files = getFileList(dir: dirname, pattern: pattern)
+    var patterns : [String] = []
+    if pattern.contains(",") {
+        patterns = pattern.components(separatedBy: ",")
+    } else {
+        patterns.append(pattern)
+    }
 
-    for ifile in files {
-        if logfile {
-            let logfile = ifile.replacingOccurrences(of: ".root", with: ".log")
-            print("bin/runTreeReader01 -f \(dirname)/\(ifile) >&! \(logfile)")
-        } else {
-            print("bin/runTreeReader01 -f \(dirname)/\(ifile) ")
+    for ipattern in patterns {
+        let files = getFileList(dir: dirname, pattern: ipattern)
+
+        for ifile in files {
+            if logfile {
+                let logfile = ifile.replacingOccurrences(of: ".root", with: ".log")
+                print("bin/runTreeReader01 -f \(dirname)/\(ifile) >&! \(logfile)")
+            } else {
+                print("bin/runTreeReader01 -f \(dirname)/\(ifile) ")
+            }
+
         }
-
     }
 
 }

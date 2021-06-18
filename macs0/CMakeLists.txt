@@ -3,7 +3,12 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(macs0)
 
-set(CMAKE_CXX_FLAGS "-O0 -std=c++17 -fPIC -Wno-return-type")
+#set(CMAKE_CXX_FLAGS "-O0 -g -std=c++17 -fPIC -Wno-return-type")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -37,6 +42,14 @@ endif()
 
 # Include ROOT's CMake functions for dictionary generation
 include("${ROOT_DIR}/modules/RootMacros.cmake")
+
+
+#----------------------------------------------------------------------
+FIND_PACKAGE(Boost)
+IF (Boost_FOUND)
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+    ADD_DEFINITIONS( "-DHAS_BOOST" )
+ENDIF()
 
 #----------------------------------------------------------------------------
 # P01 requires shared libraries

@@ -66,33 +66,7 @@ class musrMuFormation : public G4VDiscreteProcess
 			   G4ForceCondition* condition);
 
 
-  //! Condition for process application (step Object).
-  G4bool CheckCondition(const G4Step& aStep);
-
-  //! Condition for process application (step Pointer).
-  G4bool CheckCondition(const G4Step* aStep);
-
-
-  G4String  p_name;
-  G4bool condition;
-
-
-  void GetDatas( const G4Step* aStep);
-  // model parameters
-  G4ParticleTable* particleTable;
-  G4ParticleDefinition* particle;
-  Yields   Gonin;
-  G4double yvector[3];
-  G4double rnd;
-  G4DynamicParticle *DP;
-
-  //! The particle change object.
-  G4VParticleChange fParticleChange;
-
-  void  PrepareSecondary(const G4Track&);
-  G4Track* aSecondary;
-
-  void InitializeSecondaries(const G4Track&);
+  Yields   fGonin;
 };
 
 #endif
