@@ -7,6 +7,9 @@
 
 # -- external dependency, cf https://github.com/ursl/util
 UTIL = /Users/ursl/macros/ana/util
+# -- rpath solutions.
+PWD  = $(shell pwd)
+BASE = $(abspath $(dir $(PWD)))
 
 ROOTCINT      = $(ROOTSYS)/bin/rootcint
 ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
@@ -31,8 +34,8 @@ endif
 
 CXXFLAGS      = -g -O0 -Wall -fPIC -pipe
 LD            = $(CXX)
-LDFLAGS       = -g #?? -Wl -rpath$(ROOTSYS)
-SOFLAGS       = -shared  #?? -Wl -rpath
+LDFLAGS       = -g -rpath $(PWD)/lib
+SOFLAGS       = -shared
 
 CXXFLAGS     += $(ROOTCFLAGS)
 GLIBS         = $(filter-out -lz, $(ROOTGLIBS)) -lTMVA -lTMVAGui -lRooFitCore -lRooFit
@@ -77,16 +80,16 @@ $(addprefix lib/,%.pcm) :
 all: vars prep lib bin
 
 lib: prep $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o $(PWD)/lib/libAnaClasses.so $(GLIBS) -lMinuit $(PWD)/lib/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
 bin: lib obj/runTreeReader01.o  obj/runPlot.o
-	$(LD) $(LDFLAGS) -o bin/runTreeReader01 obj/runTreeReader01.o $(GLIBS) lib/libAnaClasses.so ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
-	$(LD) $(LDFLAGS) -o bin/runPlot obj/runPlot.o $(GLIBS) lib/libAnaClasses.so  ../_build/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
+	$(LD) $(LDFLAGS) -o bin/runTreeReader01 obj/runTreeReader01.o $(GLIBS) $(PWD)/lib/libAnaClasses.so $(PWD)/lib/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
+	$(LD) $(LDFLAGS) -o bin/runPlot obj/runPlot.o $(GLIBS) $(PWD)/lib/libAnaClasses.so  $(PWD)/lib/libClassesDict.so $(UTIL)/lib/libAnaUtil.so
 
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
-	cd lib && ln -f -s ../build/libClassesDict.so && cd -
+	cd lib && ln -f -s $(BASE)/_build/libClassesDict.so && cd -
 	cd lib && ln -f -s $(UTIL)/lib/libAnaUtil.so && cd -
 
 # -- clean up
