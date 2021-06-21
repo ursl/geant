@@ -70,8 +70,10 @@ int main(int argc, char** argv) {
 
   // -- Default run manager
 #ifdef G4MULTITHREADED
+  cout << "runG4> G4MULTITHREADED" << endl;
   G4MTRunManager* runManager = new G4MTRunManager;
 #else
+  cout << "runG4> G4 single threaded" << endl;
   G4RunManager* runManager = new G4RunManager;
 #endif
 
@@ -106,16 +108,13 @@ int main(int argc, char** argv) {
     ((PrimaryGeneratorAction*)runManager->GetUserPrimaryGeneratorAction())->setVerbose(verbose);
 
     ((StackingAction*)runManager->GetUserStackingAction())->setVerbose(verbose);
-}
-
-  // -- Initialize visualization
-  G4VisManager* visManager = new G4VisExecutive;
-  visManager->Initialize();
+  }
 
   // --  Pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-  // -- Process macro or start UI session
+  G4VisManager* visManager(0);
+  // -- Process macro or start (G)UI session
   if (!ui) {
     // batch mode: after *.mac the program exits
     G4String command = "/control/execute ";
@@ -126,9 +125,12 @@ int main(int argc, char** argv) {
     if (sgE > -0.9) UImanager->ApplyCommand(Form("/macs0/generator/sgKinEnergy %7.6f MeV", sgE));
     // -- run some events
     UImanager->ApplyCommand(Form("/run/beamOn %d", nevt));
-  }
-  else {
-    // batch mode: after vis.mac the program waits for user input
+  } else {
+    // -- Initialize visualization
+    visManager = new G4VisExecutive;
+    visManager->Initialize();
+
+    // GUI mode: after vis.mac the program waits for user input
     UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();
     delete ui;
@@ -136,7 +138,7 @@ int main(int argc, char** argv) {
 
   RootIO::GetInstance()->Close();
 
-  delete visManager;
+  if (visManager) delete visManager;
   delete runManager;
 
   return 0;
