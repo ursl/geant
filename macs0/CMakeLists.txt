@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------
 # Setup the project
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(macs0)
 
 #set(CMAKE_CXX_FLAGS "-O0 -g -std=c++17 -fPIC -Wno-return-type")
@@ -8,6 +8,10 @@ project(macs0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_BUILD_TYPE Debug)
+
+set(PROJECT_RUN_DIR ${PROJECT_SOURCE_DIR}/run)
 
 
 #----------------------------------------------------------------------------
@@ -90,27 +94,10 @@ add_executable(readHits readHits.cc  ${sources} ${headers})
 target_link_libraries(readHits ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
-# Copy all scripts to the build directory, i.e. the directory in which we
-# build P01. This is so that we can run the executable directly because it
-# relies on these scripts being in the current working directory.
-#
-set(P01_SCRIPTS
-    run.mac vis.mac init_vis.mac example.in egun.mac Mugun.mac commands.mac
-  )
-
-foreach(_script ${P01_SCRIPTS})
-  configure_file(
-    ${PROJECT_SOURCE_DIR}/${_script}
-    ${PROJECT_BINARY_DIR}/${_script}
-    COPYONLY
-    )
-endforeach()
-
-#----------------------------------------------------------------------------
 # Add program to the project targets
 # (this avoids the need of typing the program name after make)
 #
-add_custom_target(P01 DEPENDS runG4 readHits )
+add_custom_target(DEPENDS runG4 readHits )
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
