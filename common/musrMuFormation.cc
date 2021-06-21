@@ -1,33 +1,3 @@
-/***************************************************************************
- *  musrSim - the program for the simulation of (mainly) muSR instruments. *
- *          More info on http://lmu.web.psi.ch/simulation/index.html .     *
- *          musrSim is based od Geant4 (http://geant4.web.cern.ch/geant4/) *
- *                                                                         *
- *  Copyright (C) 2009 by Paul Scherrer Institut, 5232 Villigen PSI,       *
- *                                                       Switzerland       *
- *                                                                         *
- *  This program is free software; you can redistribute it and/or modify   *
- *  it under the terms of the GNU General Public License as published by   *
- *  the Free Software Foundation; either version 2 of the License, or      *
- *  (at your option) any later version.                                    *
- *                                                                         *
- *  This program is distributed in the hope that it will be useful,        *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
- *  GNU General Public License for more details.                           *
- *                                                                         *
- *  You should have received a copy of the GNU General Public License      *
- *  along with this program; if not, write to the Free Software            *
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.              *
- ***************************************************************************/
-
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//  Muonium Formation according to yield.cc function (through GetYields method).
-//  Id    : musrMuFormation.cc, v 1.4
-//  Author: Taofiq PARAISO, T. Shiroka
-//  Date  : 2007-12
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
 #include "musrMuFormation.hh"
 
 #include "RootIO.hh"
@@ -43,11 +13,10 @@ musrMuFormation::~musrMuFormation(){}
 
 // ----------------------------------------------------------------------
 G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const G4Step&  aStep) {
-  G4VParticleChange fParticleChange;
   fParticleChange.Initialize(trackData);
 
   G4Track theNewTrack;
-  if (0)   G4cout << "START "
+  if (1)   G4cout << "START "
 		  << " ID = " << trackData.GetTrackID()
 		  << " " << trackData.GetDefinition()->GetParticleName()
 		  << " Ekin [keV] = " << trackData.GetKineticEnergy()/CLHEP::keV
@@ -59,11 +28,13 @@ G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const
   // -- muonium only formed for positive muons entering Target
   G4String  p_name = trackData.GetDefinition()->GetParticleName(); // particle name
   if (p_name != "mu+") {
+    G4cout << "musrMuFormation::PostStepDoIt> not a mu, but ->" << p_name << "<-" << G4endl;
     fParticleChange.ProposeTrackStatus(trackData.GetTrackStatus()) ;
     return &fParticleChange;
   }
   std::string logVolName = trackData.GetVolume()->GetLogicalVolume()->GetName();
   if (logVolName != "Target") {
+    G4cout << "musrMuFormation::PostStepDoIt> not in target, but in ->" << logVolName << "<-" << G4endl;
     fParticleChange.ProposeTrackStatus(trackData.GetTrackStatus()) ;
     return &fParticleChange;
   }
