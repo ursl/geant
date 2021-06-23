@@ -37,7 +37,7 @@
 #include "G4ParticleTable.hh"
 
 #include <TMath.h>
-#include <TRandom.h>
+#include <TRandom3.h>
 
 
 /*! musrMuEnergyLossLandau class defines the energy loss given by the Landau distribution,
@@ -53,25 +53,20 @@ class musrMuEnergyLossLandau : public G4VDiscreteProcess
 
   ~musrMuEnergyLossLandau();
 
-  //! - Main method. Muonium(!) energy loss process is executed at the END of a step. */
-  G4VParticleChange* PostStepDoIt(
-			     const G4Track&,
-			     const G4Step&);
+  G4bool IsApplicable(const G4ParticleDefinition& particle);
 
-  G4double GetMeanFreePath(const G4Track& aTrack,
-			   G4double previousStepSize,
-			   G4ForceCondition* condition);
+  G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&);
 
-  // G4double PostStepGetPhysicalInteractionLength(const G4Track&t, G4double, G4double, G4double&, G4GPILSelection*);
+  G4double GetMeanFreePath(const G4Track& aTrack, G4double previousStepSize, G4ForceCondition* condition);
 
 
-  TRandom *random;
-  static double landauMPV;
-  static double landauSigma;
+  TRandom *fRandom;
+  static double fLandauMPV;
+  static double fLandauSigma;
 
   // model parameters
-  G4ParticleTable* particleTable;
-  G4ParticleDefinition* particle;
+  G4ParticleTable *fParticleTable;
+  G4ParticleDefinition *fParticleDefinition;
   G4double rnd;
   G4DynamicParticle *DP;
 
