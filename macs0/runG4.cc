@@ -88,7 +88,11 @@ int main(int argc, char** argv) {
   // physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   // runManager->SetUserInitialization(physicsList);
   //  physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-  runManager->SetUserInitialization(new PhysicsList);
+  PhysicsList *pl = new PhysicsList;
+  if (verbose > 0) {
+    pl->SetVerboseLevel(verbose);
+  }
+  runManager->SetUserInitialization(pl);
 
   // -- Set user action classes: define particle generator
   runManager->SetUserAction(new PrimaryGeneratorAction(detector));
@@ -100,8 +104,6 @@ int main(int argc, char** argv) {
   runManager->SetUserAction(new SteppingAction);
   runManager->SetUserAction(new TrackingAction);
 
-  runManager->Initialize();
-
   if (verbose > 0) {
     ((EventAction*)runManager->GetUserEventAction())->setVerbose(verbose);
     ((RunAction*)runManager->GetUserRunAction())->setVerbose(verbose);
@@ -109,6 +111,8 @@ int main(int argc, char** argv) {
 
     ((StackingAction*)runManager->GetUserStackingAction())->setVerbose(verbose);
   }
+
+  //  runManager->Initialize();
 
   // --  Pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
