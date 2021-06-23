@@ -50,14 +50,15 @@ musrMuonium* musrMuonium::Definition()
   //               type    lepton number  baryon number   PDG encoding
   //             stable         lifetime    decay table
   //             shortlived      subType    anti_encoding
-  anInstance = new G4ParticleDefinition(
-                 name,   0.1056584*CLHEP::GeV, 2.99591e-16*CLHEP::MeV,   0.*CLHEP::eplus,
-		    1,               0,             0,
-		    0,               0,             0,
-	     "lepton",              -1,             0,         -1313,
-		false,      2197.03*CLHEP::ns,          NULL,
-             false,           "mu"
-              );
+    anInstance = new G4ParticleDefinition(
+					  name,   0.1056584*CLHEP::GeV, 2.99591e-16*CLHEP::MeV,   0.*CLHEP::eplus,
+					  1,               0,             0,
+					  0,               0,             0,
+					  "lepton",              -1,             0,         -1313,
+					  false, 2197.03*CLHEP::ns,          NULL,
+					  // XX CHECK XX		false,      4000.03*CLHEP::ns,          NULL,
+					  false,           "mu"
+					  );
    // Bohr magnetron of Muonium - T. Shiroka
    // The magnetic moment of Mu is the sum of those of mu+ and e- with
    // the respective gyromagnetic ratio anomalies as coefficients
