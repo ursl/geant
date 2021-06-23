@@ -18,9 +18,12 @@ public:
   ~TGenCand() { };
   void     clear() {fID = -123;}
 
+  double  ekin() {return (fP.E() - fMass);}
+
   // ----------------------------------------------------------------------
-  void dump(int printPt = 1);
-  void dump(std::ofstream &);
+  void dump(int mode = 2);
+  void dump(std::ofstream &, int mode = 2);
+  std::string dumpLine(int mode);
 
   // ----------------------------------------------------------------------
   int            fID, fNumber, fStatus;
