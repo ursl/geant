@@ -122,10 +122,12 @@ void treeReader01::fillMuFinal() {
 	double ekin0 = pMom->ekin();
 	double ekin1 = pGen->ekin();
 	double eloss = 1.e3*(ekin0 - ekin1); // in keV
-	cout << "eloss = " << eloss
-	     << " this: " << pGen->fNumber << " E = " << pGen->fP.E() << " p = " << pMom->fP.Vect().Mag()
-	     << " mother: " << pGen->fMom1 << " E = " << pMom->fP.E() << " p = " << pMom->fP.Vect().Mag()
-	     << endl;
+	if (0) {
+	  cout << "eloss = " << eloss
+	       << " this: " << pGen->fNumber << " E = " << pGen->fP.E() << " p = " << pMom->fP.Vect().Mag()
+	       << " mother: " << pGen->fMom1 << " E = " << pMom->fP.E() << " p = " << pMom->fP.Vect().Mag()
+	       << endl;
+	}
 	((TH1D*)fpHistFile->Get("muEloss"))->Fill(eloss);
       }
 
@@ -134,8 +136,27 @@ void treeReader01::fillMuFinal() {
 
   if (DBX) {
     cout << "and the final Mu list" << endl;
+    TGenCand *pOld(0);
     for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
-      fMuFinal[i]->dump(0);
+      pMom = fpEvt->getGenCandWithNumber(fMuFinal[i]->fMom1);
+      pOld = pMom;
+      while (-1313 == pMom->fID) {
+	pOld = pMom;
+	pMom = fpEvt->getGenCandWithNumber(pMom->fMom1);
+      }
+      fMuFinal[i]->fMom2 = pOld->fNumber;
+      fMuFinal[i]->dump(2);
+      // -- time from first Mu to final Mu
+      double t0 = pOld->fGlobalTime;
+      double t1 = fMuFinal[i]->fGlobalTime;
+      double dt = t1 - t0;
+      ((TH1D*)fpHistFile->Get("muTform"))->Fill(dt);
+      // -- now decay time of Mu
+      pDau = fpEvt->getGenCandWithNumber(fMuFinal[i]->fDau1);
+      t0 = t1;
+      t1 = pDau->fGlobalTime;
+      dt = t1 - t0;
+      ((TH1D*)fpHistFile->Get("muTdecay"))->Fill(dt);
     }
   }
 }
@@ -272,7 +293,9 @@ void treeReader01::bookHist() {
   new TH1D("h10", "proper decay time", 100, 0., 1.e-5);
   new TH2D("m10", "proper decay time vs. z", 100, 0., 1.e-5, 100, -2200., 2200.);
 
-  new TH1D("muEloss",  "energy loss per step", 100, 0., 1.);
+  new TH1D("muEloss",   "energy loss per step", 100, 0., 1.);
+  new TH1D("muTform",  "(global) formation time ", 100, 0., 1.e-3);
+  new TH1D("muTdecay",  "(global) decay time ", 100, 0., 2.e4);
 
   // -- histograms for Mu decayed in decay volume
   new TH1D("h17", "mu+(beam) Ekin [keV]", 100, 0., 100.);
