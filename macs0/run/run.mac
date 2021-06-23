@@ -1,0 +1,53 @@
+/run/initialize
+
+
+# -- select muon BR
+# 0: BR: 9.85966000000000e-01 [Muon Decay]: e+ nu_e anti_nu_mu
+# 1: BR: 1.40000000000000e-02 [rmd]:        e+ gamma nu_e anti_nu_mu
+# 2: BR: 3.40000000000000e-05 [intconv]:    e+ e- e+ anti_nu_mu nu_e
+#/particle/property/verbose 2
+#/particle/list
+#/particle/select mu+
+#/particle/property/decay/select 0
+#/particle/property/decay/br 1
+#/particle/property/decay/select 1
+#/particle/property/decay/br 0
+#/particle/property/decay/select 2
+#/particle/property/decay/br 0
+#/particle/property/decay/dump
+
+
+# ----------------------------------------------------------------------
+# -- physics setup (from run.mac)
+/tracking/verbose 0
+/tracking/storeTrajectory 2
+
+
+#/macs0/det/setField 4 tesla
+/macs0/field/value -0.0048 tesla
+
+# -- muon beam
+/macs0/generator/bgKinEnergy 5 keV
+/macs0/generator/bgKinEnergySigma 0. keV
+/macs0/generator/bgNpart 5
+/macs0/generator/bgNpartSigma 0
+
+# -- configure target
+# materials examples: G4_Al, G4_Ti, G4_Cu, G4_C, G4_Ca, G4_Cr, G4_Ni, G4_Cu
+#                     Aerogel, SiO2, Cfoil
+/macs0/det/setTargetMaterial Cfoil
+/macs0/det/setTargetLength 100 um
+
+# -- (signal) Muonium source and decay
+#/gun/position 0 0 0 cm
+#/gun/energy 0.001 eV
+#/gun/direction 0 0 1
+
+# -- single muons
+#/gun/particle mu+
+#/gun/position 0 0 -50 cm
+#/gun/energy 26 MeV
+#/gun/direction 0 0 1
+
+# -- running with 20000 requires patience for startup!
+#/run/beamOn 1
