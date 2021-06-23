@@ -17,14 +17,16 @@
  * The process is executed at the END of a step, i.e. the muon is converted into
  * Muonium AFTER flying through the Carbon foil (see also yields.hh). */
 
-class musrMuFormation : public G4VDiscreteProcess
-{
+class musrMuFormation : public G4VDiscreteProcess {
  public:
 
-   musrMuFormation(const G4String& name = "MuoniumFormation", // process description
+   musrMuFormation(const G4String& name = "musrMuFormation", // process description
 		   G4ProcessType aType = fElectromagnetic);
 
   ~musrMuFormation();
+
+
+  G4bool IsApplicable(const G4ParticleDefinition& particle);
 
   //! - Main method. Muonium formation process is executed at the END of a step. */
   G4VParticleChange* PostStepDoIt(
