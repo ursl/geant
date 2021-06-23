@@ -35,6 +35,14 @@ void treeReader01::eventProcessing() {
     cout << "Found " << fpEvt->nGenCands() << " gen cands in event" << endl;
     cout << "Found " << fpEvt->nHits() << " hits in event" << endl;
   }
+  if (DBX) {
+    TGenCand *pGen(0);
+    cout << "--> GenCands:" << endl;
+    for (int igen = 0; igen < fpEvt->nGenCands(); ++igen) {
+      pGen = fpEvt->getGenCand(igen);
+      pGen->dump(2);
+    }
+  }
   ((TH1D*)fpHistFile->Get("h1"))->Fill(fpEvt->nHits());
   THit *pHit(0);
   int nhtrk(0), nhmcp(0);
@@ -59,7 +67,7 @@ void treeReader01::eventProcessing() {
     pGen = fpEvt->getGenCand(igen);
     if (-13 == pGen->fID && -1 == pGen->fMom1) {
       ++nPrimaryMuons;
-      double ekin = 1.e3*(pGen->fP.E() - MMUON); // in keV
+      double ekin = 1.e3*pGen->ekin(); // in keV
       ((TH1D*)fpHistFile->Get("h7"))->Fill(ekin);
       if (DBX) pGen->dump(0);
     }
@@ -107,6 +115,20 @@ void treeReader01::fillMuFinal() {
       if ((pGen->fDau2 - pGen->fDau1 > 0) && (pGen->fDau1 < 9999) && (pGen->fDau2 > -9999)) {
 	fMuFinal.push_back(pGen);
       }
+
+      // - fill energy loss wrt mother
+      pMom = fpEvt->getGenCandWithNumber(pGen->fMom1);
+      if (-1313 == pMom->fID) {
+	double ekin0 = pMom->ekin();
+	double ekin1 = pGen->ekin();
+	double eloss = 1.e3*(ekin0 - ekin1); // in keV
+	cout << "eloss = " << eloss
+	     << " this: " << pGen->fNumber << " E = " << pGen->fP.E() << " p = " << pMom->fP.Vect().Mag()
+	     << " mother: " << pGen->fMom1 << " E = " << pMom->fP.E() << " p = " << pMom->fP.Vect().Mag()
+	     << endl;
+	((TH1D*)fpHistFile->Get("muEloss"))->Fill(eloss);
+      }
+
     }
   }
 
@@ -246,10 +268,11 @@ void treeReader01::bookHist() {
   new TH1D("h7", "mu+(beam) Ekin [keV]", 300, 0., 30000.);
   new TH1D("h8", "Mu decay length [mm]", 100, 0., 5000.);
   new TH1D("h9", "Mu momentum [MeV]", 100, 0., 10.);
-  new TH1D("h7", "mu+(beam) Ekin [keV]", 300, 0., 30000.);
 
   new TH1D("h10", "proper decay time", 100, 0., 1.e-5);
   new TH2D("m10", "proper decay time vs. z", 100, 0., 1.e-5, 100, -2200., 2200.);
+
+  new TH1D("muEloss",  "energy loss per step", 100, 0., 1.);
 
   // -- histograms for Mu decayed in decay volume
   new TH1D("h17", "mu+(beam) Ekin [keV]", 100, 0., 100.);
