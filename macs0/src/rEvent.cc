@@ -66,6 +66,20 @@ TGenCand* rEvent::getGenCand(Int_t n) {
   return (TGenCand*)fGenCands->UncheckedAt(n);
 }
 
+
+// ----------------------------------------------------------------------
+TGenCand* rEvent::getGenCandWithNumber(int number) {
+  TGenCand *pGenCand;
+  for (int i = 0; i < fnGenCands; i++) {
+    pGenCand = getGenCand(i);
+    if (number == pGenCand->fNumber) {
+      return (TGenCand*)fGenCands->UncheckedAt(i);
+    }
+  }
+  return 0;
+}
+
+
 // ----------------------------------------------------------------------
 TGenVtx* rEvent::getGenVtx(Int_t n) {
   return (TGenVtx*)fGenVtx->UncheckedAt(n);

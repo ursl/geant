@@ -18,6 +18,7 @@ public:
   // ----------------------------------------------------------------------
   int                 nGenCands() {return fnGenCands;}
   TGenCand*           getGenCand(int n);
+  TGenCand*           getGenCandWithNumber(int number);
   TGenCand*           addGenCand();
   void                dumpGenBlock();
   void                clearGenBlock();
