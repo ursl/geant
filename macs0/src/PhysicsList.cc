@@ -94,9 +94,9 @@ void PhysicsList::ConstructParticle() {
   G4LeptonConstructor::ConstructParticle();
   G4MesonConstructor::ConstructParticle();
 
-  // -- set up Muonium decays
-  musrMuonium::MuoniumDefinition();
-  MuDecayChannel *MuDecay = new MuDecayChannel("Muonium", 1.);
+  // -- set up Muonium
+  //  musrMuonium::MuoniumDefinition();
+  // MuDecayChannel *MuDecay = new MuDecayChannel("Muonium", 1.);
 
   // -- set up muon decays
   G4double radbr10MeV = 0.014;
@@ -124,6 +124,7 @@ void PhysicsList::ConstructParticle() {
   table->Insert(michel);
   table->Insert(raddecay);
   table->Insert(intconv);
+  //  table->Insert(MuDecay);
   G4MuonPlus::Definition()->SetDecayTable(table);
 
 
@@ -202,9 +203,10 @@ void PhysicsList::ConstructProcess() {
       muonNuclearProcess->RegisterMe(new G4MuonVDNuclearModel);
       helper->RegisterProcess(muonNuclearProcess, particle);
 
-      G4ProcessManager* pmanager = particle->GetProcessManager();
-      pmanager->AddProcess(new musrMuFormation, -1, -1, 2);
-
+      if (particleName == "mu+") {
+	G4ProcessManager* pmanager = particle->GetProcessManager();
+	pmanager->AddProcess(new musrMuFormation, -1, -1, 2);
+      }
     }
     else if (particleName == "pi+"
 	     || particleName == "pi-"
@@ -219,13 +221,16 @@ void PhysicsList::ConstructProcess() {
       if (1) {
 	G4cout << "PhysicsList::ConstructProcess(): particle->GetParticleName() = "
 	       << particle->GetParticleName()
-	       << " registering  musrMuEnergyLossLandau process" << G4endl;
-	// -- musrMuScatter should better be called musrMuStop
-	// G4VProcess* aMuScatt = new musrMuScatter();
-	// pmanager->AddProcess(aMuScatt);
+	       << " registering  musrMuEnergyLossLandau process "
+	       << " with GetVerboseLevel() = " << GetVerboseLevel()
+	       << G4endl;
+
+	//helper->RegisterProcess(new musrMuEnergyLossLandau, particle);
+
 	G4VProcess *aMuEnergyLossLandau = new musrMuEnergyLossLandau();
+	//	aMuEnergyLossLandau->SetVerboseLevel(GetVerboseLevel());
 	pmanager->AddProcess(aMuEnergyLossLandau);
-	// -- this is essential for getting this process activated:
+	 // // -- this is essential for getting this process activated:
 	pmanager->SetProcessOrdering(aMuEnergyLossLandau, idxPostStep, 1);
       }
     } else if (!particle->IsShortLived()
