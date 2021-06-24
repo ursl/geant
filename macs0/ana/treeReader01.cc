@@ -32,7 +32,7 @@ void treeReader01::eventProcessing() {
   // -- generic rudimentary analysis
   if (DBX) {
     cout << "----------------------------------------------------------------------" << endl;
-    cout << "Found " << fpEvt->nGenCands() << " gen cands in event" << endl;
+    cout << "Found " << fpEvt->nGenCands() << " gen cands in event " << fEvt << endl;
     cout << "Found " << fpEvt->nHits() << " hits in event" << endl;
   }
   if (DBX) {
@@ -77,21 +77,21 @@ void treeReader01::eventProcessing() {
   // -- call specific analysis functions
   fillMuFinal();
   fillHist();
+
   if (DBX) {
     cout << "----------------------------------------------------------------------" << endl;
     cout << "vtx: " << endl;
-  }
-  TGenVtx *pVtx;
-  for (int ivtx = 0; ivtx < fpEvt->nGenVtx(); ++ivtx) {
-    pVtx = fpEvt->getGenVtx(ivtx);
-    if (DBX) pVtx->dump();
-  }
-  if (DBX) {
+
+    TGenVtx *pVtx;
+    for (int ivtx = 0; ivtx < fpEvt->nGenVtx(); ++ivtx) {
+      pVtx = fpEvt->getGenVtx(ivtx);
+      pVtx->dump();
+    }
     cout << "----------------------------------------------------------------------" << endl;
     cout << "hits: " << endl;
     for (int i = 0; i < fpEvt->nHits(); ++i) {
       pHit = fpEvt->getHit(i);
-      if (DBX) pHit->dump();
+      pHit->dump();
     }
   }
 
@@ -116,9 +116,9 @@ void treeReader01::fillMuFinal() {
 	fMuFinal.push_back(pGen);
       }
 
-      // - fill energy loss wrt mother
+      // - fill energy loss wrt mother (must protect pMom because in signal mode the -1313 do not have a mother!)
       pMom = fpEvt->getGenCandWithNumber(pGen->fMom1);
-      if (-1313 == pMom->fID) {
+      if (pMom && (-1313 == pMom->fID)) {
 	double ekin0 = pMom->ekin();
 	double ekin1 = pGen->ekin();
 	double eloss = 1.e3*(ekin0 - ekin1); // in keV
@@ -136,27 +136,8 @@ void treeReader01::fillMuFinal() {
 
   if (DBX) {
     cout << "and the final Mu list" << endl;
-    TGenCand *pOld(0);
     for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
-      pMom = fpEvt->getGenCandWithNumber(fMuFinal[i]->fMom1);
-      pOld = pMom;
-      while (-1313 == pMom->fID) {
-	pOld = pMom;
-	pMom = fpEvt->getGenCandWithNumber(pMom->fMom1);
-      }
-      fMuFinal[i]->fMom2 = pOld->fNumber;
       fMuFinal[i]->dump(2);
-      // -- time from first Mu to final Mu
-      double t0 = pOld->fGlobalTime;
-      double t1 = fMuFinal[i]->fGlobalTime;
-      double dt = t1 - t0;
-      ((TH1D*)fpHistFile->Get("muTform"))->Fill(dt);
-      // -- now decay time of Mu
-      pDau = fpEvt->getGenCandWithNumber(fMuFinal[i]->fDau1);
-      t0 = t1;
-      t1 = pDau->fGlobalTime;
-      dt = t1 - t0;
-      ((TH1D*)fpHistFile->Get("muTdecay"))->Fill(dt);
     }
   }
 }
@@ -166,19 +147,46 @@ void treeReader01::fillMuFinal() {
 void treeReader01::fillHist() {
   int idxEAtom(-1), idxEMuon(-1);
   TGenCand *pGen(0), *pMu(0), *pEMuon(0), *pEAtom(0);
+  TGenCand *pOld(0), *pDau(0), *pMom(0);
   vector<int> signalTrkId;
 
   for (unsigned int i = 0; i < fMuFinal.size(); ++i) {
     pMu = fMuFinal[i];
     idxEAtom = idxEMuon = -1;
     fillDaughters(pMu, idxEMuon, idxEAtom);
+
+    // -- histogramming the decay time
+    pMom = fpEvt->getGenCandWithNumber(pMu->fMom1);
+    // --  must protect pMom because in signal mode the -1313 do not have a mother!
+    if (pMom) {
+      pOld = pMom;
+      while (-1313 == pMom->fID) {
+	pOld = pMom;
+	pMom = fpEvt->getGenCandWithNumber(pMom->fMom1);
+      }
+      // -- fMom2 contains the first Mu corresponding to this final Mu
+      pMu->fMom2 = pOld->fNumber;
+      // -- time from first Mu to final Mu
+      double t0 = pOld->fGlobalTime;
+      double t1 = pMu->fGlobalTime;
+      double dt = t1 - t0;
+      ((TH1D*)fpHistFile->Get("muTform"))->Fill(dt);
+    }
+    // -- now decay time of Mu
+    pDau = fpEvt->getGenCandWithNumber(pMu->fDau1);
+    double t0 = pMu->fGlobalTime;
+    double t1 = pDau->fGlobalTime;
+    double dt = t1 - t0;
+    ((TH1D*)fpHistFile->Get("muTdecay"))->Fill(dt);
+
+    // -- and now the rest
     if (idxEMuon > -1) pEMuon = fpEvt->getGenCand(idxEMuon);
     if (idxEAtom > -1) pEAtom = fpEvt->getGenCand(idxEAtom);
     if (0 == pEMuon) continue;
     if (0 == pEAtom) continue;
 
     double zdecay = pEMuon->fV.Z();
-    double ekin = 1.e3*(pMu->fP.E() - MMUON); // in keV
+    double ekin = 1.e3*pMu->ekin(); // in keV
 
     signalTrkId.push_back(pEMuon->fNumber);
     signalTrkId.push_back(pEAtom->fNumber);
@@ -298,7 +306,7 @@ void treeReader01::bookHist() {
   new TH1D("muTdecay",  "(global) decay time ", 100, 0., 2.e4);
 
   // -- histograms for Mu decayed in decay volume
-  new TH1D("h17", "mu+(beam) Ekin [keV]", 100, 0., 100.);
+  new TH1D("h17", "Mu Ekin [keV]", 100, 0., 100.);
   new TH1D("h18", "Mu decay length [mm]", 100, 0., 5000.);
   new TH1D("h19", "Mu momentum [MeV]", 100, 0., 10.);
 
