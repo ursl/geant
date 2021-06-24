@@ -195,6 +195,25 @@ func main() {
         return
     }
 
+    // 210624: setup for scan with different Mu momentan
+    if 2 == mode {
+        let arguments = [["-s", "/macs0/generator/sgKinEnergy=0.026 eV,0.1 eV,0.2 eV,0.5 eV,1.0 eV,5.0 eV,10 eV,100 eV,1 keV,10 keV,100 keV,1 MeV, 5 MeV",
+                          "-n", "signal-5Mu", "-f", macname]
+        ]
+
+        for args in arguments {
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/Users/ursl/fsx/geant4/muamu/macs0/swift/mkMacFiles.swift")
+            task.arguments = args
+            do {
+                try task.run()
+            } catch {
+                print("could not run task")
+            }
+        }
+        return
+    }
+
     let sfile = readMacFile(macname)
     mkMacFile(basename: basename, macname: macname, contents: sfile)
 
