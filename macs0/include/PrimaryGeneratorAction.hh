@@ -27,6 +27,9 @@ private:
   G4double fSgKinEnergy, fSgKinEnergySigma;
   G4double fBgKinEnergy, fBgKinEnergySigma;
 
+  G4double fSgGunZposition;
+  G4double fBgGunZposition;
+
   G4ParticleGun* fParticleGun;
   G4ParticleGun* fBackgroundGun;
   DetectorConstruction* fMyDetector;
