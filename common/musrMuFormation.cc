@@ -124,6 +124,8 @@ G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const
 G4double musrMuFormation::GetMeanFreePath(const G4Track&t, G4double, G4ForceCondition* condition) {
   *condition = Forced;
 
+  return DBL_MAX;
+
   std::string logVolName = t.GetVolume()->GetLogicalVolume()->GetName();
   if (verboseLevel > 0) {
     G4cout << "musrMuFormation::GetMeanFreePath> XXXXXXX in " << logVolName
