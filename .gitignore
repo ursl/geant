@@ -1,6 +1,8 @@
-*.pdf
-build
+_build
+run
 bin
 obj
 lib
+*.pdf
+*.log
 *.root
