@@ -90,8 +90,7 @@ target_link_libraries(ClassesDict  ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #
 add_executable(runG4 runG4.cc ${sources} ${headers})
 target_link_libraries(runG4 ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
-add_executable(readHits readHits.cc  ${sources} ${headers})
-target_link_libraries(readHits ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Add program to the project targets
@@ -103,6 +102,5 @@ add_custom_target(DEPENDS runG4 readHits )
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
 install(TARGETS runG4 DESTINATION bin)
-install(TARGETS readHits DESTINATION bin)
 install(TARGETS ClassesDict DESTINATION lib)
 install(FILES ${PROJECT_BINARY_DIR}/Classes_rdict.pcm DESTINATION lib)
