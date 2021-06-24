@@ -5,13 +5,14 @@
 //
 //
 // Usage/examples:
+// ../swift/mkMacFiles.swift -f ../run.mac -m 1
+//
 // ../swift/mkMacFiles.swift -f vis.mac -n basename  -s /macs0/det/setTargetLength=5\ nm,10\ nm,15\ nm
 //                          [-p /macs0/det/setTargetMaterial=Cfoil] [-p /macs0/generator/bgKinEnergy\ =26\ MeV]
 //
-// ../swift/mkMacFiles.swift -m 1
-//
 // History: 2021/04/29 First shot
 //          2021/05/04 add modes to combine various runs
+//          2021/06/24 change path, add macname to '-m 1' operation
 // ----------------------------------------------------------------------
 
 import Foundation
@@ -136,54 +137,54 @@ func main() {
         let arguments = [["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
                           "-p", "/macs0/det/setTargetMaterial=Aerogel",
                           "-p", "/macs0/generator/bgKinEnergy =26 MeV",
-                          "-n", "aerogel-26MeV", "-f", "vis.mac"]
+                          "-n", "aerogel-26MeV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
                            "-p", "/macs0/det/setTargetMaterial=Aerogel",
                            "-p", "/macs0/generator/bgKinEnergy =5 MeV",
-                           "-n", "aerogel-5MeV", "-f", "vis.mac"]
+                           "-n", "aerogel-5MeV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
                            "-p", "/macs0/det/setTargetMaterial=Aerogel",
                            "-p", "/macs0/generator/bgKinEnergy =50 keV",
-                           "-n", "aerogel-50keV", "-f", "vis.mac"]
+                           "-n", "aerogel-50keV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=10 um,100 um,1 mm,8 mm",
                            "-p", "/macs0/det/setTargetMaterial=Aerogel",
                            "-p", "/macs0/generator/bgKinEnergy =500 keV",
-                           "-n", "aerogel-500keV", "-f", "vis.mac"]
+                           "-n", "aerogel-500keV", "-f", macname]
 
                         , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
                            "-p", "/macs0/det/setTargetMaterial=Cfoil",
                            "-p", "/macs0/generator/bgKinEnergy =5 keV",
-                           "-n", "Cfoil-5keV", "-f", "vis.mac"]
+                           "-n", "Cfoil-5keV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
                            "-p", "/macs0/det/setTargetMaterial=Cfoil",
                            "-p", "/macs0/generator/bgKinEnergy =10 keV",
-                           "-n", "Cfoil-10keV", "-f", "vis.mac"]
+                           "-n", "Cfoil-10keV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
                            "-p", "/macs0/det/setTargetMaterial=Cfoil",
                            "-p", "/macs0/generator/bgKinEnergy =15 keV",
-                           "-n", "Cfoil-15keV", "-f", "vis.mac"]
+                           "-n", "Cfoil-15keV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=5 nm,10 nm,15 nm",
                            "-p", "/macs0/det/setTargetMaterial=Cfoil",
                            "-p", "/macs0/generator/bgKinEnergy =50 keV",
-                           "-n", "Cfoil-50keV", "-f", "vis.mac"]
+                           "-n", "Cfoil-50keV", "-f", macname]
 
                         , ["-s", "/macs0/det/setTargetLength=500 nm,750 nm,1500 nm",
                            "-p", "/macs0/det/setTargetMaterial=G4_Al",
                            "-p", "/macs0/generator/bgKinEnergy =1 MeV",
-                           "-n", "Al-1MeV", "-f", "vis.mac"]
+                           "-n", "Al-1MeV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=500 nm,750 nm,1500 nm",
                            "-p", "/macs0/det/setTargetMaterial=G4_Al",
                            "-p", "/macs0/generator/bgKinEnergy =5 MeV",
-                           "-n", "Al-5MeV", "-f", "vis.mac"]
+                           "-n", "Al-5MeV", "-f", macname]
                         , ["-s", "/macs0/det/setTargetLength=500 nm,750 nm,1500 nm",
                            "-p", "/macs0/det/setTargetMaterial=G4_Al",
                            "-p", "/macs0/generator/bgKinEnergy =10 MeV",
-                           "-n", "Al-10MeV", "-f", "vis.mac"]
+                           "-n", "Al-10MeV", "-f", macname]
         ]
 
         for args in arguments {
             let task = Process()
-            task.executableURL = URL(fileURLWithPath: "/Users/ursl/fsx/geant4/geant4.10.04.p02/muamu/macs0/swift/mkMacFiles.swift")
+            task.executableURL = URL(fileURLWithPath: "/Users/ursl/fsx/geant4/muamu/macs0/swift/mkMacFiles.swift")
             task.arguments = args
             do {
                 try task.run()
