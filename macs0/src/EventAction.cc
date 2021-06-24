@@ -24,7 +24,15 @@ void EventAction::BeginOfEventAction(const G4Event*evt) {
   TTimeStamp ts;
   int every(1);
   if (0 == fVerbose) {
-    every = 100;
+    if (fNevt <= 100) {
+      every = 10;
+    } else if (fNevt <= 1000) {
+      every = 100;
+    } else if (fNevt <= 10000) {
+      every = 500;
+    } else {
+      every = 1000;
+    }
   }
   if (0 == evt->GetEventID()%every) {
     G4cout << "==========> Event " << Form("%6d", evt->GetEventID()) << " start, time now: "

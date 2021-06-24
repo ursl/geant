@@ -55,9 +55,10 @@ public:
   virtual void EndOfEventAction(const G4Event*);
   G4int getParticleID(G4int, const G4Event *);
   void setVerbose(int v) {fVerbose = v;}
+  void setNevt(int nevt) {fNevt = nevt;}
 
 private:
-  int fVerbose;
+  int fVerbose, fNevt;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

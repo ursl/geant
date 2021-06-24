@@ -112,6 +112,9 @@ int main(int argc, char** argv) {
     ((StackingAction*)runManager->GetUserStackingAction())->setVerbose(verbose);
   }
 
+  ((EventAction*)runManager->GetUserEventAction())->setNevt(nevt);
+
+
   //  runManager->Initialize();
 
   // --  Pointer to the User Interface manager
