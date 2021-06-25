@@ -441,6 +441,10 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 
   fLogicEndplateF->SetUserLimits(new G4UserLimits(0.001*mm));
 
+  G4cout << "DetectorConstruction::>macs0 placing endplates at z = "
+	 << worldHalfLength-0.5*cm
+	 << " and z = " << -(worldHalfLength-0.5*cm)
+	 << G4endl;
 
   G4VisAttributes *pVA1  = new G4VisAttributes;
   pVA1->SetColour(G4Colour(0.9, 0.9, 0.9));
@@ -506,6 +510,10 @@ void DetectorConstruction::makeAccel() {
   G4double lAcc =   2.0*cm;
   auto p0 = new G4Tubs("Accel", orAcc-0.1*cm, orAcc, lAcc, 0.*deg, 360.*deg);
   fLogicAccel = new G4LogicalVolume(p0, fVac, "lAccel");
+
+  G4cout << "DetectorConstruction::makeAccel> placing accelerator at z = "
+	 << 0.5*(fTrkLength+2.*lAcc)+0.5*cm
+	 << G4endl;
 
   G4RotationMatrix* fieldRot = new G4RotationMatrix();
   //  fieldRot->rotateX(90.*deg);
@@ -665,6 +673,10 @@ void DetectorConstruction::makeTarget() {
   //  G4ThreeVector positionTarget = G4ThreeVector(0., 0., -trkHalfLength+tgtHalfLength);
 
   G4double zposition = -0.5*fTrkLength + 10.*cm;
+
+  G4cout << "DetectorConstruction::makeTarget> placing target at z = "
+	 << zposition
+	 << G4endl;
 
   G4ThreeVector positionTarget = G4ThreeVector(0., 0., zposition);
   G4double tgtHalfLength       = 0.5*fTargetLength;    // Half length of the Target
