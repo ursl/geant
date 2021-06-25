@@ -217,7 +217,7 @@ void treeReader01::fillHist() {
       ((TH1D*)fpHistFile->Get("muprod"))->Fill(0.);
     }
 
-    if (zdecay > -400 && zdecay < 2095.) {
+    if (zdecay > -400 && zdecay < 2089.) {
       ((TH1D*)fpHistFile->Get("h10"))->Fill(t);
       ((TH1D*)fpHistFile->Get("h17"))->Fill(ekin);
       ((TH1D*)fpHistFile->Get("h18"))->Fill(fl);

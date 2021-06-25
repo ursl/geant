@@ -30,7 +30,7 @@ public :
   void   resetHistograms(bool deleteThem = false);
 
 
-  void   scanAnalyses();
+  void   scanAnalyses(std::string mode = "sgKinEnergy");
   double totalMuons(TH1 *h);
 };
 
