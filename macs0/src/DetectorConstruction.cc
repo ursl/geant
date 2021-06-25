@@ -366,6 +366,12 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   fPhysiTracker = new G4PVPlacement(0, positionTracker, fLogicTracker, "Tracker", fLogicWorld, false, 0, true);
   fLogicTracker->SetVisAttributes(boxVisAtt);
 
+
+    G4cout << "DetectorConstruction::>macs0 placing tracker from z = "
+	 << -trkHalfLength
+	 << " to z = " << trkHalfLength
+	 << G4endl;
+
   G4VisAttributes* chamberVisAtt = new G4VisAttributes(G4Colour(1.0,1.0,0.0));
   for (G4int itrk=0; itrk < fMacsTrkNum; itrk++) {
 
@@ -388,7 +394,6 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 					    fCheckOverlaps);              // checking overlaps
 
   }
-
 
   G4Region* trackerRegion = new G4Region("TrackerRegion");
   RegionInformation* trackerInfo = new RegionInformation();
