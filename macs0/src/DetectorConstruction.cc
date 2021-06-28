@@ -344,8 +344,8 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   pBp->SetColour(G4Colour(0.7, 0.8, 0.7));
   //  pBp->SetForceLineSegmentsPerCircle(6);
   //  pBp->SetForceAuxEdgeVisible(true);
-  pBp->SetLineWidth(0.01);
-  pBp->SetForceSolid(false);
+  pBp->SetLineWidth(0.1);
+  pBp->SetForceSolid(true);
   fLogicBeampipe->SetVisAttributes(pBp);
 
   G4cout << "Beampipe is " << fBeampipeLength/mm << "mm of " << fBeampipeMater->GetName() << G4endl;
@@ -372,7 +372,7 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 	 << " to z = " << trkHalfLength
 	 << G4endl;
 
-  G4VisAttributes* chamberVisAtt = new G4VisAttributes(G4Colour(1.0,1.0,0.0));
+  G4VisAttributes* chamberVisAtt = new G4VisAttributes(G4Colour(0.8,0.4,0.3));
   for (G4int itrk=0; itrk < fMacsTrkNum; itrk++) {
 
     G4Tubs* chamberS = new G4Tubs("Chamber_solid", fMacsTrkInnerRadius[itrk],
@@ -558,7 +558,8 @@ void DetectorConstruction::makeEndDetector() {
 
   G4VisAttributes *pVA  = new G4VisAttributes;
   pVA->SetColour(G4Colour(0.6, 0.4, 0.2));
-  pVA->SetForceWireframe(true);
+  pVA->SetForceWireframe(false);
+  pVA->SetForceSolid(true);
   fLogicMCP->SetVisAttributes(pVA);
 
 
@@ -608,6 +609,11 @@ void DetectorConstruction::makeSplitTrspTube() {
   G4double fheight = 0.31*m;
   auto magneticSolid = new G4Tubs("magneticTubs", 0., fdiam, fheight, 0., 360.*deg);
   fMagneticLogical = new G4LogicalVolume(magneticSolid, fVac, "magneticLogical");
+  G4VisAttributes *pMa  = new G4VisAttributes;
+  pMa->SetColour(G4Colour(0., 0., 0.));
+  pMa->SetForceSolid(false);
+  pMa->SetForceWireframe(true);
+  fMagneticLogical->SetVisAttributes(pMa);
 
   G4RotationMatrix* fieldRot = new G4RotationMatrix();
   fieldRot->rotateX(90.*deg);
