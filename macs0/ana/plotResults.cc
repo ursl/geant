@@ -75,21 +75,35 @@ void plotResults::scanAnalyses(string mode) {
     energies.push_back("1.0eV");
     energies.push_back("5.0eV");
     energies.push_back("10eV");
-    energies.push_back("50eV");
     energies.push_back("100eV");
     energies.push_back("500eV");
     energies.push_back("1keV");
-    energies.push_back("5keV");
+    energies.push_back("2keV");
     energies.push_back("10keV");
-    energies.push_back("50keV");
+    energies.push_back("20keV");
     energies.push_back("100keV");
-    energies.push_back("500keV");
+    energies.push_back("200keV");
     energies.push_back("1MeV");
     energies.push_back("5MeV");
 
     fHistFile->cd();
-    TH1D *h2 = new TH1D(Form("acc"), "acceptance (decay in volume)", energies.size(), 0., energies.size());
-    setTitles(h2, "Mu Energy", "acceptance", 0.04, 1.2, 2.3);
+    TH1D *h2 = new TH1D(Form("acc"), "Acceptance (decay before accelerator)", energies.size(), 0., energies.size());
+    setTitles(h2, "Mu Energy", "Acceptance", 0.04, 1.2, 1.2);
+
+    TH1D *h3 = new TH1D(Form("eff"), "Efficiency (hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
+    setTitles(h3, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+
+    TH1D *h3a = new TH1D(Form("ef2"), "Efficiency (#geq2 hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
+    setTitles(h3a, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+
+    TH1D *h3b = new TH1D(Form("ef3"), "Efficiency (#geq hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
+    setTitles(h3b, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+
+    TH1D *h4 = new TH1D(Form("ef4"), "(Efficiency | decay) (hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
+    setTitles(h4, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+
+    TH1D *ht = new TH1D(Form("ht"), "average proper decay time [#mus]", energies.size(), 0., energies.size());
+    setTitles(ht, "Mu Energy", "#LTt#GT [#mus]", 0.04, 1.2, 1.2);
 
     for (unsigned k = 0; k < energies.size(); ++k) {
       string filename = "signal-5Mu-" + energies[k] + ".default.root";
@@ -97,23 +111,120 @@ void plotResults::scanAnalyses(string mode) {
       TFile *f = TFile::Open(filename.c_str());
       TH1D *h1 = (TH1D*)f->Get("acc");
       TH1D *hm = (TH1D*)f->Get("h6");
-      double nacc = h1->GetBinContent(h1->FindBin(0.01));
+      TH1D *h10 = (TH1D*)f->Get("h10");
       double nMu = hm->GetEntries();
+      double nacc = h1->GetBinContent(h1->FindBin(0.01));
+      double neff = h1->GetBinContent(h1->FindBin(3.01));
+      double nef2 = h1->GetBinContent(h1->FindBin(13.01));
+      double nef3 = h1->GetBinContent(h1->FindBin(23.01));
       double acc = nacc/nMu;
       double acce= dEff(static_cast<int>(nacc), static_cast<int>(nMu));
+      double eff = neff/nMu;
+      double effe= dEff(static_cast<int>(neff), static_cast<int>(nMu));
+      double ef2 = nef2/nMu;
+      double ef2e= dEff(static_cast<int>(nef2), static_cast<int>(nMu));
+      double ef3 = nef3/nMu;
+      double ef3e= dEff(static_cast<int>(nef3), static_cast<int>(nMu));
+      double ef4 = neff/nacc;
+      double ef4e= dEff(static_cast<int>(neff), static_cast<int>(nacc));
       h2->SetBinContent(k+1, acc);
       h2->SetBinError(k+1, acce);
       h2->GetXaxis()->SetBinLabel(k+1, energies[k].c_str());
 
+      h3->SetBinContent(k+1, eff);
+      h3->SetBinError(k+1, effe);
+      h3->GetXaxis()->SetBinLabel(k+1, energies[k].c_str());
+
+      h3a->SetBinContent(k+1, ef2);
+      h3a->SetBinError(k+1, ef2e);
+      h3a->GetXaxis()->SetBinLabel(k+1, energies[k].c_str());
+
+      h3b->SetBinContent(k+1, ef3);
+      h3b->SetBinError(k+1, ef3e);
+      h3b->GetXaxis()->SetBinLabel(k+1, energies[k].c_str());
+
+      h4->SetBinContent(k+1, ef4);
+      h4->SetBinError(k+1, ef4e);
+      h4->GetXaxis()->SetBinLabel(k+1, energies[k].c_str());
+
+      ht->SetBinContent(k+1, 1.e6*h10->GetMean());
+      ht->SetBinError(k+1, 1.e6*h10->GetMeanError());
+      ht->GetXaxis()->SetBinLabel(k+1, energies[k].c_str());
+
+
       cout << filename << " nacc: " << nacc << " nMu: " << nMu
 	   << " acc: " << acc << " +/- " << acce
+	   << " eff: " << eff << " +/- " << effe
 	   << endl;
       f->Close();
     }
 
+    gStyle->SetOptTitle(0);
+
+    c0->SetGridx(1);
+    c0->SetGridy(1);
+
     gStyle->SetOptStat(0);
     h2->Draw("texte");
     savePad(Form("acc_%s.pdf", mode.c_str()));
+
+    h3->Draw("texte");
+    savePad(Form("eff_%s.pdf", mode.c_str()));
+
+    h3a->Draw("texte");
+    savePad(Form("eff2_%s.pdf", mode.c_str()));
+
+    h3b->Draw("texte");
+    savePad(Form("eff3_%s.pdf", mode.c_str()));
+
+    // -- overlay efficiency plots
+    c0->Clear();
+    c0->SetGridx(1);
+    c0->SetGridy(1);
+    c0->SetLogy(1);
+    setHist(h3, kBlack);
+    setHist(h3a, kBlue);
+    setHist(h3b, kRed);
+    h3->Draw("hist");
+    h3a->Draw("histsame");
+    h3b->Draw("histsame");
+    newLegend(0.12, 0.25, 0.50, 0.40, "");
+    legg->SetFillStyle(1000);
+    legg->AddEntry(h3, "hits from e_{#mu} and e_{atomic}", "l");
+    legg->AddEntry(h3a, "#geq 2 hits from e_{#mu} and e_{atomic}", "l");
+    legg->AddEntry(h3b, "#geq 4 hits from e_{#mu} and e_{atomic}", "l");
+    legg->Draw();
+    savePad(Form("effoverlayLog_%s.pdf", mode.c_str()));
+
+
+    // -- overlay efficiency plots
+    c0->Clear();
+    c0->SetGridx(1);
+    c0->SetGridy(1);
+    c0->SetLogy(0);
+    setHist(h3, kBlack);
+    setHist(h3a, kBlue);
+    setHist(h3b, kRed);
+    h3->Draw("hist");
+    h3a->Draw("histsame");
+    h3b->Draw("histsame");
+    newLegend(0.12, 0.25, 0.50, 0.40, "");
+    legg->SetFillStyle(1000);
+    legg->AddEntry(h3, "hits from e_{#mu} and e_{atomic}", "l");
+    legg->AddEntry(h3a, "#geq 2 hits from e_{#mu} and e_{atomic}", "l");
+    legg->AddEntry(h3b, "#geq 4 hits from e_{#mu} and e_{atomic}", "l");
+    legg->Draw();
+    savePad(Form("effoverlayLin_%s.pdf", mode.c_str()));
+
+    //    shrinkPad(0.1, 0.12);
+    h4->Draw("histe");
+    savePad(Form("eff4_%s.pdf", mode.c_str()));
+
+    c0->SetLogy(1);
+    ht->SetMinimum(0.01);
+    ht->Draw("histe");
+    savePad(Form("decaytime_%s.pdf", mode.c_str()));
+    c0->SetLogy(0);
 
   }
 

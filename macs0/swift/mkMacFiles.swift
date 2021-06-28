@@ -198,7 +198,7 @@ func main() {
 
     // 210624: setup for scan with different Mu momentan
     if 2 == mode {
-        let arguments = [["-s", "/macs0/generator/sgKinEnergy=0.010 eV,0.026 eV,0.050 eV,0.1 eV,0.2 eV,0.5 eV,1.0 eV,5.0 eV,10 eV,50 eV,100 eV,500 eV,1 keV,5 keV,10 keV,50 keV,100 keV,500 keV,1 MeV,5 MeV",
+        let arguments = [["-s", "/macs0/generator/sgKinEnergy=0.010 eV,0.026 eV,0.050 eV,0.1 eV,0.2 eV,0.5 eV,1.0 eV,5.0 eV,10 eV,100 eV,500 eV,1 keV,2 keV,10 keV,20 keV,100 keV,200 keV,1 MeV,5 MeV",
                           "-n", "signal-5Mu", "-f", macname]
         ]
 
