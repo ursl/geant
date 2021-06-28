@@ -9,8 +9,27 @@
 # Initialize kernel
 /run/initialize
 #
-# Visualization setting
-/control/echo "**********************************************************************"
-/control/echo "****** Calling vis.mac *******"
-/control/echo "**********************************************************************"
-/control/execute vis.mac
+
+# Draw geometry:
+/vis/open OGL 1000x1000-0+0
+/vis/drawVolume
+
+# Specify view angle:
+/vis/viewer/set/viewpointThetaPhi 115. 160.
+
+# Specify zoom value:
+/vis/viewer/zoom 1.4
+
+/vis/viewer/set/background white
+
+# Specify style (surface or wireframe):
+/vis/viewer/set/style surface
+/vis/viewer/set/style wireframe
+
+/vis/viewer/set/hiddenEdge 0
+/vis/viewer/set/autoRefresh true
+
+/vis/viewer/set/globalLineWidthScale 2
+
+# Draw coordinate axes:
+/vis/scene/add/axes 0 0 0 30 cm
