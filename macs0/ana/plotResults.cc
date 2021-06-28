@@ -66,44 +66,44 @@ void plotResults::scanAnalyses(string mode) {
 
   if ("sgKinEnergy" == mode) {
     vector<string> energies;
-    energies.push_back("0.010eV");
-    energies.push_back("0.026eV");
-    energies.push_back("0.050eV");
-    energies.push_back("0.1eV");
-    energies.push_back("0.2eV");
-    energies.push_back("0.5eV");
-    energies.push_back("1.0eV");
-    energies.push_back("5.0eV");
-    energies.push_back("10eV");
-    energies.push_back("100eV");
-    energies.push_back("500eV");
-    energies.push_back("1keV");
-    energies.push_back("2keV");
-    energies.push_back("10keV");
-    energies.push_back("20keV");
-    energies.push_back("100keV");
-    energies.push_back("200keV");
-    energies.push_back("1MeV");
-    energies.push_back("5MeV");
+    energies.push_back("20deg-0.010eV");
+    energies.push_back("20deg-0.026eV");
+    energies.push_back("20deg-0.050eV");
+    energies.push_back("20deg-0.1eV");
+    energies.push_back("20deg-0.2eV");
+    energies.push_back("20deg-0.5eV");
+    energies.push_back("20deg-1.0eV");
+    energies.push_back("20deg-5.0eV");
+    energies.push_back("20deg-10eV");
+    energies.push_back("20deg-100eV");
+    energies.push_back("20deg-500eV");
+    energies.push_back("2deg-1keV");
+    energies.push_back("2deg-2keV");
+    energies.push_back("2deg-10keV");
+    energies.push_back("2deg-20keV");
+    energies.push_back("2deg-100keV");
+    energies.push_back("2deg-200keV");
+    energies.push_back("2deg-1MeV");
+    energies.push_back("2deg-5MeV");
 
     fHistFile->cd();
     TH1D *h2 = new TH1D(Form("acc"), "Acceptance (decay before accelerator)", energies.size(), 0., energies.size());
-    setTitles(h2, "Mu Energy", "Acceptance", 0.04, 1.2, 1.2);
+    setTitles(h2, "Mu Energy", "Acceptance", 0.04, 1.6, 1.2);
 
     TH1D *h3 = new TH1D(Form("eff"), "Efficiency (hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
-    setTitles(h3, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+    setTitles(h3, "Mu Energy", "Efficiency", 0.04, 1.6, 1.2);
 
     TH1D *h3a = new TH1D(Form("ef2"), "Efficiency (#geq2 hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
-    setTitles(h3a, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+    setTitles(h3a, "Mu Energy", "Efficiency", 0.04, 1.6, 1.2);
 
     TH1D *h3b = new TH1D(Form("ef3"), "Efficiency (#geq hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
-    setTitles(h3b, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+    setTitles(h3b, "Mu Energy", "Efficiency", 0.04, 1.6, 1.2);
 
     TH1D *h4 = new TH1D(Form("ef4"), "(Efficiency | decay) (hits from e_{atomic} and e_{#mu})", energies.size(), 0., energies.size());
-    setTitles(h4, "Mu Energy", "Efficiency", 0.04, 1.2, 1.2);
+    setTitles(h4, "Mu Energy", "Efficiency", 0.04, 1.6, 1.2);
 
     TH1D *ht = new TH1D(Form("ht"), "average proper decay time [#mus]", energies.size(), 0., energies.size());
-    setTitles(ht, "Mu Energy", "#LTt#GT [#mus]", 0.04, 1.2, 1.2);
+    setTitles(ht, "Mu Energy", "#LTt#GT [#mus]", 0.04, 1.6, 1.2);
 
     for (unsigned k = 0; k < energies.size(); ++k) {
       string filename = "signal-5Mu-" + energies[k] + ".default.root";
@@ -161,6 +161,7 @@ void plotResults::scanAnalyses(string mode) {
 
     gStyle->SetOptTitle(0);
 
+    shrinkPad(0.13, 0.12);
     c0->SetGridx(1);
     c0->SetGridy(1);
 
@@ -188,7 +189,7 @@ void plotResults::scanAnalyses(string mode) {
     h3->Draw("hist");
     h3a->Draw("histsame");
     h3b->Draw("histsame");
-    newLegend(0.12, 0.25, 0.50, 0.40, "");
+    newLegend(0.12, 0.25, 0.47, 0.40, "");
     legg->SetFillStyle(1000);
     legg->AddEntry(h3, "hits from e_{#mu} and e_{atomic}", "l");
     legg->AddEntry(h3a, "#geq 2 hits from e_{#mu} and e_{atomic}", "l");
@@ -208,7 +209,7 @@ void plotResults::scanAnalyses(string mode) {
     h3->Draw("hist");
     h3a->Draw("histsame");
     h3b->Draw("histsame");
-    newLegend(0.12, 0.25, 0.50, 0.40, "");
+    newLegend(0.12, 0.25, 0.47, 0.40, "");
     legg->SetFillStyle(1000);
     legg->AddEntry(h3, "hits from e_{#mu} and e_{atomic}", "l");
     legg->AddEntry(h3a, "#geq 2 hits from e_{#mu} and e_{atomic}", "l");
@@ -217,6 +218,7 @@ void plotResults::scanAnalyses(string mode) {
     savePad(Form("effoverlayLin_%s.pdf", mode.c_str()));
 
     //    shrinkPad(0.1, 0.12);
+    h4->SetMinimum(0.);
     h4->Draw("histe");
     savePad(Form("eff4_%s.pdf", mode.c_str()));
 
