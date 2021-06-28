@@ -217,7 +217,8 @@ void treeReader01::fillHist() {
       ((TH1D*)fpHistFile->Get("muprod"))->Fill(0.);
     }
 
-    if (zdecay > -400 && zdecay < 2089.) {
+    // -- decay inside tracker volume (beforehand some random numbers -400. .. 2089.)
+    if (zdecay > -500 && zdecay < 500) {
       ((TH1D*)fpHistFile->Get("h10"))->Fill(t);
       ((TH1D*)fpHistFile->Get("h17"))->Fill(ekin);
       ((TH1D*)fpHistFile->Get("h18"))->Fill(fl);
@@ -238,6 +239,29 @@ void treeReader01::fillHist() {
       if (emtrk > 0 && eamcp > 0) {
 	((TH1D*)fpHistFile->Get("acc"))->Fill(3.);
       }
+
+      // -- at least two hits in tracker!
+      if (emtrk > 1) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(11.);
+      }
+      if (eamcp > 0) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(12.);
+      }
+      if (emtrk > 1 && eamcp > 0) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(13.);
+      }
+
+      // -- at least four hits in tracker! (five tracker layers)
+      if (emtrk > 3) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(21.);
+      }
+      if (eamcp > 0) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(22.);
+      }
+      if (emtrk > 3 && eamcp > 0) {
+	((TH1D*)fpHistFile->Get("acc"))->Fill(23.);
+      }
+
     }
 
     ((TH1D*)fpHistFile->Get("h6"))->Fill(pMu->fV.Z());
