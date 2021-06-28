@@ -24,7 +24,7 @@ private:
   G4int    fSgNpart;
   G4int    fBgNpart;
   G4double fBgNpartSigma;
-  G4double fSgKinEnergy, fSgKinEnergySigma;
+  G4double fSgKinEnergy, fSgKinEnergySigma, fSgAlpha;
   G4double fBgKinEnergy, fBgKinEnergySigma;
 
   G4double fSgGunZposition;

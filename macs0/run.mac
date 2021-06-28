@@ -29,6 +29,7 @@
 /macs0/generator/sgNpart 5
 /macs0/generator/sgKinEnergy 1 eV
 /macs0/generator/sgGunZposition -39.8 cm
+/macs0/generator/sgAlpha 20 deg
 
 
 # -- muon beam
