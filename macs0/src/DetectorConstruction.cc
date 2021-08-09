@@ -6,7 +6,6 @@
 
 #include "DetectorConstruction.hh"
 #include "DetectorMessenger.hh"
-#include "ChamberParameterisation.hh"
 #include "MagneticField.hh"
 #include "ElectricFieldSetup.hh"
 #include "RegionInformation.hh"
