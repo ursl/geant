@@ -13,7 +13,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 RootIO::RootIO(string filename):fNevents(0), fVerbose(0) {
-  TSystem ts;
+  //  TSystem ts;
   gSystem->Load("libClassesDict");
 
   fFile = TFile::Open(filename.c_str(), "RECREATE");
