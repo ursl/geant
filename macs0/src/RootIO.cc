@@ -7,14 +7,12 @@
 #include "G4EventManager.hh"
 #include "G4Event.hh"
 
-static RootIO* instance = 0;
+static RootIO* gInstance = 0;
 
 using namespace std;
 
 // ----------------------------------------------------------------------
 RootIO::RootIO(string filename):fNevents(0), fVerbose(0) {
-  gSystem->Load("libClassesDict");
-
   fFile = TFile::Open(filename.c_str(), "RECREATE");
 
 
@@ -34,10 +32,10 @@ RootIO::~RootIO() {
 
 // ----------------------------------------------------------------------
 RootIO* RootIO::GetInstance(string filename) {
-  if (instance == 0)   {
-    instance = new RootIO(filename);
+  if (gInstance == 0)   {
+    gInstance = new RootIO(filename);
   }
-  return instance;
+  return gInstance;
 }
 
 // ----------------------------------------------------------------------
