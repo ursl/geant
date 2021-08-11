@@ -230,7 +230,7 @@ void PhysicsList::ConstructProcess() {
 	G4VProcess *aMuEnergyLossLandau = new musrMuEnergyLossLandau();
 	//	aMuEnergyLossLandau->SetVerboseLevel(GetVerboseLevel());
 	pmanager->AddProcess(aMuEnergyLossLandau);
-	 // // -- this is essential for getting this process activated:
+	// -- this is essential for getting this process activated:
 	pmanager->SetProcessOrdering(aMuEnergyLossLandau, idxPostStep, 1);
       }
     } else if (!particle->IsShortLived()
