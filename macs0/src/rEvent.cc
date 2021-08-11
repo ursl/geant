@@ -15,8 +15,13 @@ using namespace std;
 rEvent::rEvent() {
 
   fGenCands  = new TClonesArray("TGenCand", NGENCAND);
+  fnGenCands = 0;
+
   fGenVtx    = new TClonesArray("TGenVtx", NGENVTX);
+  fnGenVtx   = 0;
+
   fHits      = new TClonesArray("THit", NHITS);
+  fnHits     = 0;
 
   Clear();
 
@@ -38,7 +43,9 @@ void rEvent::Clear(const char * /*opt*/) {
 
   clearGenBlock();
   clearHits();
+  clearVtxBlock();
 }
+
 
 // ----------------------------------------------------------------------
 void rEvent::clearGenBlock() {
@@ -49,42 +56,7 @@ void rEvent::clearGenBlock() {
   }
   fGenCands->Clear();
   fnGenCands = 0;
-
-  TGenVtx *pGenVtx;
-  for (int i = 0; i < fnGenVtx; i++) {
-    pGenVtx = getGenVtx(i);
-    pGenVtx->clear();
-  }
-  fGenVtx->Clear();
-  fnGenVtx = 0;
-
 }
-
-
-// ----------------------------------------------------------------------
-TGenCand* rEvent::getGenCand(Int_t n) {
-  return (TGenCand*)fGenCands->UncheckedAt(n);
-}
-
-
-// ----------------------------------------------------------------------
-TGenCand* rEvent::getGenCandWithNumber(int number) {
-  TGenCand *pGenCand;
-  for (int i = 0; i < fnGenCands; i++) {
-    pGenCand = getGenCand(i);
-    if (number == pGenCand->fNumber) {
-      return (TGenCand*)fGenCands->UncheckedAt(i);
-    }
-  }
-  return 0;
-}
-
-
-// ----------------------------------------------------------------------
-TGenVtx* rEvent::getGenVtx(Int_t n) {
-  return (TGenVtx*)fGenVtx->UncheckedAt(n);
-}
-
 
 // ----------------------------------------------------------------------
 TGenCand* rEvent::addGenCand() {
@@ -92,6 +64,40 @@ TGenCand* rEvent::addGenCand() {
   new(d[d.GetLast()+1]) TGenCand();
   ++fnGenCands;
   return (TGenCand*)d[d.GetLast()];
+}
+
+// ----------------------------------------------------------------------
+TGenCand* rEvent::getGenCand(Int_t n) {
+  return (TGenCand*)fGenCands->UncheckedAt(n);
+}
+
+// ----------------------------------------------------------------------
+TGenCand* rEvent::getGenCandWithNumber(int number) {
+  TGenCand *pGenCand;
+  for (int i = 0; i < fnGenCands; i++) {
+    pGenCand = getGenCand(i);
+    if (number == pGenCand->fNumber) {
+      return pGenCand;
+    }
+  }
+  return 0;
+}
+
+
+// ----------------------------------------------------------------------
+void rEvent::clearVtxBlock() {
+  TGenVtx *pGenVtx;
+  for (int i = 0; i < fnGenVtx; i++) {
+    pGenVtx = getGenVtx(i);
+    pGenVtx->clear();
+  }
+  fGenVtx->Clear();
+  fnGenVtx = 0;
+}
+
+// ----------------------------------------------------------------------
+TGenVtx* rEvent::getGenVtx(Int_t n) {
+  return (TGenVtx*)fGenVtx->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
