@@ -32,24 +32,22 @@
 // ######################################################################
 musrMuonium* musrMuonium::theInstance = 0;
 
-musrMuonium* musrMuonium::Definition()
-{
+musrMuonium* musrMuonium::Definition() {
   if (theInstance !=0) return theInstance;
   const G4String name = "Muonium";
   // search in particle table]
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
-  if (anInstance ==0)
-  {
-  // create particle
-  //
-  //    Arguments for constructor are as follows
-  //               name             mass          width         charge
-  //             2*spin           parity  C-conjugation
-  //          2*Isospin       2*Isospin3       G-parity
-  //               type    lepton number  baryon number   PDG encoding
-  //             stable         lifetime    decay table
-  //             shortlived      subType    anti_encoding
+  if (anInstance ==0)  {
+    // create particle
+    //
+    //    Arguments for constructor are as follows
+    //               name             mass          width         charge
+    //             2*spin           parity  C-conjugation
+    //          2*Isospin       2*Isospin3       G-parity
+    //               type    lepton number  baryon number   PDG encoding
+    //             stable         lifetime    decay table
+    //             shortlived      subType    anti_encoding
     anInstance = new G4ParticleDefinition(
 					  name,   0.1056584*CLHEP::GeV, 2.99591e-16*CLHEP::MeV,   0.*CLHEP::eplus,
 					  1,               0,             0,
@@ -59,22 +57,22 @@ musrMuonium* musrMuonium::Definition()
 					  // XX CHECK XX		false,      4000.03*CLHEP::ns,          NULL,
 					  false,           "mu"
 					  );
-   // Bohr magnetron of Muonium - T. Shiroka
-   // The magnetic moment of Mu is the sum of those of mu+ and e- with
-   // the respective gyromagnetic ratio anomalies as coefficients
+    // Bohr magnetron of Muonium - T. Shiroka
+    // The magnetic moment of Mu is the sum of those of mu+ and e- with
+    // the respective gyromagnetic ratio anomalies as coefficients
 
-   G4double muBmu =  0.5*CLHEP::eplus*CLHEP::hbar_Planck/(0.10565840*CLHEP::GeV/CLHEP::c_squared);
-   G4double muBel = -0.5*CLHEP::eplus*CLHEP::hbar_Planck/(0.51099906*CLHEP::MeV/CLHEP::c_squared);
-   G4double muB   =  1.0011659208*muBmu + 1.0011596521859*muBel;
+    G4double muBmu =  0.5*CLHEP::eplus*CLHEP::hbar_Planck/(0.10565840*CLHEP::GeV/CLHEP::c_squared);
+    G4double muBel = -0.5*CLHEP::eplus*CLHEP::hbar_Planck/(0.51099906*CLHEP::MeV/CLHEP::c_squared);
+    G4double muB   =  1.0011659208*muBmu + 1.0011596521859*muBel;
 
-   anInstance->SetPDGMagneticMoment( muB );
+    anInstance->SetPDGMagneticMoment( muB );
 
-  //create Decay Table
-  G4DecayTable* table = new G4DecayTable();
-  // create a decay channel
-  G4VDecayChannel* mode = new MuDecayChannel("Muonium",1.00);
-  table->Insert(mode);
-  anInstance->SetDecayTable(table);
+    //create Decay Table
+    G4DecayTable* table = new G4DecayTable();
+    // create a decay channel
+    G4VDecayChannel* mode = new MuDecayChannel("Muonium",1.00);
+    table->Insert(mode);
+    anInstance->SetDecayTable(table);
 
   }
   theInstance = reinterpret_cast<musrMuonium*>(anInstance);
