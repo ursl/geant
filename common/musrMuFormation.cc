@@ -99,6 +99,7 @@ G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const
 
   // -- PrepareSecondary(trackData);
   if (1) {
+    if (1) G4cout << "hello" << G4endl;
     RootIO *rio = RootIO::GetInstance();
     TGenVtx *pVtx = rio->getEvent()->addGenVtx();
     pVtx->fNumber = rio->getEvent()->nGenVtx()-1;
@@ -115,6 +116,8 @@ G4VParticleChange* musrMuFormation::PostStepDoIt(const G4Track& trackData, const
   fParticleChange.AddSecondary(aSecondary);
   // -- the (original) muon is killed, not the Muonium!
   fParticleChange.ProposeTrackStatus(fStopAndKill) ;
+
+  delete DP;
 
   return &fParticleChange;
 }
