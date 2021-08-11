@@ -313,7 +313,6 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
 
   fTrkInnerRadius = 5.0*cm;
   fTrkOuterRadius = 100.0*cm;
-  G4double trkHalfLength  = 0.5*fTrkLength;
   G4double beampipeHalfLength  = 0.5*fBeampipeLength;
 
   // ------------------------------
@@ -358,6 +357,65 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   // ------------------------------
   // -- Tracker
   // ------------------------------
+  makeTracker();
+
+  // ------------------------------
+  // -- Transport tube
+  // ------------------------------
+  makeSplitTrspTube();
+  makeAccel();
+  makeEndDetector();
+  makeEndplate();
+
+  return fPhysiWorld;
+}
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::SetMagField(G4double fieldValue) {
+  G4cout << "===============> DetectorConstruction::SetMagField> SetMagField(" << fieldValue << G4endl;
+  fpMagField->SetField(fieldValue);
+}
+
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::ConstructSDandField() {
+  fpMagField = new MagneticField();
+  fpFieldMgr = new G4FieldManager();
+  fpFieldMgr->SetDetectorField(fpMagField);
+  fpFieldMgr->CreateChordFinder(fpMagField);
+  fMagneticLogical->SetFieldManager(fpFieldMgr, true);
+
+  // -- Sensitive detectors
+
+  // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
+  if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/TrackerChamberSD", false)) {
+    TrackerSD* aTrackerSD = new TrackerSD("/macs0/TrackerChamberSD", "TrackerHitsCollection", fVerbose);
+    G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
+    SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
+  }
+
+  // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
+  if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/MCPSD", false)) {
+    MCPSD* aMCPSD = new MCPSD("/macs0/MCPSD", "MCPHitsCollection", fVerbose);
+    G4SDManager::GetSDMpointer()->AddNewDetector(aMCPSD);
+    SetSensitiveDetector("lMCP", aMCPSD, true);
+  }
+
+  if (!fEmFieldSetup.Get()) {
+    ElectricFieldSetup* fieldSetup = new ElectricFieldSetup();
+    fEmFieldSetup.Put(fieldSetup);
+  }
+  fLogicAccel->SetFieldManager(fpFieldMgr, true);
+
+  // -- these two lines lead to BREAKs (not true anymore?!)
+  G4AutoDelete::Register(fpMagField);
+  G4AutoDelete::Register(fpFieldMgr);
+}
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::makeTracker() {
+  G4VisAttributes* boxVisAtt= new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));
+  G4double trkHalfLength  = 0.5*fTrkLength;
   G4ThreeVector positionTracker = G4ThreeVector(0,0,0);
 
   fSolidTracker = new G4Tubs("Tracker", fTrkInnerRadius, fTrkOuterRadius, trkHalfLength, 0.*deg, 360.*deg);
@@ -418,94 +476,8 @@ G4VPhysicalVolume* DetectorConstruction::macs0() {
   pBs->SetForceSolid(true);
 
   fLogicShield->SetVisAttributes(pBs);
-
-
-  // ------------------------------
-  // -- Transport tube
-  // ------------------------------
-  makeSplitTrspTube();
-  makeAccel();
-  makeEndDetector();
-
-
-  // ----------------------------------------------------------------------
-  // -- Endplates (as a stop for the undecayed Muonia)
-  // ----------------------------------------------------------------------
-  G4ThreeVector positionEndplate = G4ThreeVector(0., 0., worldHalfLength-0.5*cm);
-  fSolidEndplate = new G4Box("Endplate", 200*cm, 200*cm, 0.1*cm);
-  fLogicEndplate = new G4LogicalVolume(fSolidEndplate, fTargetMater, "Endplate", 0, 0, 0);
-  fPhysiEndplate = new G4PVPlacement(0, positionEndplate, fLogicEndplate, "Endplate", fLogicWorld, false, 0, true);
-
-  fLogicEndplate->SetUserLimits(new G4UserLimits(0.001*mm));
-
-  G4ThreeVector positionEndplateF = G4ThreeVector(0., 0., -(worldHalfLength-0.5*cm));
-  fSolidEndplateF = new G4Box("Endplate", 200*cm, 200*cm, 0.1*cm);
-  fLogicEndplateF = new G4LogicalVolume(fSolidEndplateF, fTargetMater, "Endplate", 0, 0, 0);
-  fPhysiEndplateF = new G4PVPlacement(0, positionEndplateF, fLogicEndplateF, "Endplate", fLogicWorld, false, 0, true);
-
-  fLogicEndplateF->SetUserLimits(new G4UserLimits(0.001*mm));
-
-  G4cout << "DetectorConstruction::>macs0 placing endplates at z = "
-	 << worldHalfLength-0.5*cm
-	 << " and z = " << -(worldHalfLength-0.5*cm)
-	 << G4endl;
-
-  G4VisAttributes *pVA1  = new G4VisAttributes;
-  pVA1->SetColour(G4Colour(0.9, 0.9, 0.9));
-  pVA1->SetForceSolid(true);
-  fLogicEndplate->SetVisAttributes(pVA1);
-  fLogicEndplateF->SetVisAttributes(pVA1);
-
-  G4cout << "Endplates are " <<  "1mm of " << fTargetMater->GetName()
-	 << " with logical name ->" << fLogicEndplate->GetName() << "<-"
-	 << G4endl;
-
-
-
-  return fPhysiWorld;
 }
 
-// ----------------------------------------------------------------------
-void DetectorConstruction::SetMagField(G4double fieldValue) {
-  G4cout << "===============> DetectorConstruction::SetMagField> SetMagField(" << fieldValue << G4endl;
-  fpMagField->SetField(fieldValue);
-}
-
-
-// ----------------------------------------------------------------------
-void DetectorConstruction::ConstructSDandField() {
-
-  // -- Sensitive detectors
-
-  // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
-  if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/TrackerChamberSD", false)) {
-    TrackerSD* aTrackerSD = new TrackerSD("/macs0/TrackerChamberSD", "TrackerHitsCollection", fVerbose);
-    G4SDManager::GetSDMpointer()->AddNewDetector(aTrackerSD);
-    SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
-  }
-
-  // -- FIXME: not sure this is a good thing. Atm I guess that the SD only outputs hits and is not affected by geometry
-  if (!G4SDManager::GetSDMpointer()->FindSensitiveDetector("/macs0/MCPSD", false)) {
-    MCPSD* aMCPSD = new MCPSD("/macs0/MCPSD", "MCPHitsCollection", fVerbose);
-    G4SDManager::GetSDMpointer()->AddNewDetector(aMCPSD);
-    SetSensitiveDetector("lMCP", aMCPSD, true);
-  }
-
-  fpMagField = new MagneticField();
-  fpFieldMgr = new G4FieldManager();
-  fpFieldMgr->SetDetectorField(fpMagField);
-  fpFieldMgr->CreateChordFinder(fpMagField);
-  fMagneticLogical->SetFieldManager(fpFieldMgr, true);
-
-  ElectricFieldSetup* fieldSetup = new ElectricFieldSetup();
-  fEmFieldSetup.Put(fieldSetup);
-  fLogicAccel->SetFieldManager(fpFieldMgr, true);
-
-
-  // -- these two lines lead to BREAKs
-  //  G4AutoDelete::Register(fpMagField);
-  //  G4AutoDelete::Register(fpFieldMgr);
-}
 
 // ----------------------------------------------------------------------
 void DetectorConstruction::makeAccel() {
@@ -705,4 +677,38 @@ void DetectorConstruction::makeTarget() {
   G4cout << "Target is " << fTargetLength/mm << "mm of " << fTargetMater->GetName()
 	 << " with logical name ->" << fLogicTarget->GetName() << "<-"
 	 << G4endl;
+}
+
+// ----------------------------------------------------------------------
+void DetectorConstruction::makeEndplate() {
+  G4double worldHalfLength = 0.5*fWorldLength;
+  G4ThreeVector positionEndplate = G4ThreeVector(0., 0., worldHalfLength-0.5*cm);
+  fSolidEndplate = new G4Box("Endplate", 200*cm, 200*cm, 0.1*cm);
+  fLogicEndplate = new G4LogicalVolume(fSolidEndplate, fTargetMater, "Endplate", 0, 0, 0);
+  fPhysiEndplate = new G4PVPlacement(0, positionEndplate, fLogicEndplate, "Endplate", fLogicWorld, false, 0, true);
+
+  fLogicEndplate->SetUserLimits(new G4UserLimits(0.001*mm));
+
+  G4ThreeVector positionEndplateF = G4ThreeVector(0., 0., -(worldHalfLength-0.5*cm));
+  fSolidEndplateF = new G4Box("Endplate", 200*cm, 200*cm, 0.1*cm);
+  fLogicEndplateF = new G4LogicalVolume(fSolidEndplateF, fTargetMater, "Endplate", 0, 0, 0);
+  fPhysiEndplateF = new G4PVPlacement(0, positionEndplateF, fLogicEndplateF, "Endplate", fLogicWorld, false, 0, true);
+
+  fLogicEndplateF->SetUserLimits(new G4UserLimits(0.001*mm));
+
+  G4cout << "DetectorConstruction::>macs0 placing endplates at z = "
+	 << worldHalfLength-0.5*cm
+	 << " and z = " << -(worldHalfLength-0.5*cm)
+	 << G4endl;
+
+  G4VisAttributes *pVA1  = new G4VisAttributes;
+  pVA1->SetColour(G4Colour(0.9, 0.9, 0.9));
+  pVA1->SetForceSolid(true);
+  fLogicEndplate->SetVisAttributes(pVA1);
+  fLogicEndplateF->SetVisAttributes(pVA1);
+
+  G4cout << "Endplates are " <<  "1mm of " << fTargetMater->GetName()
+	 << " with logical name ->" << fLogicEndplate->GetName() << "<-"
+	 << G4endl;
+
 }

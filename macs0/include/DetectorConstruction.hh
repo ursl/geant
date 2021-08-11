@@ -55,6 +55,10 @@ public:
   void makeEndDetector();
   // -- target
   void makeTarget();
+  // -- tracker
+  void makeTracker();
+  // -- endplate
+  void makeEndplate();
 
 private:
   int fVerbose;
