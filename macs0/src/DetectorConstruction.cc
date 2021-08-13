@@ -383,6 +383,7 @@ void DetectorConstruction::ConstructSDandField() {
   fpFieldMgr = new G4FieldManager();
   fpFieldMgr->SetDetectorField(fpMagField);
   fpFieldMgr->CreateChordFinder(fpMagField);
+
   fMagneticLogical->SetFieldManager(fpFieldMgr, true);
 
   // -- Sensitive detectors
