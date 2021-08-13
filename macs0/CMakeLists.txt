@@ -70,8 +70,48 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
 		   )
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/../common/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+#file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/../common/*.cc)
+set(sources
+# -- first files from local dir
+${PROJECT_SOURCE_DIR}/src/ChamberParameterisation.cc
+${PROJECT_SOURCE_DIR}/src/DetectorConstruction.cc
+${PROJECT_SOURCE_DIR}/src/DetectorMessenger.cc
+${PROJECT_SOURCE_DIR}/src/ElectricFieldSetup.cc
+${PROJECT_SOURCE_DIR}/src/EventAction.cc
+${PROJECT_SOURCE_DIR}/src/F02ElectricFieldSetup.cc
+${PROJECT_SOURCE_DIR}/src/F02FieldMessenger.cc
+${PROJECT_SOURCE_DIR}/src/MCPHit.cc
+${PROJECT_SOURCE_DIR}/src/MCPSD.cc
+${PROJECT_SOURCE_DIR}/src/MagneticField.cc
+${PROJECT_SOURCE_DIR}/src/PhysicsList.cc
+${PROJECT_SOURCE_DIR}/src/PrimaryGeneratorAction.cc
+${PROJECT_SOURCE_DIR}/src/RegionInformation.cc
+${PROJECT_SOURCE_DIR}/src/RootIO.cc
+${PROJECT_SOURCE_DIR}/src/RunAction.cc
+${PROJECT_SOURCE_DIR}/src/StackingAction.cc
+${PROJECT_SOURCE_DIR}/src/SteppingAction.cc
+${PROJECT_SOURCE_DIR}/src/SteppingVerbose.cc
+${PROJECT_SOURCE_DIR}/src/TGenCand.cc
+${PROJECT_SOURCE_DIR}/src/TGenVtx.cc
+${PROJECT_SOURCE_DIR}/src/THit.cc
+${PROJECT_SOURCE_DIR}/src/TrackInformation.cc
+${PROJECT_SOURCE_DIR}/src/TrackerHit.cc
+${PROJECT_SOURCE_DIR}/src/TrackerSD.cc
+${PROJECT_SOURCE_DIR}/src/TrackingAction.cc
+${PROJECT_SOURCE_DIR}/src/Trajectory.cc
+${PROJECT_SOURCE_DIR}/src/rEvent.cc
+# -- second files from common dir
+${PROJECT_SOURCE_DIR}/../common/Mu3eMuonInternalConversionDecayWithSpin.cc
+${PROJECT_SOURCE_DIR}/../common/Mu3eMuonRadiativeDecayChannelWithSpin.cc
+${PROJECT_SOURCE_DIR}/../common/MuDecayChannel.cc
+${PROJECT_SOURCE_DIR}/../common/musrMuEnergyLossLandau.cc
+${PROJECT_SOURCE_DIR}/../common/musrMuFormation.cc
+${PROJECT_SOURCE_DIR}/../common/musrMuStop.cc
+${PROJECT_SOURCE_DIR}/../common/musrMuonium.cc
+${PROJECT_SOURCE_DIR}/../common/yields.cc
+)
+
+#file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 
 
@@ -88,7 +128,7 @@ target_link_libraries(ClassesDict  ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(runG4 runG4.cc ${sources} ${headers})
+add_executable(runG4 runG4.cc ${sources})
 target_link_libraries(runG4 ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 target_link_libraries(ClassesDict ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
