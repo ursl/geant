@@ -13,7 +13,8 @@
 #include <TTimeStamp.h>
 
 // ----------------------------------------------------------------------
-EventAction::EventAction(): G4UserEventAction(), fVerbose(0) { }
+EventAction::EventAction(): G4UserEventAction(), fVerbose(0) {
+}
 
 // ----------------------------------------------------------------------
 EventAction::~EventAction() {
