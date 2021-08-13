@@ -186,7 +186,7 @@ void ElectricFieldSetup::CreateStepper() {
   //      the driver (if it exists) about the new stepper.
 
   // Always inform the (existing) driver about the new stepper
-  if (fIntgrDriver) fIntgrDriver->RenewStepperAndAdjust( fStepper );
+  if (fIntgrDriver) fIntgrDriver->RenewStepperAndAdjust(fStepper);
 }
 
 // ----------------------------------------------------------------------
