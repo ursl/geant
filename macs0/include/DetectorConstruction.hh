@@ -5,7 +5,7 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "G4Cache.hh"
 #include "G4FieldManager.hh"
-#include "ElectricFieldSetup.hh"
+//#include "ElectricFieldSetup.hh"
 
 class G4Box;
 class G4Tubs;
@@ -17,6 +17,8 @@ class G4Material;
 class G4UserLimits;
 class DetectorMessenger;
 class MagneticField;
+//class ElectricFieldSetup;
+class F02ElectricFieldSetup;
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
 public:
@@ -131,6 +133,7 @@ private:
 
   static G4ThreadLocal MagneticField* fpMagField;
   static G4ThreadLocal G4FieldManager* fpFieldMgr;
+  static G4ThreadLocal G4FieldManager* fpFieldMgrE;
 
   DetectorMessenger* fDetectorMessenger;  // pointer to the Messenger
   G4UserLimits* fStepLimit;            // pointer to user step limits
@@ -148,7 +151,8 @@ private:
 
   G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps
 
-  G4Cache<ElectricFieldSetup*> fEmFieldSetup;
+  //  G4Cache<ElectricFieldSetup*> fEmFieldSetup;
+  G4Cache<F02ElectricFieldSetup*> fEmFieldSetup;
 
 };
 

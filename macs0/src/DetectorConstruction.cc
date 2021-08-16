@@ -8,6 +8,7 @@
 #include "DetectorMessenger.hh"
 #include "MagneticField.hh"
 #include "ElectricFieldSetup.hh"
+#include "F02ElectricFieldSetup.hh"
 #include "RegionInformation.hh"
 #include "TrackerSD.hh"
 #include "MCPSD.hh"
@@ -402,11 +403,19 @@ void DetectorConstruction::ConstructSDandField() {
     SetSensitiveDetector("lMCP", aMCPSD, true);
   }
 
+  // if (!fEmFieldSetup.Get()) {
+  //   ElectricFieldSetup* fieldSetup = new ElectricFieldSetup();
+  //   fEmFieldSetup.Put(fieldSetup);
+  // }
+
   if (!fEmFieldSetup.Get()) {
-    ElectricFieldSetup* fieldSetup = new ElectricFieldSetup();
+    F02ElectricFieldSetup* fieldSetup = new F02ElectricFieldSetup();
+    G4AutoDelete::Register(fieldSetup); //Kernel will delete the messenger
     fEmFieldSetup.Put(fieldSetup);
+    G4bool allLocal = true;
+    fLogicAccel->SetFieldManager(fieldSetup->getGlobalFieldManager(), allLocal);
   }
-  fLogicAccel->SetFieldManager(fpFieldMgr, true);
+
 
   // -- these two lines lead to BREAKs (not true anymore?!)
   G4AutoDelete::Register(fpMagField);

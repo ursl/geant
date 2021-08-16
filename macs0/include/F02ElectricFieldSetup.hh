@@ -63,7 +63,7 @@ public:
 
   virtual ~F02ElectricFieldSetup();
 
-   // Methods to set parameters or select 
+   // Methods to set parameters or select
   void SetStepperType( G4int i) { fStepperType = i ; CreateStepper(); }
 
   void SetMinStep(G4double s) { fMinStep = s ; }
@@ -74,10 +74,12 @@ public:
    // Set/Get Field strength in Geant4 units
 
   void UpdateIntegrator();
-   // Prepare all the classes required for tracking - from stepper 
+   // Prepare all the classes required for tracking - from stepper
    //    to Chord-Finder
    //   NOTE:  field and equation must have been created before calling this.
-   
+
+  G4FieldManager*         getGlobalFieldManager() {return fFieldManager;}
+
 protected:
 
   // Find the global Field Manager
@@ -98,7 +100,7 @@ private:
   G4EqMagElectricField*   fEquation;
 
   G4ElectricField*        fEMfield;
- 
+
   G4ThreeVector           fElFieldValue;
 
   G4MagIntegratorStepper* fStepper;
@@ -106,7 +108,7 @@ private:
 
   G4int                   fStepperType;
 
-   
+
   F02FieldMessenger*      fFieldMessenger;
 
 };
