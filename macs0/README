@@ -1,8 +1,11 @@
 cd $G4BASE
 git clone git@github.com:ursl/muamu
 cd muamu/
-mkdir build
-cd build/
-cmake ../test1
-make
-./exe example.in
+mkdir _build
+cd _build/
+cmake ..
+make -j10
+
+cd ..
+_build/runG4 -c run.mac -g
+

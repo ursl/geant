@@ -45,7 +45,7 @@ if(ROOT_FOUND)
 endif()
 
 # Include ROOT's CMake functions for dictionary generation
-include("${ROOT_DIR}/modules/RootMacros.cmake")
+#include("${ROOT_DIR}/modules/RootMacros.cmake")
 
 
 #----------------------------------------------------------------------
