@@ -1,0 +1,9 @@
+local package to more efficiently work on fibres components
+
+mkdir _build
+cd _build
+cmake ..
+make -j20
+
+cd ..
+_build/fee
