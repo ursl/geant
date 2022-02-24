@@ -61,9 +61,12 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
   struct material {
     G4Material* Si;  
     G4Material* SiO2;
+    G4Material *Kapton, *PVC;
   } materials;
-  materials.Si = nist->FindOrBuildMaterial("G4_SI");
-  materials.SiO2 = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+  materials.Si     = nist->FindOrBuildMaterial("G4_SI");
+  materials.SiO2   = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+  materials.Kapton = nist->FindOrBuildMaterial("G4_KAPTON");
+  materials.PVC    = nist->FindOrBuildMaterial("G4_PVC");
   
   // -- begin header file contents
   G4LogicalVolume* fVolumeFibreFEE;
@@ -100,7 +103,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
 						 zTrans);
   
   fVolumeFibreFEEPcb = new G4LogicalVolume(solidFibreFEEPcb,
-					   materials.Si,
+					   materials.PVC,
 					   "fibreFEEPcb");
   
   fVolumeFibreFEE = new G4LogicalVolume(solidFibreFEE,
