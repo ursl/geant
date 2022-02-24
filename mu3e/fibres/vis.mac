@@ -14,13 +14,15 @@
 /vis/viewer/set/lightsVector -1 0 0
 /vis/viewer/set/background white
 
-/vis/drawVolume fibreFEEPcb
+##/vis/drawVolume fibreFEE
+#/vis/drawVolume
 
 # Specify style (surface, wireframe, auxiliary edges,...)
 /vis/viewer/set/style surface
 
 # Axes, scale, etc.
-/vis/scene/add/axes    # Simple axes: x=red, y=green, z=blue.
+#/vis/scene/add/axes 10 cm   # Simple axes: x=red, y=green, z=blue.
+/vis/scene/add/axes 0 0 0 2 cm
 
 # Make the "World" box invisible
 /vis/geometry/set/visibility World 0 false
