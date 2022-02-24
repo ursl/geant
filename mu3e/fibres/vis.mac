@@ -6,6 +6,8 @@
 /vis/viewer/set/autoRefresh false
 /vis/verbose errors
 
+/vis/viewer/set/globalLineWidthScale 1
+
 # Draw geometry:
 /vis/drawVolume
 
