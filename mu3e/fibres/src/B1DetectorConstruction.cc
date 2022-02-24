@@ -30,7 +30,7 @@ B1DetectorConstruction::~B1DetectorConstruction() { }
 // ----------------------------------------------------------------------
 G4VPhysicalVolume* B1DetectorConstruction::Construct() {  
   G4NistManager* nist = G4NistManager::Instance();
-  
+
   // -- Envelope parameters
   G4double env_sizeXY = 200*cm, env_sizeZ = 300*cm;
   G4Material* env_mat = nist->FindOrBuildMaterial("G4_Air");
@@ -61,6 +61,17 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
                       false,                 //no boolean operation
                       0,                     //copy number
                       checkOverlaps);        //overlaps checking
+
+
+  makeFEE(volume);
+  
+  return physWorld;
+}
+
+
+// ----------------------------------------------------------------------
+void B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
+  G4NistManager* nist = G4NistManager::Instance();
 
   // -- begin placeholder material
   struct material {
@@ -176,7 +187,5 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
 
   G4Transform3D TrId;
   solidFibreFEE->MakeImprint(volume, TrId, 0, 0);
- 
-  return physWorld;
-}
 
+}
