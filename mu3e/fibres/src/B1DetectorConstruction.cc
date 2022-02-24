@@ -13,6 +13,7 @@
 
 #include "G4VisAttributes.hh"
 
+#include <G4AssemblyVolume.hh>
 #include <G4UnionSolid.hh>
 
 // ----------------------------------------------------------------------
@@ -28,7 +29,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
   G4NistManager* nist = G4NistManager::Instance();
   
   // -- Envelope parameters
-  G4double env_sizeXY = 20*cm, env_sizeZ = 30*cm;
+  G4double env_sizeXY = 200*cm, env_sizeZ = 300*cm;
   G4Material* env_mat = nist->FindOrBuildMaterial("G4_Air");
    
   // -- Option to switch on/off checking of volumes overlaps
@@ -68,21 +69,25 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
   materials.SiO2 = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
   materials.Kapton = nist->FindOrBuildMaterial("G4_KAPTON");
   materials.PVC = nist->FindOrBuildMaterial("G4_PVC");
+  // -- end placeholder material
   
   // -- begin header file contents
   G4LogicalVolume* fVolumeFibreFEE;
   G4LogicalVolume* fVolumeFibreFEEPcb;
-  G4LogicalVolume* fVolumeFibreFEEAsic;
+  G4LogicalVolume* fVolumeFibreFEEAsic[4];
 
   
-  double fFEEPcbLength1    = 43.5 * CLHEP::mm;
-  double fFEEPcbWidth1     = 25.6 * CLHEP::mm;
-  double fFEEPcbThickness  = 1.07 * CLHEP::mm;
-  double fFEEPcbLength2    = 11.1 * CLHEP::mm;
-  double fFEEPcbWidth2     = 15.7 * CLHEP::mm;
-  double fFEEAsicLength    = 5.0  * CLHEP::mm;
-  double fFEEAsicWidth     = 5.0  * CLHEP::mm;
-  double fFEEAsicThickness = 1.0  * CLHEP::mm; // FIXME??
+  double fFEEPcbLength1     = 43.5 * CLHEP::mm;
+  double fFEEPcbWidth1      = 25.6 * CLHEP::mm;
+  double fFEEPcbThickness   = 1.07 * CLHEP::mm;
+  double fFEEPcbLength2     = 11.1 * CLHEP::mm;
+  double fFEEPcbWidth2      = 15.7 * CLHEP::mm;
+  double fFEEAsicLength     = 5.0  * CLHEP::mm;
+  double fFEEAsicWidth      = 5.0  * CLHEP::mm;
+  double fFEEAsicThickness  = 1.0  * CLHEP::mm; // FIXME??
+  double fFEEAsicDeltaFront = 7.9  * CLHEP::mm; 
+  double fFEEAsicDeltaSide  = 1.236* CLHEP::mm; 
+  double fFEEAsicDeltaChip  = 1.05 * CLHEP::mm; 
   // -- end header file contents
   
   
@@ -99,6 +104,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
 					    fFEEAsicThickness/2.);
   
   
+  // -- create PCB (non-rectangular) shape
   G4RotationMatrix* yRot = new G4RotationMatrix(); 
   G4ThreeVector zTrans(0, 0.5*(fFEEPcbLength1+fFEEPcbLength2), 0);
   G4UnionSolid* solidFibreFEEPcb = new G4UnionSolid("solidFibreFEEPcb",
@@ -110,32 +116,51 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
   fVolumeFibreFEEPcb = new G4LogicalVolume(solidFibreFEEPcb,
 					   materials.Kapton,
 					   "fibreFEEPcb");
-  
-  // fVolumeFibreFEE = new G4LogicalVolume(solidFibreFEE,
-  // 					materials.Si,
-  // 					"fibreFEE");
-  
-
-  double lengthPlate = 20*mm;
-  double length      = 10*mm;
-  
-  new G4PVPlacement(0, {0, 0, 0},
-		    fVolumeFibreFEEPcb,
-		    "fibreFEEPcb",
-		    volume,
-		    false,
-		    0);
 
   G4VisAttributes *pVA1  = new G4VisAttributes;
   pVA1->SetColour(G4Colour(0.8, 0.2, 0.4, 0.5));
   pVA1->SetForceSolid(true);
   fVolumeFibreFEEPcb->SetVisAttributes(pVA1);
 
-  G4VisAttributes *pVA2  = new G4VisAttributes;
-  pVA2->SetColour(G4Colour(0.9, 0.9, 0.9));
-  pVA2->SetForceSolid(true);
-  fVolumeFibreFEE->SetVisAttributes(pVA1);
+  
+  // -- create complete board as assembly, first PCB
+  G4RotationMatrix Ra;
+  G4ThreeVector Ta;
+  G4Transform3D Tr;
+  G4AssemblyVolume* solidFibreFEE = new G4AssemblyVolume();
+  
+  Ra.rotateZ(M_PI*radian);
+  
+  Ta.setX(0.5*fFEEPcbWidth1);
+  Ta.setY(0.5*fFEEPcbLength1 + fFEEPcbLength2);
+  Ta.setZ(0.);
+  Tr = G4Transform3D(Ra,Ta);
+  solidFibreFEE->AddPlacedVolume(fVolumeFibreFEEPcb, Tr);
+  
+  // -- add asics
+  for (unsigned int i = 0; i < 4; ++i) {
+    fVolumeFibreFEEAsic[i] = new G4LogicalVolume(solidFibreFEEAsic,
+						 materials.Si,
+						 "fibreFEEAsic");
+    
+    G4VisAttributes *pVA2  = new G4VisAttributes;
+    pVA2->SetColour(G4Colour(0., 0., 0.));
+    pVA2->SetForceSolid(true);
+    fVolumeFibreFEEAsic[i]->SetVisAttributes(pVA2);
+    
+    Ta.setX(0.5*fFEEAsicWidth + fFEEAsicDeltaSide + i*(fFEEAsicWidth + fFEEAsicDeltaChip)); 
+    Ta.setY(fFEEPcbLength1 + fFEEPcbLength2 - fFEEAsicDeltaFront);
+    Ta.setZ(0.5*(fFEEPcbThickness + fFEEAsicThickness));
+    
+    // -- revert to no rotation
+    Ra.rotateZ(-M_PI*radian);
+    Tr = G4Transform3D(Ra,Ta);
+    solidFibreFEE->AddPlacedVolume(fVolumeFibreFEEAsic[i], Tr);
+  }
 
+  G4Transform3D TrId;
+  solidFibreFEE->MakeImprint(volume, TrId, 0, 0);
+ 
   return physWorld;
 }
 
