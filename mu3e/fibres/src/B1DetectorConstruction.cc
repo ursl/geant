@@ -63,14 +63,16 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
                       checkOverlaps);        //overlaps checking
 
 
-  makeFEE(volume);
+  G4AssemblyVolume *solidFibreFEE = makeFEE(volume);
+  G4Transform3D TrId;
+  solidFibreFEE->MakeImprint(volume, TrId, 0, 0);
   
   return physWorld;
 }
 
 
 // ----------------------------------------------------------------------
-void B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
+G4AssemblyVolume* B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
   G4NistManager* nist = G4NistManager::Instance();
 
   // -- begin placeholder material
@@ -185,7 +187,5 @@ void B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
     solidFibreFEE->AddPlacedVolume(fVolumeFibreFEEAsic[i], Tr);
   }
 
-  G4Transform3D TrId;
-  solidFibreFEE->MakeImprint(volume, TrId, 0, 0);
-
+  return solidFibreFEE;
 }

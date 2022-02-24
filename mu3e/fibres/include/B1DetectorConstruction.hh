@@ -6,7 +6,7 @@
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
-
+class G4AssemblyVolume; 
 
 class B1DetectorConstruction : public G4VUserDetectorConstruction {
 public:
@@ -15,7 +15,7 @@ public:
   
   virtual G4VPhysicalVolume* Construct();
 
-  void makeFEE(G4LogicalVolume *);
+  G4AssemblyVolume*  makeFEE(G4LogicalVolume *);
   
   G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
   
