@@ -15,6 +15,9 @@
 
 #include <G4AssemblyVolume.hh>
 #include <G4UnionSolid.hh>
+#include <G4MultiUnion.hh>
+#include <G4Tubs.hh>
+#include <G4SubtractionSolid.hh>
 
 // ----------------------------------------------------------------------
 B1DetectorConstruction::B1DetectorConstruction(): G4VUserDetectorConstruction(), fScoringVolume(0) { }
@@ -95,6 +98,21 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
 					    fFEEPcbWidth1/2., fFEEPcbLength1/2.,
 					    fFEEPcbThickness/2.);
 
+  G4MultiUnion* fourHoles = new G4MultiUnion("FourHoles");
+  G4Tubs *hole = new G4Tubs("hole", 0, 1*mm, fFEEPcbThickness, 0, 2.*M_PI*radian);
+  G4RotationMatrix rotm = G4RotationMatrix();
+  G4Transform3D tr1 = G4Transform3D(rotm, G4ThreeVector(-11, -19, 0.));
+  fourHoles->AddNode(*hole, tr1);
+  G4Transform3D tr2 = G4Transform3D(rotm, G4ThreeVector(-11, 19, 0.));
+  fourHoles->AddNode(*hole, tr2);
+  G4Transform3D tr3 = G4Transform3D(rotm, G4ThreeVector(+11, -19, 0.));
+  fourHoles->AddNode(*hole, tr3);
+  G4Transform3D tr4 = G4Transform3D(rotm, G4ThreeVector(+11, 19, 0.));
+  fourHoles->AddNode(*hole, tr4);
+  
+  G4SubtractionSolid *subtraction = new G4SubtractionSolid("fibreFEEPcb11", solidFibreFEEPcb1, fourHoles);
+
+  
   G4VSolid* solidFibreFEEPcb2   = new G4Box("fibreFEEPcb2",
 					    fFEEPcbWidth2/2., fFEEPcbLength2/2.,
 					    fFEEPcbThickness/2.);
@@ -108,7 +126,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
   G4RotationMatrix* yRot = new G4RotationMatrix(); 
   G4ThreeVector zTrans(0, 0.5*(fFEEPcbLength1+fFEEPcbLength2), 0);
   G4UnionSolid* solidFibreFEEPcb = new G4UnionSolid("solidFibreFEEPcb",
-						    solidFibreFEEPcb1,
+						    subtraction, 
 						    solidFibreFEEPcb2,
 						    yRot,
 						    zTrans);
@@ -149,12 +167,10 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
     fVolumeFibreFEEAsic[i]->SetVisAttributes(pVA2);
     
     Ta.setX(0.5*fFEEAsicWidth + fFEEAsicDeltaSide + i*(fFEEAsicWidth + fFEEAsicDeltaChip)); 
-    Ta.setY(fFEEPcbLength1 + fFEEPcbLength2 - fFEEAsicDeltaFront);
+    Ta.setY(fFEEPcbLength1 + fFEEPcbLength2 - 0.5*fFEEAsicWidth - fFEEAsicDeltaFront);
     Ta.setZ(0.5*(fFEEPcbThickness + fFEEAsicThickness));
     
-    // -- revert to no rotation
-    Ra.rotateZ(-M_PI*radian);
-    Tr = G4Transform3D(Ra,Ta);
+    Tr = G4Transform3D(rotm, Ta);
     solidFibreFEE->AddPlacedVolume(fVolumeFibreFEEAsic[i], Tr);
   }
 
