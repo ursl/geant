@@ -11,6 +11,7 @@
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "G4VisAttributes.hh"
 
 #include <G4UnionSolid.hh>
 
@@ -63,10 +64,10 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
     G4Material* SiO2;
     G4Material *Kapton, *PVC;
   } materials;
-  materials.Si     = nist->FindOrBuildMaterial("G4_SI");
-  materials.SiO2   = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+  materials.Si = nist->FindOrBuildMaterial("G4_SI");
+  materials.SiO2 = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
   materials.Kapton = nist->FindOrBuildMaterial("G4_KAPTON");
-  materials.PVC    = nist->FindOrBuildMaterial("G4_PVC");
+  materials.PVC = nist->FindOrBuildMaterial("G4_PVC");
   
   // -- begin header file contents
   G4LogicalVolume* fVolumeFibreFEE;
@@ -85,41 +86,55 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
   // -- end header file contents
   
   
-  G4VSolid* solidFibreFEEPcb   = new G4Box("fibreFEEPcb",
-					   fFEEPcbWidth1/2., fFEEPcbLength1/2.,
-					   fFEEPcbThickness/2.);
- 
+  G4VSolid* solidFibreFEEPcb1   = new G4Box("fibreFEEPcb1",
+					    fFEEPcbWidth1/2., fFEEPcbLength1/2.,
+					    fFEEPcbThickness/2.);
+
+  G4VSolid* solidFibreFEEPcb2   = new G4Box("fibreFEEPcb2",
+					    fFEEPcbWidth2/2., fFEEPcbLength2/2.,
+					    fFEEPcbThickness/2.);
+  
   G4VSolid* solidFibreFEEAsic   = new G4Box("fibreFEEAsic",
 					    fFEEAsicWidth/2., fFEEAsicLength/2.,
 					    fFEEAsicThickness/2.);
   
   
   G4RotationMatrix* yRot = new G4RotationMatrix(); 
-  G4ThreeVector zTrans(0, 10, 10);
-  G4UnionSolid* solidFibreFEE = new G4UnionSolid("solidFibreFEEPcb+solidFibreFEEAsic",
-						 solidFibreFEEPcb,
-						 solidFibreFEEAsic,
-						 yRot,
-						 zTrans);
+  G4ThreeVector zTrans(0, 0.5*(fFEEPcbLength1+fFEEPcbLength2), 0);
+  G4UnionSolid* solidFibreFEEPcb = new G4UnionSolid("solidFibreFEEPcb",
+						    solidFibreFEEPcb1,
+						    solidFibreFEEPcb2,
+						    yRot,
+						    zTrans);
   
   fVolumeFibreFEEPcb = new G4LogicalVolume(solidFibreFEEPcb,
-					   materials.PVC,
+					   materials.Kapton,
 					   "fibreFEEPcb");
   
-  fVolumeFibreFEE = new G4LogicalVolume(solidFibreFEE,
-					materials.Si,
-					"fibreFEE");
+  // fVolumeFibreFEE = new G4LogicalVolume(solidFibreFEE,
+  // 					materials.Si,
+  // 					"fibreFEE");
   
 
   double lengthPlate = 20*mm;
   double length      = 10*mm;
   
-  new G4PVPlacement(0, {0, 0, -lengthPlate/2. + length/2.},
+  new G4PVPlacement(0, {0, 0, 0},
 		    fVolumeFibreFEEPcb,
 		    "fibreFEEPcb",
 		    volume,
 		    false,
 		    0);
+
+  G4VisAttributes *pVA1  = new G4VisAttributes;
+  pVA1->SetColour(G4Colour(0.8, 0.2, 0.4, 0.5));
+  pVA1->SetForceSolid(true);
+  fVolumeFibreFEEPcb->SetVisAttributes(pVA1);
+
+  G4VisAttributes *pVA2  = new G4VisAttributes;
+  pVA2->SetColour(G4Colour(0.9, 0.9, 0.9));
+  pVA2->SetForceSolid(true);
+  fVolumeFibreFEE->SetVisAttributes(pVA1);
 
   return physWorld;
 }
