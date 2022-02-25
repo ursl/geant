@@ -64,7 +64,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
 
 
   G4AssemblyVolume *solidFibreFEE = makeFEE(fVolume);
-  if (1) {
+  if (0) {
     G4Transform3D TrId;
     solidFibreFEE->MakeImprint(fVolume, TrId, 0, 0);  
   } else {
@@ -95,12 +95,11 @@ void B1DetectorConstruction::placeFEE() {
   const double dphi = 2 * M_PI / detector->nribbons;
   // -- y = 0 is between two ribbons. Therefore start with offset. Mirror this here as well.
   rotM.rotateX(-M_PI/2*CLHEP::rad);
-  rotM.rotateZ(0);
+  rotM.rotateZ(dphi/2);
   G4AssemblyVolume *solidFibreFEE = makeFEE(fVolume);
   
   for(unsigned int i = 0; i < detector->nribbons; ++i) {
-    //	phi = dphi/2 + i * dphi;
-    phi = i * dphi;
+    phi = dphi/2 + i * dphi;
     position =  {-std::sin(phi), std::cos(phi), 0};
     positionPcb = position * (rInSup + rPlate);
     positionPcb.setZ(position.z() - length/2.  - 0.3*CLHEP::cm);
@@ -142,7 +141,7 @@ G4AssemblyVolume* B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
   double fFEEAsicWidth      = 5.0  * CLHEP::mm;
   double fFEEAsicThickness  = 1.0  * CLHEP::mm; // FIXME??
   double fFEEAsicDeltaFront = 7.9  * CLHEP::mm; 
-  double fFEEAsicDeltaSide  = 2*1.236* CLHEP::mm; 
+  double fFEEAsicDeltaSide  = 2*1.236* CLHEP::mm;  // need factor 2 to better center ASIC row
   double fFEEAsicDeltaChip  = 1.05 * CLHEP::mm; 
   // -- end header file contents
   
