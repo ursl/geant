@@ -48,14 +48,14 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
 				0.5*world_sizeXY,
 				0.5*world_sizeZ);     
       
-  G4LogicalVolume* volume = new G4LogicalVolume(solidWorld,
+  fVolume = new G4LogicalVolume(solidWorld,
 						world_mat,        
 						"World"); 
   
   G4VPhysicalVolume* physWorld = 
     new G4PVPlacement(0,                     //no rotation
                       G4ThreeVector(),       //at (0,0,0)
-                      volume,            //its logical volume
+                      fVolume,            //its logical volume
                       "World",               //its name
                       0,                     //its mother  volume
                       false,                 //no boolean operation
@@ -63,11 +63,51 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct() {
                       checkOverlaps);        //overlaps checking
 
 
-  G4AssemblyVolume *solidFibreFEE = makeFEE(volume);
-  G4Transform3D TrId;
-  solidFibreFEE->MakeImprint(volume, TrId, 0, 0);
+  G4AssemblyVolume *solidFibreFEE = makeFEE(fVolume);
+  if (1) {
+    G4Transform3D TrId;
+    solidFibreFEE->MakeImprint(fVolume, TrId, 0, 0);  
+  } else {
+    placeFEE();
+  }
   
   return physWorld;
+}
+
+
+// ----------------------------------------------------------------------
+void B1DetectorConstruction::placeFEE() {
+  struct bla {
+    int nribbons;
+  };
+  struct bla *detector = new struct bla;
+  detector->nribbons = 12;
+  double rInSup =   39 * CLHEP::mm;
+  double rPlate =   15 * CLHEP::mm;
+  double length = (20.66 * mm) * 18/2. + (0.04 * mm) * (18 - 1) + 2; 
+    
+  G4RotationMatrix rotM = G4RotationMatrix();
+  G4ThreeVector position = {};
+  G4ThreeVector positionPcb = {};
+  G4Transform3D transform;
+  
+  double phi;
+  const double dphi = 2 * M_PI / detector->nribbons;
+  // -- y = 0 is between two ribbons. Therefore start with offset. Mirror this here as well.
+  rotM.rotateX(-M_PI/2*CLHEP::rad);
+  rotM.rotateZ(0);
+  G4AssemblyVolume *solidFibreFEE = makeFEE(fVolume);
+  
+  for(unsigned int i = 0; i < detector->nribbons; ++i) {
+    //	phi = dphi/2 + i * dphi;
+    phi = i * dphi;
+    position =  {-std::sin(phi), std::cos(phi), 0};
+    positionPcb = position * (rInSup + rPlate);
+    positionPcb.setZ(position.z() - length/2.  - 0.3*CLHEP::cm);
+    transform = G4Transform3D(rotM, positionPcb);
+    solidFibreFEE->MakeImprint(fVolume, transform);
+    rotM.rotateZ(dphi);
+  }
 }
 
 
@@ -102,7 +142,7 @@ G4AssemblyVolume* B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
   double fFEEAsicWidth      = 5.0  * CLHEP::mm;
   double fFEEAsicThickness  = 1.0  * CLHEP::mm; // FIXME??
   double fFEEAsicDeltaFront = 7.9  * CLHEP::mm; 
-  double fFEEAsicDeltaSide  = 1.236* CLHEP::mm; 
+  double fFEEAsicDeltaSide  = 2*1.236* CLHEP::mm; 
   double fFEEAsicDeltaChip  = 1.05 * CLHEP::mm; 
   // -- end header file contents
   
@@ -137,7 +177,7 @@ G4AssemblyVolume* B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
   
   // -- create PCB (non-rectangular) shape
   G4RotationMatrix* yRot = new G4RotationMatrix(); 
-  G4ThreeVector zTrans(0, 0.5*(fFEEPcbLength1+fFEEPcbLength2), 0);
+  G4ThreeVector zTrans(0., 0.5*(fFEEPcbLength1+fFEEPcbLength2), 0.);
   G4UnionSolid* solidFibreFEEPcb = new G4UnionSolid("solidFibreFEEPcb",
 						    subtraction, 
 						    solidFibreFEEPcb2,
@@ -162,8 +202,8 @@ G4AssemblyVolume* B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
   
   Ra.rotateZ(M_PI*radian);
   
-  Ta.setX(0.5*fFEEPcbWidth1);
-  Ta.setY(0.5*fFEEPcbLength1 + fFEEPcbLength2);
+  Ta.setX(0.);
+  Ta.setY(0.);
   Ta.setZ(0.);
   Tr = G4Transform3D(Ra,Ta);
   solidFibreFEE->AddPlacedVolume(fVolumeFibreFEEPcb, Tr);
@@ -179,8 +219,9 @@ G4AssemblyVolume* B1DetectorConstruction::makeFEE(G4LogicalVolume *volume) {
     pVA2->SetForceSolid(true);
     fVolumeFibreFEEAsic[i]->SetVisAttributes(pVA2);
     
-    Ta.setX(0.5*fFEEAsicWidth + fFEEAsicDeltaSide + i*(fFEEAsicWidth + fFEEAsicDeltaChip)); 
-    Ta.setY(fFEEPcbLength1 + fFEEPcbLength2 - 0.5*fFEEAsicWidth - fFEEAsicDeltaFront);
+    //    Ta.setX(-0.5*fFEEPcbWidth1 + 0.5*(fFEEAsicDeltaSide + fFEEAsicWidth) + i*(fFEEAsicWidth + fFEEAsicDeltaChip)); 
+    Ta.setX(0.5*(-fFEEPcbWidth1 + fFEEAsicDeltaSide + fFEEAsicWidth) + i*(fFEEAsicWidth + fFEEAsicDeltaChip));
+    Ta.setY(0.5*fFEEPcbLength1 - 0.5*fFEEAsicWidth - fFEEAsicDeltaFront);
     Ta.setZ(0.5*(fFEEPcbThickness + fFEEAsicThickness));
     
     Tr = G4Transform3D(rotm, Ta);

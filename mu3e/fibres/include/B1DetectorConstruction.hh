@@ -15,11 +15,13 @@ public:
   
   virtual G4VPhysicalVolume* Construct();
 
+  void placeFEE();
   G4AssemblyVolume*  makeFEE(G4LogicalVolume *);
   
   G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
   
 protected:
+  G4LogicalVolume*  fVolume;
   G4LogicalVolume*  fScoringVolume;
 };
 
