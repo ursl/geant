@@ -130,26 +130,29 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   G4LogicalVolume* fVolumeFibreSMB;
   G4LogicalVolume* fVolumeFibreSMBPcb;
   G4LogicalVolume* fVolumeFibreSMBAsic[4];
+  G4LogicalVolume* fVolumeFibreSMBChip1;
+  G4LogicalVolume* fVolumeFibreSMBChip2;
+  G4LogicalVolume* fVolumeFibreSMBChip3;
 
   /*
 
 
            +---------------------------------------+
            |                         +--+          |
-           |                         |  |          |
+           |        Chip3            |  |          |
     +------+                         +--+          |
     |                                              |
     |                                +--+          |
     |                                |  |          |
     |                                +--+          |
-    |fSMBPcbWidth2                                 | fSMBPcbWidth1
+ (2)|        Chip1                                 | fSMBPcbWidth1
     |                                +--+          |
     |                                |  |          |
     |                                +--+          |
     |                                              |
     +------+                         +--+          |
-       ^   |                         |  | (1)      |   (1) fSMBAsicDeltaFront
-       |   |                         +--+          |
+       ^   |         Chip2           |  | (1)      |   (1) fSMBAsicDeltaFront
+       |   |                         +--+          |   (2) fSMBPcbWidth2
        |   +---------------------------------------+
        |                fSMBPcbLength1
        |
@@ -164,19 +167,26 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   double fSMBPcbThickness   = 1.07 * CLHEP::mm; // CHECK
   double fSMBPcbLength2     = 11.0 * CLHEP::mm;
   double fSMBPcbWidth2      = 16.0 * CLHEP::mm;
-  double fSMBAsicLength     = 5.0  * CLHEP::mm;
+
   double fSMBAsicWidth      = 5.0  * CLHEP::mm;
   double fSMBAsicThickness  = 0.3  * CLHEP::mm;
-  double fSMBChip1Width     = 5.0  * CLHEP::mm;
-  double fSMBChip1Thickness = 0.3  * CLHEP::mm;
-  double fSMBChip2Width     = 5.0  * CLHEP::mm;
-  double fSMBChip2Thickness = 0.3  * CLHEP::mm;
-  double fSMBChip3Width     = 5.0  * CLHEP::mm;
-  double fSMBChip3Thickness = 0.3  * CLHEP::mm;
+
+  double fSMBChip1Width     = 5.7  * CLHEP::mm;
+  double fSMBChip1Thickness = 0.75 * CLHEP::mm;
+  double fSMBChip2Width     = 4.1  * CLHEP::mm;
+  double fSMBChip2Thickness = 1.0  * CLHEP::mm;
+  double fSMBChip3Width     = 3.1  * CLHEP::mm;
+  double fSMBChip3Thickness = 1.0  * CLHEP::mm;
 
   double fSMBAsicDeltaFront = 16.3 * CLHEP::mm; 
   double fSMBAsicDeltaSide  = 1.05 * CLHEP::mm;  
   double fSMBAsicDeltaChip  = 1.30 * CLHEP::mm; 
+
+  double fSMBChip2DeltaFront = 30.75 * CLHEP::mm; 
+  double fSMBChip2DeltaSide  = 0.25  * CLHEP::mm;
+
+  double fSMBChip3DeltaFront = 28.95 * CLHEP::mm; 
+  double fSMBChip3DeltaSide  = 22.45 * CLHEP::mm;
   // -- end header file contents
   
   G4RotationMatrix rotm = G4RotationMatrix();
@@ -193,7 +203,7 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   
   // -- the MuTRIG ASIC
   G4VSolid* solidFibreSMBAsic   = new G4Box("fibreSMBAsic",
-                                            fSMBAsicWidth/2., fSMBAsicLength/2.,
+                                            fSMBAsicWidth/2., fSMBAsicWidth/2.,
                                             fSMBAsicThickness/2.);
   // -- rotated chip next to the interposer
   G4VSolid* solidFibreSMBChip1   = new G4Box("fibreSMBChip1",
@@ -245,7 +255,7 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   Tr = G4Transform3D(Ra,Ta);
   solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBPcb, Tr);
   
-  // -- add asics
+  // -- add 4 asics
   for (unsigned int i = 0; i < 4; ++i) {
     fVolumeFibreSMBAsic[i] = new G4LogicalVolume(solidFibreSMBAsic,
 						 materials.Si,
@@ -257,12 +267,48 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
     fVolumeFibreSMBAsic[i]->SetVisAttributes(pVA2);
     
     Ta.setX(0.5*(fSMBPcbWidth1 - fSMBAsicWidth - 2.*fSMBAsicDeltaSide) - i*(fSMBAsicWidth + fSMBAsicDeltaChip));
-    Ta.setY(-0.5*(fSMBPcbLength1-fSMBAsicWidth) + fSMBAsicDeltaFront);
+    Ta.setY(-0.5*(fSMBPcbLength1 - fSMBAsicWidth) + fSMBAsicDeltaFront);
     Ta.setZ(0.5*(fSMBPcbThickness + fSMBAsicThickness));
     
     Tr = G4Transform3D(rotm, Ta);
     solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBAsic[i], Tr);
   }
+
+
+  // -- add chip #2
+  fVolumeFibreSMBChip2 = new G4LogicalVolume(solidFibreSMBChip2,
+                                             materials.Si,
+                                             "fibreSMBChip2");
+  
+  G4VisAttributes *pVA2  = new G4VisAttributes;
+  pVA2->SetColour(G4Colour(0., 0., 0.));
+  pVA2->SetForceSolid(true);
+  fVolumeFibreSMBChip2->SetVisAttributes(pVA2);
+  
+  Ta.setX(0.5*(-fSMBPcbWidth1 + fSMBChip2Width + 2.*fSMBChip2DeltaSide));
+  Ta.setY(-0.5*(fSMBPcbLength1 - fSMBChip2Width) + fSMBChip2DeltaFront);
+  Ta.setZ(0.5*(fSMBPcbThickness + fSMBChip2Thickness));
+  
+  Tr = G4Transform3D(rotm, Ta);
+  solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBChip2, Tr);
+
+
+  // -- add chip #3
+  fVolumeFibreSMBChip3 = new G4LogicalVolume(solidFibreSMBChip3,
+                                             materials.Si,
+                                             "fibreSMBChip3");
+  
+  G4VisAttributes *pVA3  = new G4VisAttributes;
+  pVA3->SetColour(G4Colour(0., 0., 0.));
+  pVA3->SetForceSolid(true);
+  fVolumeFibreSMBChip3->SetVisAttributes(pVA3);
+  
+  Ta.setX(0.5*(-fSMBPcbWidth1 + fSMBChip3Width + 2.*fSMBChip3DeltaSide));
+  Ta.setY(-0.5*(fSMBPcbLength1 - fSMBChip3Width) + fSMBChip3DeltaFront);
+  Ta.setZ(0.5*(fSMBPcbThickness + fSMBChip3Thickness));
+  
+  Tr = G4Transform3D(rotm, Ta);
+  solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBChip3, Tr);
 
   return solidFibreSMB;
 }
