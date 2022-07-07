@@ -38,6 +38,9 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 add_executable(fee fee.cc ${sources} ${headers})
 target_link_libraries(fee ${Geant4_LIBRARIES})
 
+add_executable(smb smb.cc ${sources} ${headers})
+target_link_libraries(smb ${Geant4_LIBRARIES})
+
 #----------------------------------------------------------------------------
 # For internal Geant4 use - but has no effect if you build this
 # example standalone
@@ -47,4 +50,4 @@ add_custom_target(B1 DEPENDS exampleB1)
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS fee DESTINATION bin)
+install(TARGETS fee smb DESTINATION bin)
