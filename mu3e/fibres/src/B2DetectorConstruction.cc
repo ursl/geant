@@ -133,23 +133,23 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   G4LogicalVolume* fVolumeFibreSMBChip1;
   G4LogicalVolume* fVolumeFibreSMBChip2;
   G4LogicalVolume* fVolumeFibreSMBChip3;
-
+  G4LogicalVolume* fVolumeFibreSMBConnector;
   /*
 
 
            +---------------------------------------+
            |                         +--+          |
-           |        Chip3            |  |          |
+           |           Chip3         |  |          |
     +------+                         +--+          |
-    |                                              |
-    |                                +--+          |
-    |                                |  |          |
-    |                                +--+          |
- (2)|        Chip1                                 | fSMBPcbWidth1
-    |                                +--+          |
-    |                                |  |          |
-    |                                +--+          |
-    |                                              |
+    | C                                            |
+    | o                              +--+          |
+    | n     C                        |  |          |
+    | n      h                       +--+          |
+ (2)| e       i                                    | fSMBPcbWidth1
+    | c        p                     +--+          |
+    | t         1                    |  |          |
+    | o                              +--+          |
+    | r                                            |
     +------+                         +--+          |
        ^   |         Chip2           |  | (1)      |   (1) fSMBAsicDeltaFront
        |   |                         +--+          |   (2) fSMBPcbWidth2
@@ -162,11 +162,11 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
 
 
   
-  double fSMBPcbLength1     = 44.5 * CLHEP::mm;
-  double fSMBPcbWidth1      = 26.0 * CLHEP::mm;
-  double fSMBPcbThickness   = 1.07 * CLHEP::mm; // CHECK
-  double fSMBPcbLength2     = 11.0 * CLHEP::mm;
-  double fSMBPcbWidth2      = 16.0 * CLHEP::mm;
+  double fSMBPcbLength1     = 44.5   * CLHEP::mm;
+  double fSMBPcbWidth1      = 26.0   * CLHEP::mm;
+  double fSMBPcbThickness   =  1.005 * CLHEP::mm;
+  double fSMBPcbLength2     = 11.0   * CLHEP::mm;
+  double fSMBPcbWidth2      = 16.0   * CLHEP::mm;
 
   double fSMBAsicWidth      = 5.0  * CLHEP::mm;
   double fSMBAsicThickness  = 0.3  * CLHEP::mm;
@@ -178,18 +178,25 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   double fSMBChip3Width     = 3.1  * CLHEP::mm;
   double fSMBChip3Thickness = 1.0  * CLHEP::mm;
 
-  double fSMBAsicDeltaFront = 16.3 * CLHEP::mm; 
+  double fSMBConnectorLength    = 13.1  * CLHEP::mm;
+  double fSMBConnectorWidth     =  7.1  * CLHEP::mm;
+  double fSMBConnectorThickness =  0.35 * CLHEP::mm;
+
+  double fSMBAsicDeltaFront = 16.3 * CLHEP::mm;    // chip rhs wrt 55.5 (right edge)
   double fSMBAsicDeltaSide  = 1.05 * CLHEP::mm;  
   double fSMBAsicDeltaChip  = 1.30 * CLHEP::mm; 
 
 
-  double fSMBChip1DeltaCenter = 42.79 * CLHEP::mm; 
+  double fSMBChip1DeltaCenter = 42.79 * CLHEP::mm; // chip center wrt 55.5 (right edge)
     
-  double fSMBChip2DeltaFront = 30.75 * CLHEP::mm; 
+  double fSMBChip2DeltaFront = 30.75 * CLHEP::mm;  // chip rhs wrt 55.5 (right edge)
   double fSMBChip2DeltaSide  = 0.25  * CLHEP::mm;
 
-  double fSMBChip3DeltaFront = 28.95 * CLHEP::mm; 
+  double fSMBChip3DeltaFront = 28.95 * CLHEP::mm;  // chip rhs wrt 55.5 (right edge) 
   double fSMBChip3DeltaSide  = 22.45 * CLHEP::mm;
+
+  double fSMBConnectorDelta  =  0.355* CLHEP::mm;  // connector separation wrt 0.0 (left edge)
+
   // -- end header file contents
   
   G4RotationMatrix rotm = G4RotationMatrix();
@@ -222,6 +229,11 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   G4VSolid* solidFibreSMBChip3   = new G4Box("fibreSMBChip3",
                                             fSMBChip3Width/2., fSMBChip3Width/2.,
                                             fSMBChip3Thickness/2.);
+
+  // -- Connector at narrow end
+  G4VSolid* solidFibreSMBConnector   = new G4Box("fibreSMBConnector",
+                                            fSMBConnectorLength/2., fSMBConnectorWidth/2.,
+                                            fSMBConnectorThickness/2.);
 
   
   // -- create PCB (non-rectangular) shape
@@ -335,6 +347,26 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   Tr = G4Transform3D(rotm, Ta);
   solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBChip1, Tr);
 
+  // -- add connector
+  fVolumeFibreSMBConnector = new G4LogicalVolume(solidFibreSMBConnector,
+                                             materials.Si,
+                                             "fibreSMBConnector");
+  
+  G4VisAttributes *pVA4  = new G4VisAttributes;
+  pVA4->SetColour(G4Colour(0.2, 0.2, 0.2));
+  pVA4->SetForceSolid(true);
+  fVolumeFibreSMBConnector->SetVisAttributes(pVA4);
+  
+  Ta.setX(0.);
+  Ta.setY(0.5*fSMBPcbLength1 + fSMBPcbLength2 - 0.5*fSMBConnectorWidth - fSMBConnectorDelta);
+  Ta.setZ(0.5*(fSMBPcbThickness + fSMBConnectorThickness));
+  
+  // -- rotate back
+  rotm.rotateZ(+M_PI/4*CLHEP::rad);
+  Tr = G4Transform3D(rotm, Ta);
+  solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBConnector, Tr);
+
+  
   
   return solidFibreSMB;
 }
