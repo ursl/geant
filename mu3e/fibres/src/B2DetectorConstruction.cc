@@ -182,6 +182,9 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   double fSMBAsicDeltaSide  = 1.05 * CLHEP::mm;  
   double fSMBAsicDeltaChip  = 1.30 * CLHEP::mm; 
 
+
+  double fSMBChip1DeltaCenter = 42.79 * CLHEP::mm; 
+    
   double fSMBChip2DeltaFront = 30.75 * CLHEP::mm; 
   double fSMBChip2DeltaSide  = 0.25  * CLHEP::mm;
 
@@ -234,10 +237,10 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
 					   materials.Kapton,
 					   "fibreSMBPcb");
 
-  G4VisAttributes *pVA1  = new G4VisAttributes;
-  pVA1->SetColour(G4Colour(0.8, 0.2, 0.4, 0.5));
-  pVA1->SetForceSolid(true);
-  fVolumeFibreSMBPcb->SetVisAttributes(pVA1);
+  G4VisAttributes *pVA  = new G4VisAttributes;
+  pVA->SetColour(G4Colour(0.8, 0.2, 0.4, 0.5));
+  pVA->SetForceSolid(true);
+  fVolumeFibreSMBPcb->SetVisAttributes(pVA);
 
   
   // -- create complete board as assembly, first PCB
@@ -275,6 +278,8 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   }
 
 
+
+  
   // -- add chip #2
   fVolumeFibreSMBChip2 = new G4LogicalVolume(solidFibreSMBChip2,
                                              materials.Si,
@@ -310,5 +315,26 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   Tr = G4Transform3D(rotm, Ta);
   solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBChip3, Tr);
 
+
+  // -- add chip #1
+  fVolumeFibreSMBChip1 = new G4LogicalVolume(solidFibreSMBChip1,
+                                             materials.Si,
+                                             "fibreSMBChip1");
+  
+  G4VisAttributes *pVA1  = new G4VisAttributes;
+  pVA1->SetColour(G4Colour(0., 0., 0.));
+  pVA1->SetForceSolid(true);
+  fVolumeFibreSMBChip1->SetVisAttributes(pVA1);
+  
+  Ta.setX(0.);
+  Ta.setY(-0.5*fSMBPcbLength1 + fSMBChip1DeltaCenter);
+  //  Ta.setY(-0.5*(fSMBPcbLength1) + fSMBChip1DeltaFront);
+  Ta.setZ(0.5*(fSMBPcbThickness + fSMBChip1Thickness));
+  
+  rotm.rotateZ(-M_PI/4*CLHEP::rad);
+  Tr = G4Transform3D(rotm, Ta);
+  solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBChip1, Tr);
+
+  
   return solidFibreSMB;
 }
