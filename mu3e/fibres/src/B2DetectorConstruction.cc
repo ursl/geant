@@ -55,7 +55,7 @@ G4VPhysicalVolume* B2DetectorConstruction::Construct() {
   G4VPhysicalVolume* physWorld = 
     new G4PVPlacement(0,                     //no rotation
                       G4ThreeVector(),       //at (0,0,0)
-                      fVolume,            //its logical volume
+                      fVolume,               //its logical volume
                       "World",               //its name
                       0,                     //its mother  volume
                       false,                 //no boolean operation
@@ -63,13 +63,14 @@ G4VPhysicalVolume* B2DetectorConstruction::Construct() {
                       checkOverlaps);        //overlaps checking
 
 
-  G4AssemblyVolume *solidFibreSMB = makeSMB(fVolume);
-  if (0) {
-    G4Transform3D TrId;
-    solidFibreSMB->MakeImprint(fVolume, TrId, 0, 0);  
-  } else {
-    placeSMB();
-  }
+  placeSMB();
+  
+  //  G4AssemblyVolume *solidFibreSMB = makeSMB(fVolume);
+  // if (0) {
+  //   G4Transform3D TrId;
+  //   solidFibreSMB->MakeImprint(fVolume, TrId, 0, 0);  
+  // } else {
+  // }
   
   return physWorld;
 }
@@ -366,7 +367,10 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
   Tr = G4Transform3D(rotm, Ta);
   solidFibreSMB->AddPlacedVolume(fVolumeFibreSMBConnector, Tr);
 
-  
-  
   return solidFibreSMB;
+
+  //      int sensorId = (layer << layerOffset) + (ladderId << ladderOffset);
+  //      // deliberate offset relative to the grand numbering scheme needed...
+  //      ladder->assembly->MakeImprint(mother, trans, sensorId);
+
 }
