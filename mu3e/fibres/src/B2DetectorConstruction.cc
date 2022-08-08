@@ -82,7 +82,7 @@ void B2DetectorConstruction::placeSMB() {
     int nribbons;
   };
   struct bla *detector = new struct bla;
-  detector->nribbons = 1;
+  detector->nribbons = 12;
   double rInSup =   39 * CLHEP::mm;
   double rPlate =   15 * CLHEP::mm;
   double length = (20.66 * mm) * 18/2. + (0.04 * mm) * (18 - 1) + 2; 
@@ -354,7 +354,7 @@ G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
                                              "fibreSMBConnector");
   
   G4VisAttributes *pVA4  = new G4VisAttributes;
-  pVA4->SetColour(G4Colour(0.2, 0.2, 0.2));
+  pVA4->SetColour(G4Colour(0.7, 0.7, 0.7));
   pVA4->SetForceSolid(true);
   fVolumeFibreSMBConnector->SetVisAttributes(pVA4);
   
