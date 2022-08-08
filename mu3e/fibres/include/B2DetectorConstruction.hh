@@ -16,7 +16,7 @@ public:
   virtual G4VPhysicalVolume* Construct();
 
   void placeSMB();
-  G4AssemblyVolume*  makeSMB(G4LogicalVolume *);
+  G4AssemblyVolume*  makeSMB();
   
   G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
   

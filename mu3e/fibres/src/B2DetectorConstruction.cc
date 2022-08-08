@@ -97,7 +97,7 @@ void B2DetectorConstruction::placeSMB() {
   // -- y = 0 is between two ribbons. Therefore start with offset. Mirror this here as well.
   rotM.rotateX(-M_PI/2*CLHEP::rad);
   rotM.rotateZ(dphi/2);
-  G4AssemblyVolume *solidFibreSMB = makeSMB(fVolume);
+  G4AssemblyVolume *solidFibreSMB = makeSMB();
   
   for(unsigned int i = 0; i < detector->nribbons; ++i) {
     phi = dphi/2 + i * dphi;
@@ -112,7 +112,7 @@ void B2DetectorConstruction::placeSMB() {
 
 
 // ----------------------------------------------------------------------
-G4AssemblyVolume* B2DetectorConstruction::makeSMB(G4LogicalVolume *volume) {
+G4AssemblyVolume* B2DetectorConstruction::makeSMB() {
   G4NistManager* nist = G4NistManager::Instance();
 
   // -- begin placeholder material
