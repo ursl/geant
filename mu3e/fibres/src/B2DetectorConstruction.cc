@@ -100,7 +100,8 @@ void B2DetectorConstruction::placeSMB() {
   double phi;
   const double dphi = 2 * M_PI / detector->nribbons;
   // -- y = 0 is between two ribbons. Therefore start with offset. Mirror this here as well.
-  rotM.rotateX(-M_PI/2*CLHEP::rad);
+  rotM.rotateY(M_PI*CLHEP::rad);
+  rotM.rotateX(M_PI/2*CLHEP::rad);
   rotM.rotateZ(dphi/2);
   G4AssemblyVolume *solidFibreSMB = makeSMB();
   
