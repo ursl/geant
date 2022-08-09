@@ -8,6 +8,11 @@ class G4VPhysicalVolume;
 class G4LogicalVolume;
 class G4AssemblyVolume; 
 
+// ----------------------------------------------------------------------
+// Design of the "new" SMB (as of mid 2022)
+// ----------------------------------------------------------------------
+
+
 class B2DetectorConstruction : public G4VUserDetectorConstruction {
 public:
   B2DetectorConstruction();

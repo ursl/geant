@@ -21,6 +21,11 @@
 #include <G4SubtractionSolid.hh>
 
 // ----------------------------------------------------------------------
+// Design of a "realistic" cold flange
+// ----------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------
 B3DetectorConstruction::B3DetectorConstruction(): G4VUserDetectorConstruction(), fScoringVolume(0) { }
 
 

@@ -9,6 +9,10 @@ class G4VPhysicalVolume;
 class G4LogicalVolume;
 class G4AssemblyVolume; 
 
+// ----------------------------------------------------------------------
+// Design of a "realistic" cold flange
+// ----------------------------------------------------------------------
+
 class B3DetectorConstruction : public G4VUserDetectorConstruction {
 public:
   B3DetectorConstruction();

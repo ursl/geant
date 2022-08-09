@@ -20,6 +20,11 @@
 #include <G4SubtractionSolid.hh>
 
 // ----------------------------------------------------------------------
+// Design of the "new" SMB (as of mid 2022)
+// ----------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------
 B2DetectorConstruction::B2DetectorConstruction(): G4VUserDetectorConstruction(), fScoringVolume(0) { }
 
 
