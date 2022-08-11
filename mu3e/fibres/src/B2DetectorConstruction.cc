@@ -116,18 +116,19 @@ void B2DetectorConstruction::placeSMB() {
     rotM.rotateZ(dphi);
   }
 
-  cout << "AAAA> GetAssemblyID() = " << solidFibreSMB->GetAssemblyID() << endl;
-  
+  // -- rename entities
   vector<G4VPhysicalVolume*>::iterator ipv = solidFibreSMB->GetVolumesIterator();
-
+  string simpr("SMB_US");
+  char ssmb[100], sasic[100];
+  int nSmb(-1);
   while (*ipv) {
     string sname = (*ipv)->GetName(); 
-    if (string::npos != sname.find("Pcb")) {
+    if (string::npos != sname.find("Pcb_")) {
       double phi = (*ipv)->GetTranslation().phi()*57.2957795131; 
       if (phi < 0) phi += 360.;
-      int nSmb = 11 - static_cast<int>(phi)/30;
-      char ssmb[100];
-      sprintf(ssmb, "SMB_US_%d", nSmb);
+      nSmb = 9 + static_cast<int>(phi)/30;
+      if (nSmb > 11) nSmb -= 12;
+      sprintf(ssmb, "%s_%d", simpr.c_str(), nSmb);
       cout << "*ipv->GetName() = " << sname << " trsl = "
            << (*ipv)->GetTranslation()
            << " phi = " << phi
@@ -136,9 +137,47 @@ void B2DetectorConstruction::placeSMB() {
            << endl;
       (*ipv)->SetName(ssmb); 
     }
+    if (string::npos != sname.find("Asic_")) {
+      int iasic(3);
+      sprintf(sasic, "%s_%d_ASIC_%d", simpr.c_str(), nSmb, iasic--);
+      (*ipv)->SetName(sasic); 
+
+      ++ipv;
+      sprintf(sasic, "%s_%d_ASIC_%d", simpr.c_str(), nSmb, iasic--);
+      (*ipv)->SetName(sasic); 
+
+      ++ipv;
+      sprintf(sasic, "%s_%d_ASIC_%d", simpr.c_str(), nSmb, iasic--);
+      (*ipv)->SetName(sasic); 
+
+      ++ipv;
+      sprintf(sasic, "%s_%d_ASIC_%d", simpr.c_str(), nSmb, iasic--);
+      (*ipv)->SetName(sasic); 
+
+      continue;
+    }
+    if (string::npos != sname.find("Chip")) {
+      int ichip(0);
+      sprintf(sasic, "%s_%d_CHIP_%d", simpr.c_str(), nSmb, ichip++);
+      (*ipv)->SetName(sasic); 
+      ++ipv;
+
+      sprintf(sasic, "%s_%d_CHIP_%d", simpr.c_str(), nSmb, ichip++);
+      (*ipv)->SetName(sasic); 
+      ++ipv;
+
+      sprintf(sasic, "%s_%d_CHIP_%d", simpr.c_str(), nSmb, ichip++);
+      (*ipv)->SetName(sasic); 
+      ++ipv;
+      continue;
+    }
+    if (string::npos != sname.find("Connector_")) {
+      sprintf(sasic, "%s_%d_CONN", simpr.c_str(), nSmb);
+      (*ipv)->SetName(sasic); 
+      continue;
+    }
     ++ipv;
   }
-  
 }
 
 
