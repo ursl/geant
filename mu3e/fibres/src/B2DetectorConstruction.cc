@@ -23,6 +23,7 @@
 // Design of the "new" SMB (as of mid 2022)
 // ----------------------------------------------------------------------
 
+using namespace::std;
 
 // ----------------------------------------------------------------------
 B2DetectorConstruction::B2DetectorConstruction(): G4VUserDetectorConstruction(), fScoringVolume(0) { }
@@ -114,6 +115,30 @@ void B2DetectorConstruction::placeSMB() {
     solidFibreSMB->MakeImprint(fVolume, transform);
     rotM.rotateZ(dphi);
   }
+
+  cout << "AAAA> GetAssemblyID() = " << solidFibreSMB->GetAssemblyID() << endl;
+  
+  vector<G4VPhysicalVolume*>::iterator ipv = solidFibreSMB->GetVolumesIterator();
+
+  while (*ipv) {
+    string sname = (*ipv)->GetName(); 
+    if (string::npos != sname.find("Pcb")) {
+      double phi = (*ipv)->GetTranslation().phi()*57.2957795131; 
+      if (phi < 0) phi += 360.;
+      int nSmb = 11 - static_cast<int>(phi)/30;
+      char ssmb[100];
+      sprintf(ssmb, "SMB_US_%d", nSmb);
+      cout << "*ipv->GetName() = " << sname << " trsl = "
+           << (*ipv)->GetTranslation()
+           << " phi = " << phi
+           << " -> nSmb = " << nSmb
+           << " -> ssmb = " << ssmb
+           << endl;
+      (*ipv)->SetName(ssmb); 
+    }
+    ++ipv;
+  }
+  
 }
 
 
