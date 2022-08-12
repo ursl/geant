@@ -117,6 +117,7 @@ G4Polycone* B3DetectorConstruction::makeColdFlange(G4LogicalVolume *volume) {
   double rOuter[] = { 0, 10, 10, 5 , 5, 10 , 10 , 2, 2};
   double zPlane[] = { 5, 7, 9, 11, 25, 27, 29, 31, 35 };
 
+  // FIXME
   G4Polycone* solidFibreColdFlange = new G4Polycone("coldFlange",
                                                           phiStart,
                                                           phiTotal,
