@@ -12,7 +12,8 @@
 /vis/drawVolume
 
 # Specify view angle:
-/vis/viewer/set/viewpointVector -1 0 0
+/vis/viewer/set/viewpointVector 0 -2 0
+/vis/viewer/set/viewpointVector 2 -2 0 #for display
 /vis/viewer/set/lightsVector -1 0 0
 /vis/viewer/set/background white
 
@@ -24,12 +25,15 @@
 
 # Axes, scale, etc.
 #/vis/scene/add/axes 10 cm   # Simple axes: x=red, y=green, z=blue.
-/vis/scene/add/axes 0 0 0 2 cm
+
+#/vis/scene/add/axes 0 0 0 2 cm 
+#/vis/scene/add/axes 0 0 0 2 cm # for display
 
 # Make the "World" box invisible
 /vis/geometry/set/visibility World 0 false
 
-/vis/viewer/set/viewpointThetaPhi 120 150
+#/vis/viewer/set/viewpointThetaPhi 120 150
+/vis/viewer/set/viewpointThetaPhi -90 90 #for display
 
 # Re-establish auto refreshing and verbosity:
 /vis/viewer/set/autoRefresh true
