@@ -89,7 +89,7 @@ void B2DetectorConstruction::placeSMB() {
   };
   struct bla *detector = new struct bla;
   detector->nribbons = 12;
-  detector->nribbons = 1; // for display
+  //  detector->nribbons = 1; // for display
   double rInSup =   39 * CLHEP::mm;
   double rPlate =   15 * CLHEP::mm;
   double length = (20.66 * mm) * 18/2. + (0.04 * mm) * (18 - 1) + 2; 
@@ -109,11 +109,11 @@ void B2DetectorConstruction::placeSMB() {
   
   for(unsigned int i = 0; i < detector->nribbons; ++i) {
     phi = dphi/2 + i * dphi;
-    phi = i * dphi; // for display
+    //    phi = i * dphi; // for display
     position =  {-std::sin(phi), std::cos(phi), 0};
     positionPcb = position * (rInSup + rPlate);
     positionPcb.setZ(position.z() - length/2.  - 0.3*CLHEP::cm);
-    positionPcb.setZ(0.); // for display
+    //    positionPcb.setZ(0.); // for display
     transform = G4Transform3D(rotM, positionPcb);
     solidFibreSMB->MakeImprint(fVolume, transform);
     rotM.rotateZ(dphi);
